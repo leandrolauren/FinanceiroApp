@@ -51,7 +51,7 @@ const columns = [
           variant="outlined"
           color="error"
           size="small"
-          href={`/Pessoas/DeletePessoa/${params.id}`}
+          onClick={() => window.abrirModalExclusaoPessoa(params.id)}
         >
           Excluir
         </Button>
@@ -71,6 +71,12 @@ export default function PessoasDataGrid() {
         setRows(data)
         setLoading(false)
       })
+  }, [])
+
+  useEffect(() => {
+    window.atualizarTabelaPessoas = (idRemovido) => {
+      setRows((prevRows) => prevRows.filter((p) => p.id !== idRemovido))
+    }
   }, [])
 
   return (
@@ -95,7 +101,7 @@ export default function PessoasDataGrid() {
           rows={rows}
           columns={columns}
           getRowId={(row) => row.id}
-          pageSize={15}
+          pageSize={25}
           rowsPerPageOptions={[5, 10, 20]}
           localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
           disableRowSelectionOnClick
@@ -131,6 +137,6 @@ if (rootElement) {
   root.render(
     <AppWrapper>
       <PessoasDataGrid />
-    </AppWrapper>
+    </AppWrapper>,
   )
 }

@@ -5,7 +5,10 @@ namespace FinanceiroApp.Models;
 public class UsuarioModel
 {
     public int Id { get; set; }
+
+    [Required(ErrorMessage = "O nome é obrigatório.")]
     public string Nome { get; set; } = string.Empty;
+    [EmailAddress(ErrorMessage = "Informe um email válido.")]
     public string Email { get; set; } = string.Empty;
     public string SenhaHash { get; set; } = string.Empty;
 

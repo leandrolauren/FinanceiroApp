@@ -26,6 +26,17 @@ public class ContasController : Controller
         return Json(contas);
     }
 
+    // GET: Conta -- Recebe uma unica conta para exclusão
+    [HttpGet]
+    public IActionResult GetContaEx(int id)
+    {
+        var conta = _context.ContasBancarias.Find(id);
+        if (conta == null)
+            return NotFound();
+
+        return Json(conta);
+    }
+
     public IActionResult CreateConta() => View();
 
     // POST: Contas/Create
@@ -101,8 +112,7 @@ public class ContasController : Controller
     }
 
     // POST: Contas/Delete/id
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [HttpDelete]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var userId = GetUserId();

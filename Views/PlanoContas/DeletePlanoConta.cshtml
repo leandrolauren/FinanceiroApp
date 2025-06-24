@@ -1,0 +1,11 @@
+@model PlanoContasModel
+
+@{
+    ViewData["Title"] = "Excluir Plano de Contas";
+}
+
+<div id="plano-conta-delete-root" data-id="@Model.Id"></div>
+
+@section Scripts {
+    <script src="~/js/dist/PlanoContaDelete.bundle.js"></script>
+}

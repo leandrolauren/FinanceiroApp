@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AppWrapper from './AppWrapper'
+import { enqueueSnackbar } from 'notistack'
 
 const columns = [
   { field: 'descricao', headerName: 'Descrição', flex: 1 },
@@ -39,7 +40,7 @@ const columns = [
           variant="outlined"
           color="error"
           size="small"
-          href={`/Contas/DeleteConta/${params.id}`}
+          onClick={() => window.abrirModalExclusaoConta(params.id)}
         >
           Excluir
         </Button>
@@ -49,16 +50,30 @@ const columns = [
 ]
 
 export default function ContaBancariaDataGrid() {
-  const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
+  const [contas, setContas] = useState([])
+  const [error, setError] = useState([])
 
   useEffect(() => {
-    fetch('/Contas/GetContas')
-      .then((res) => res.json())
-      .then((data) => {
-        setRows(data)
-        setLoading(false)
+    try {
+      fetch('/Contas/GetContas')
+        .then((res) => res.json())
+        .then((data) => {
+          setContas(data)
+          setLoading(false)
+        })
+    } catch (err) {
+      enqueueSnackbar('Erro ao carregar as contas bancárias.', {
+        variant: 'error',
       })
+      setError(err)
+    }
+  }, [])
+
+  useEffect(() => {
+    window.atualizaTabelaContas = (idRemovido) => {
+      setContas((prevContas) => prevContas.filter((p) => p.id !== idRemovido))
+    }
   }, [])
 
   return (
@@ -80,9 +95,9 @@ export default function ContaBancariaDataGrid() {
         </Box>
       ) : (
         <DataGrid
-          rows={rows}
+          rows={contas}
           columns={columns}
-          getRowId={(row) => row.id}
+          getRowId={(conta) => conta.id}
           pageSize={15}
           rowsPerPageOptions={[5, 10, 20]}
           localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
@@ -110,6 +125,6 @@ if (rootElement) {
   root.render(
     <AppWrapper>
       <ContaBancariaDataGrid />
-    </AppWrapper>
+    </AppWrapper>,
   )
 }

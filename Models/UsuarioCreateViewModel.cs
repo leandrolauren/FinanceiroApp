@@ -7,7 +7,7 @@ public class UsuarioCreateViewModel
     public string Nome { get; set; } = string.Empty;
 
     [Required]
-    [EmailAddress]
+    [EmailAddress(ErrorMessage = "Informe um email válido.")]
     [Display(Name = "E-mail")]
     public string Email { get; set; } = string.Empty;
 

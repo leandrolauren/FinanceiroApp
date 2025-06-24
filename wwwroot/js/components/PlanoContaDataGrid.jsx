@@ -65,7 +65,9 @@ export default function PlanoContaDataGrid() {
         variant: 'success',
       })
     } catch (err) {
-      enqueueSnackbar('Plano de contas pai não pode ser excluído.', { variant: 'error' })
+      enqueueSnackbar('Plano de contas pai não pode ser excluído.', {
+        variant: 'error',
+      })
     }
   }
 
@@ -185,6 +187,6 @@ if (rootElement) {
   root.render(
     <AppWrapper>
       <PlanoContaDataGrid />
-    </AppWrapper>
+    </AppWrapper>,
   )
 }

@@ -50,6 +50,8 @@ namespace FinanceiroApp.Data.Mappings
                 .HasColumnType("DATE")
                 .HasDefaultValueSql("CURRENT_DATE");
 
+            builder.Property(p => p.Tipo).HasColumnType("INTEGER").IsRequired();
+
             builder
                 .HasOne(p => p.Usuario)
                 .WithMany(u => u.Pessoas)

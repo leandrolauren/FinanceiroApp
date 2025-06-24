@@ -7,6 +7,8 @@ module.exports = {
     PessoasDataGrid: './wwwroot/js/components/PessoasDataGrid.jsx',
     PlanoContaDataGrid: './wwwroot/js/components/PlanoContaDataGrid.jsx',
     FormRegister: './wwwroot/js/components/FormRegister.jsx',
+    PessoaDeleteModal: './wwwroot/js/components/PessoaDeleteModal.jsx',
+    ContaDeleteModal: './wwwroot/js/components/ContaDeleteModal.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'wwwroot/js/dist'),

@@ -23,9 +23,20 @@ public class PessoasController : Controller
 
     public async Task<IActionResult> GetPessoas()
     {
-        var userId = ObterUsuarioId();
+        var userId = getUserId();
         var pessoas = await _context.Pessoas.Where(p => p.UsuarioId == userId).ToListAsync();
         return Json(pessoas);
+    }
+
+    // GET: Pessoa -- Recebe uma unica pessoa para exclusão
+    [HttpGet]
+    public IActionResult GetPessoa(int id)
+    {
+        var pessoa = _context.Pessoas.Find(id);
+        if (pessoa == null)
+            return NotFound();
+
+        return Json(pessoa);
     }
 
     public IActionResult CreatePessoa() => View();
@@ -40,7 +51,7 @@ public class PessoasController : Controller
             TempData["MensagemErro"] = "Preencha os campos obrigatórios.";
             return View(pessoa);
         }
-        var userId = ObterUsuarioId();
+        var userId = getUserId();
         pessoa.UsuarioId = userId;
         _context.Add(pessoa);
         await _context.SaveChangesAsync();
@@ -48,13 +59,14 @@ public class PessoasController : Controller
 
         ModelState.Clear();
 
-        return View(new PessoaModel());
+        return View("CreatePessoa");
     }
 
     // GET: Pessoas/Edit/id
+    [HttpGet]
     public async Task<IActionResult> EditPessoa(int id)
     {
-        var pessoa = await ObterPessoa(id);
+        var pessoa = await getPerson(id);
         if (pessoa == null)
             return Unauthorized();
 
@@ -62,11 +74,11 @@ public class PessoasController : Controller
     }
 
     // POST: Pessoas/Edit/id
-    [HttpPost]
+    [HttpPut]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPessoa(PessoaModel pessoa)
     {
-        var pessoaExiste = await ObterPessoa(pessoa.Id);
+        var pessoaExiste = await getPerson(pessoa.Id);
         if (pessoaExiste == null)
             return NotFound();
 
@@ -89,52 +101,53 @@ public class PessoasController : Controller
     }
 
     // GET: Pessoas/Delete/id
+    [HttpGet]
     public async Task<IActionResult> DeletePessoa(int id)
     {
-        var pessoa = await ObterPessoa(id);
+        var pessoa = await getPerson(id);
         if (pessoa == null)
             return NotFound();
 
         return View(pessoa);
     }
 
-    // POST
-    [HttpPost, ActionName("DeleteConfirmed")]
-    [ValidateAntiForgeryToken]
+    [HttpDelete]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var userId = ObterUsuarioId();
+        var userId = getUserId();
 
         var pessoa = await _context
             .Pessoas.Include(p => p.Lancamentos)
             .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == userId);
 
         if (pessoa == null)
-            return NotFound();
+            return NotFound(new { mensagem = "Pessoa não encontrada." });
 
         if (pessoa.Lancamentos.Any())
         {
-            TempData["MensagemErro"] =
-                "Esta pessoa não pode ser excluída pois está vinculada a pelo menos um lançamento.";
-            return RedirectToAction(nameof(Index));
+            return BadRequest(
+                new
+                {
+                    mensagem = "Esta pessoa não pode ser excluída pois está vinculada a pelo menos um lançamento.",
+                }
+            );
         }
 
         _context.Pessoas.Remove(pessoa);
         await _context.SaveChangesAsync();
 
-        TempData["MensagemSucesso"] = "Pessoa excluída.";
-        return RedirectToAction(nameof(Index));
+        return Ok(new { mensagem = "Pessoa excluída com sucesso." });
     }
 
-    private async Task<PessoaModel?> ObterPessoa(int PessoaId)
+    private async Task<PessoaModel?> getPerson(int PessoaId)
     {
-        var userId = ObterUsuarioId();
+        var userId = getUserId();
         return await _context
             .Pessoas.AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == PessoaId && p.UsuarioId == userId);
     }
 
-    private int ObterUsuarioId()
+    private int getUserId()
     {
         var claim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (claim == null || string.IsNullOrEmpty(claim.Value))

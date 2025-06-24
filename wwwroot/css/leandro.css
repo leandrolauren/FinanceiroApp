@@ -48,6 +48,13 @@
 .container input[id='tipoReceita']:checked ~ .glider {
   transform: translateX(137%);
 }
+.container input[id='tipoFisica']:checked ~ .glider {
+  transform: translateX(0);
+}
+
+.container input[id='tipoJuridica']:checked ~ .glider {
+  transform: translateX(137%);
+}
 
 .container input[id='radio-3']:checked ~ .glider {
   transform: translateX(200%);
