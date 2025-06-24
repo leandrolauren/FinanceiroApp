@@ -1,0 +1,48 @@
+<nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+
+    <!-- Sidebar Toggle (apenas mobile) -->
+    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+        <i class="fa fa-bars"></i>
+    </button>
+
+    <!-- Topbar Navbar -->
+    <ul class="navbar-nav ml-auto">
+
+        <!-- Nav Item - User Info -->
+        <li class="nav-item dropdown text-end">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="me-2 d-none d-lg-inline text-gray-600 small">@User.Identity.Name</span>
+                <img class="img-profile rounded-circle"
+                     src="~/img/undraw_profile.svg" style="width: 32px; height: 32px;" />
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow animated--grow-in" aria-labelledby="userDropdown">
+                <li>
+                    <a class="dropdown-item" asp-controller="Usuario" asp-action="Perfil">
+                        <i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
+                        Perfil 
+                    </a>
+                </li>
+
+                <li>
+                    <a class="dropdown-item" asp-controller="Configuracao" asp-action="Index">
+                        <i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>
+                        Configurações
+                    </a>
+                </li>
+
+                <li><hr class="dropdown-divider" /></li>
+
+                <li>
+                    <form method="post" class="d-inline" asp-controller="Login" asp-action="Logout">
+                        <button type="submit" class="dropdown-item">
+                            <i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
+                            Sair
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+
+    </ul>
+</nav>

@@ -1,0 +1,159 @@
+@model FinanceiroApp.Models.LancamentoModel
+
+@{
+    ViewData["Title"] = "Lançamento";
+
+    var pessoas = ViewBag.Pessoas as List<PessoaModel> ?? new();
+    var planos = ViewBag.PlanosConta as List<PlanoContasModel> ?? new();
+    var contas = ViewBag.ContasBancarias as List<ContaBancaria> ?? new();
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+@await Component.InvokeAsync("PopupMensagem")
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var state in ViewData.ModelState.Values)
+            {
+                foreach (var error in state.Errors)
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="Create" method="post">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="Tipo" class="form-label">Tipo</label>
+            <select asp-for="Tipo" class="form-select">
+                <option value="0">Receita</option>
+                <option value="1">Despesa</option>
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Valor" class="form-label">Valor</label>
+            <input asp-for="Valor" class="form-control" type="number" step="0.01" />
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Descricao" class="form-label">Descrição</label>
+            <input asp-for="Descricao" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="PessoaId" class="form-label">Pessoa</label>
+            <select asp-for="PessoaId" class="form-select select2">
+                <option value="">Selecione</option>
+                @foreach (var p in pessoas)
+                {
+                    <option value="@p.Id">@p.Nome</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="PlanoContaId" class="form-label">Plano de Conta</label>
+            <select asp-for="PlanoContaId" class="form-select select2" id="planoContaSelect">
+                <option value="">Selecione</option>
+                @foreach (var plano in planos)
+                {
+                    <option value="@plano.Id" data-tipo="@plano.Tipo">@plano.Descricao</option>
+                }
+            </select>
+
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="ContaBancariaId" class="form-label">Conta Bancária</label>
+            <select asp-for="ContaBancariaId" class="form-select select2">
+                <option value="">Selecione</option>
+                @foreach (var conta in contas)
+                {
+                    <option value="@conta.Id">@conta.Descricao</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="DataCompetencia" class="form-label">Data de Competência</label>
+            <input asp-for="DataCompetencia" class="form-control" type="date" />
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="DataVencimento" class="form-label">Data de Vencimento</label>
+            <input asp-for="DataVencimento" class="form-control" type="date" />
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Pago" class="form-label">Pago</label>
+            <select asp-for="Pago" class="form-select">
+                <option value="false">Não</option>
+                <option value="true">Sim</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="DataPagamento" class="form-label">Data de Pagamento</label>
+            <input asp-for="DataPagamento" class="form-control" type="date" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Salvar</button>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Voltar</a>
+</form>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Inicializa o Select2
+            $('.select2').select2({
+                width: '100%',
+                language: 'pt-BR',
+                placeholder: 'Selecione...',
+                allowClear: true
+            });
+
+            // Captura mudança no select de Tipo
+            $('#Tipo').on('change', function () {
+                const tipoSelecionado = $(this).val() == "0" ? "Receita" : "Despesa";
+                const $planoContaSelect = $('#planoContaSelect');
+
+                // Guarda as opções completas, se ainda não tiver feito
+                if (!$planoContaSelect.data('all-options')) {
+                    $planoContaSelect.data('all-options', $planoContaSelect.html());
+                }
+
+                // Restaura todas as opções
+                $planoContaSelect.html($planoContaSelect.data('all-options'));
+
+                // Filtra pelas opções com data-tipo correspondente
+                $planoContaSelect.find('option').each(function () {
+                    const tipo = $(this).data('tipo');
+                    if (tipo && tipo !== tipoSelecionado) {
+                        $(this).remove();
+                    }
+                });
+
+                // Limpa seleção
+                $planoContaSelect.val(null).trigger('change');
+            });
+
+            // Gatilho inicial se já vier preenchido
+            $('#Tipo').trigger('change');
+        });
+    </script>
+
+}

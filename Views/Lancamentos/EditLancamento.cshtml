@@ -1,0 +1,95 @@
+@model FinanceiroApp.Models.LancamentoModel
+
+@{
+    ViewData["Title"] = "Editar Lançamento";
+    var pessoas = ViewBag.Pessoas as List<PessoaModel>;
+    var planos = ViewBag.PlanosConta as List<PlanoContasModel>;
+    var contas = ViewBag.ContasBancarias as List<ContaBancaria>;
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@await Component.InvokeAsync("PopupMensagem")
+
+<form asp-action="EditLancamento" method="put">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="Tipo" class="form-label">Tipo</label>
+            <select asp-for="Tipo" class="form-select">
+                <option value="0" selected="@Model.Tipo == TipoLancamento.Receita">Receita</option>
+                <option value="1" selected="@Model.Tipo == TipoLancamento.Despesa">Despesa</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Valor" class="form-label">Valor</label>
+            <input asp-for="Valor" class="form-control" type="number" step="0.01" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Descricao" class="form-label">Descrição</label>
+            <input asp-for="Descricao" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="PessoaId" class="form-label">Pessoa</label>
+            <select asp-for="PessoaId" class="form-select">
+                <option value="">Selecione</option>
+                @foreach (var p in pessoas)
+                {
+                    <option value="@p.Id" selected="@Model.PessoaId == p.Id">@p.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="PlanoContaId" class="form-label">Plano de Conta</label>
+            <select asp-for="PlanoContaId" class="form-select">
+                <option value="">Selecione</option>
+                @foreach (var plano in planos)
+                {
+                    <option value="@plano.Id" selected="@Model.PlanoContaId == plano.Id">@plano.Descricao</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="ContaBancariaId" class="form-label">Conta Bancária</label>
+            <select asp-for="ContaBancariaId" class="form-select">
+                <option value="">Selecione</option>
+                @foreach (var conta in contas)
+                {
+                    <option value="@conta.Id" selected="@Model.ContaBancariaId == conta.Id">@conta.Descricao</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="DataCompetencia" class="form-label">Competência</label>
+            <input asp-for="DataCompetencia" class="form-control" type="date" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="DataVencimento" class="form-label">Vencimento</label>
+            <input asp-for="DataVencimento" class="form-control" type="date" />
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Pago" class="form-label">Pago</label>
+            <select asp-for="Pago" class="form-select">
+                <option value="false" selected="@(Model.Pago == false)">Não</option>
+                <option value="true" selected="@(Model.Pago == true)">Sim</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="DataPagamento" class="form-label">Data de Pagamento</label>
+            <input asp-for="DataPagamento" class="form-control" type="date" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+    <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+</form>

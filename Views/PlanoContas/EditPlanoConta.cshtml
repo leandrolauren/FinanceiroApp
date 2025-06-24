@@ -1,0 +1,45 @@
+@model FinanceiroApp.Models.PlanoContasEditViewModel
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var state in ViewData.ModelState.Values)
+            {
+                foreach (var error in state.Errors)
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            }
+        </ul>
+    </div>
+}
+@{
+    ViewData["Title"] = "Editar Plano de Contas";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="EditPlanoConta" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label asp-for="Descricao" class="form-label">Descrição</label>
+        <input asp-for="Descricao" class="form-control" />
+        <span asp-validation-for="Descricao" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Tipo</label>
+        <input class="form-control" value="@Model.Tipo" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PlanoContasPaiId" class="form-label">Plano de Contas Pai</label>
+        <select asp-for="PlanoContasPaiId" class="form-select" asp-items="Model.PlanosContasPaisDisponiveis">
+            <option value="">Selecione..</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Salvar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

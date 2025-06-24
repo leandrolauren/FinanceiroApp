@@ -1,0 +1,25 @@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Cadastro de Usuário";
+    Layout = "~/Views/Shared/_LayoutSimples.cshtml";
+}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="csrf-token" content="@Antiforgery.GetAndStoreTokens(Context).RequestToken" />
+    <title>@ViewData["Title"]</title>
+</head>
+
+<body>
+    <div id="formRegister-root"></div>
+
+    @section Scripts {
+        <script src="~/js/dist/FormRegister.bundle.js"></script>
+    }
+</body>
+
+</html>

@@ -1,0 +1,100 @@
+@model FinanceiroApp.Models.PlanoContasModel
+@{
+    ViewData["Title"] = "Cadastro Plano de Contas";
+}
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var state in ViewData.ModelState.Values)
+            {
+                foreach (var error in state.Errors)
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+@await Component.InvokeAsync("PopupMensagem")
+
+<head>
+    <link href="~/css/leandro.css" rel="stylesheet" />
+</head>
+
+<div class="container-fluid h-custom">
+    <div class="col-md-8 col-lg-5 col-xl-6 offset-xl-2">
+        <h2>@ViewData["Title"]</h2>
+
+        <form asp-action="CreatePlanoConta" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="mb-2">
+                <label asp-for="Descricao" class="form-outline mb-4">Descrição</label>
+                <input asp-for="Descricao" class="input" placeholder="Plano de Contas" />
+                <span asp-validation-for="Descricao" class="text-danger"></span>
+            </div>
+
+            <div class="container">
+                <div class="tabs">
+                    <input type="radio" id="tipoDespesa" name="Tipo" value="Despesa" checked>
+                    <label class="tab" for="tipoDespesa">Despesa</label>
+
+                    <input type="radio" id="tipoReceita" name="Tipo" value="Receita">
+                    <label class="tab" for="tipoReceita">Receita</label>
+
+                    <span class="glider"></span>
+                </div>
+                <span asp-validation-for="Tipo" class="text-danger"></span>
+            </div>
+
+            <div class="mb-2 mt-2">
+                <label for="PlanoContasPaiId" class="form-outline mb-4">Plano de Contas Pai (opcional)</label>
+                <select asp-for="PlanoContasPaiId" class="form-select" id="planoPaiSelect">
+                    <option value="">Selecione..</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a asp-action="Index" class="btn btn-secondary">Voltar</a>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function atualizarPlanoPai(tipo) {
+            const selectPai = document.getElementById("planoPaiSelect");
+            selectPai.innerHTML = '<option value="">-- Nenhum --</option>';
+
+            if (tipo) {
+                fetch(`/PlanoContas/ObterPlanosPorTipo?tipo=${tipo}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(p => {
+                            const option = document.createElement("option");
+                            option.value = p.id;
+                            option.textContent = p.descricao;
+                            selectPai.appendChild(option);
+                        });
+                    });
+            }
+        }
+
+        document.querySelectorAll('input[name="Tipo"]').forEach(radio => {
+            radio.addEventListener("change", function () {
+                atualizarPlanoPai(this.value);
+            });
+
+            if (radio.checked) {
+                atualizarPlanoPai(radio.value);
+            }
+        });
+    </script>
+
+}

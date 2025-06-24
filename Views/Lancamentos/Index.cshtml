@@ -1,0 +1,15 @@
+@using FinanceiroApp.Models
+@model IEnumerable<LancamentoModel>
+
+@{
+    ViewData["Title"] = "Lançamentos";
+}
+
+@await Component.InvokeAsync("PopupMensagem")
+
+<div id="lancamentos-table-root"></div>
+
+@section Scripts {
+
+    <script src="~/js/dist/LancamentosDataGrid.bundle.js"></script>
+}

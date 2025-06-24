@@ -1,0 +1,73 @@
+# .gitignore para projeto ASP.NET
+
+# Build results
+bin/
+obj/
+out/
+
+lib/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# NuGet packages
+*.nupkg
+# The packages folder can be ignored because of Package Restore
+**/packages/*
+!**/packages/build/
+!**/packages/repositories.config
+
+# Microsoft Azure Web App publish settings
+*.PublishSettings
+
+# Logs
+*.log
+
+# IIS Express
+.vs/
+*.vspscc
+*.vssscc
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# Rider
+.idea/
+
+# DotCover
+*.dotCover
+
+# User secrets
+secrets.json
+
+# Others
+*.dbmdl
+*.bak
+*.sql
+*.pdb
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.swp
+*.swo
+
+.env
+
+node_modules/
+dist/
+
+vendor/
