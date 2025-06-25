@@ -2,13 +2,17 @@ const path = require('path')
 
 module.exports = {
   entry: {
-    ContaBancariaDataGrid: './wwwroot/js/components/ContaBancariaDataGrid.jsx',
-    LancamentosDataGrid: './wwwroot/js/components/LancamentosDataGrid.jsx',
-    PessoasDataGrid: './wwwroot/js/components/PessoasDataGrid.jsx',
-    PlanoContaDataGrid: './wwwroot/js/components/PlanoContaDataGrid.jsx',
-    FormRegister: './wwwroot/js/components/FormRegister.jsx',
-    PessoaDeleteModal: './wwwroot/js/components/PessoaDeleteModal.jsx',
-    ContaDeleteModal: './wwwroot/js/components/ContaDeleteModal.jsx',
+    ContaBancariaDataGrid:
+      './wwwroot/js/components/ContaBancaria/ContaBancariaDataGrid.jsx',
+    LancamentosDataGrid:
+      './wwwroot/js/components/Lancamento/LancamentosDataGrid.jsx',
+    PessoasDataGrid: './wwwroot/js/components/Pessoa/PessoasDataGrid.jsx',
+    PlanoContaDataGrid:
+      './wwwroot/js/components/PlanoConta/PlanoContaDataGrid.jsx',
+    FormRegister: './wwwroot/js/components/Usuario/FormRegister.jsx',
+    PessoaDeleteModal: './wwwroot/js/components/Pessoa/PessoaDeleteModal.jsx',
+    ContaDeleteModal:
+      './wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'wwwroot/js/dist'),

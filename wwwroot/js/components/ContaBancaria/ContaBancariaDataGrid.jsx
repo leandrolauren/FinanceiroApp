@@ -4,30 +4,28 @@ import { DataGrid } from '@mui/x-data-grid'
 import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
-import AppWrapper from './AppWrapper'
+import AppWrapper from '../Shared/AppWrapper'
+import { enqueueSnackbar } from 'notistack'
 
 const columns = [
-  { field: 'nome', headerName: 'Nome', width: 185 },
-  { field: 'razaoSocial', headerName: 'Razão Social', flex: 1 },
-  { field: 'nomeFantasia', headerName: 'Nome Fantasia', flex: 1 },
-  { field: 'cnpj', headerName: 'CNPJ', flex: 1 },
-  { field: 'inscricaoEstadual', headerName: 'Inscrição Estadual', flex: 1 },
-  { field: 'cpf', headerName: 'CPF', flex: 1 },
-  { field: 'rg', headerName: 'RG', flex: 1 },
+  { field: 'descricao', headerName: 'Descrição', flex: 1 },
   {
-    field: 'dataNascimento',
-    headerName: 'Data de Nascimento',
+    field: 'tipo',
+    headerName: 'Tipo',
     flex: 1,
   },
-  { field: 'telefone', headerName: 'Telefone', flex: 1 },
-  { field: 'email', headerName: 'E-mail', flex: 1 },
-  { field: 'cep', headerName: 'CEP', flex: 1 },
-  { field: 'endereco', headerName: 'Endereço', flex: 1 },
-  { field: 'numero', headerName: 'Número', flex: 1 },
-  { field: 'bairro', headerName: 'Bairro', flex: 1 },
-  { field: 'cidade', headerName: 'Cidade', flex: 1 },
-  { field: 'estado', headerName: 'Estado', flex: 1 },
-  { field: 'complemento', headerName: 'Complemento', flex: 1 },
+  { field: 'numeroConta', headerName: 'Número', flex: 1 },
+  { field: 'digitoConta', headerName: 'Dg. Conta', flex: 1 },
+  { field: 'agencia', headerName: 'Agência', flex: 1 },
+  { field: 'digitoAgencia', headerName: 'Dg. Agencia', flex: 1 },
+  {
+    field: 'ativa',
+    headerName: 'Ativo',
+    flex: 1,
+    valueGetter: (params) => (params.row?.ativa === true ? 'Sim' : 'Não'),
+  },
+  { field: 'banco', headerName: 'Banco', flex: 1 },
+  { field: 'saldo', headerName: 'Saldo', flex: 1, type: Number },
   {
     field: 'acoes',
     headerName: 'Ações',
@@ -43,7 +41,7 @@ const columns = [
           variant="outlined"
           color="warning"
           size="small"
-          href={`/Pessoas/EditPessoa/${params.id}`}
+          href={`/Contas/EditConta/${params.id}`}
         >
           Editar
         </Button>
@@ -51,7 +49,7 @@ const columns = [
           variant="outlined"
           color="error"
           size="small"
-          onClick={() => window.abrirModalExclusaoPessoa(params.id)}
+          onClick={() => window.abrirModalExclusaoConta(params.id)}
         >
           Excluir
         </Button>
@@ -60,36 +58,44 @@ const columns = [
   },
 ]
 
-export default function PessoasDataGrid() {
-  const [rows, setRows] = useState([])
+export default function ContaBancariaDataGrid() {
   const [loading, setLoading] = useState(true)
+  const [contas, setContas] = useState([])
+  const [error, setError] = useState([])
 
   useEffect(() => {
-    fetch('/Pessoas/GetPessoas')
-      .then((res) => res.json())
-      .then((data) => {
-        setRows(data)
-        setLoading(false)
+    try {
+      fetch('/Contas/GetContas')
+        .then((res) => res.json())
+        .then((data) => {
+          setContas(data)
+          setLoading(false)
+        })
+    } catch (err) {
+      enqueueSnackbar('Erro ao carregar as contas bancárias.', {
+        variant: 'error',
       })
+      setError(err)
+    }
   }, [])
 
   useEffect(() => {
-    window.atualizarTabelaPessoas = (idRemovido) => {
-      setRows((prevRows) => prevRows.filter((p) => p.id !== idRemovido))
+    window.atualizarTabelaContas = (idRemovido) => {
+      setContas((prevContas) => prevContas.filter((p) => p.id !== idRemovido))
     }
   }, [])
 
   return (
     <Box sx={{ height: 500, width: '100%', padding: 1 }}>
       <Typography variant="h4" gutterBottom>
-        Pessoas
+        Contas Bancárias
       </Typography>
       <Button
         variant="contained"
-        href="/Pessoas/CreatePessoa"
+        href="/Contas/CreateConta"
         sx={{ marginBottom: 2 }}
       >
-        Nova Pessoa
+        Nova Conta
       </Button>
 
       {loading ? (
@@ -98,10 +104,10 @@ export default function PessoasDataGrid() {
         </Box>
       ) : (
         <DataGrid
-          rows={rows}
+          rows={contas}
           columns={columns}
-          getRowId={(row) => row.id}
-          pageSize={25}
+          getRowId={(conta) => conta.id}
+          pageSize={15}
           rowsPerPageOptions={[5, 10, 20]}
           localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
           disableRowSelectionOnClick
@@ -112,15 +118,6 @@ export default function PessoasDataGrid() {
           initialState={{
             columns: {
               columnVisibilityModel: {
-                nomeFantasia: false,
-                rg: false,
-                dataNascimento: false,
-                numero: false,
-                cep: false,
-                endereco: false,
-                bairro: false,
-                complemento: false,
-                inscricaoEstadual: false,
                 acoes: true,
               },
             },
@@ -131,12 +128,12 @@ export default function PessoasDataGrid() {
   )
 }
 
-const rootElement = document.getElementById('pessoas-table-root')
+const rootElement = document.getElementById('conta-table-root')
 if (rootElement) {
   const root = createRoot(rootElement)
   root.render(
     <AppWrapper>
-      <PessoasDataGrid />
+      <ContaBancariaDataGrid />
     </AppWrapper>,
   )
 }

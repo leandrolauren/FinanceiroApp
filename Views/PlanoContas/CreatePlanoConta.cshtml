@@ -1,32 +1,15 @@
 @model FinanceiroApp.Models.PlanoContasModel
 @{
-    ViewData["Title"] = "Cadastro Plano de Contas";
+    ViewData["Title"] = "Cadastro de Plano de Contas";
 }
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        <ul>
-            @foreach (var state in ViewData.ModelState.Values)
-            {
-                foreach (var error in state.Errors)
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            }
-        </ul>
-    </div>
-}
-
 @await Component.InvokeAsync("PopupMensagem")
 
 <head>
     <link href="~/css/leandro.css" rel="stylesheet" />
 </head>
-
+<h2>@ViewData["Title"]</h2>
 <div class="container-fluid h-custom">
     <div class="col-md-8 col-lg-5 col-xl-6 offset-xl-2">
-        <h2>@ViewData["Title"]</h2>
-
         <form asp-action="CreatePlanoConta" method="post">
             @Html.AntiForgeryToken()
 

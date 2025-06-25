@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid'
 import { createRoot } from 'react-dom/client'
-import AppWrapper from './AppWrapper'
+import AppWrapper from '../Shared/AppWrapper'
 import {
   Box,
   Typography,

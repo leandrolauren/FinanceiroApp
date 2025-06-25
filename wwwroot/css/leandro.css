@@ -55,9 +55,20 @@
 .container input[id='tipoJuridica']:checked ~ .glider {
   transform: translateX(137%);
 }
+.container input.radio-1:checked ~ .glider {
+  transform: translateX(0);
+}
 
-.container input[id='radio-3']:checked ~ .glider {
+.container input.radio-2:checked ~ .glider {
+  transform: translateX(137%);
+}
+
+.container input.radio-3:checked ~ .glider {
   transform: translateX(200%);
+}
+
+.container input.radio-4:checked ~ .glider {
+  transform: translateX(300%);
 }
 
 .glider {

@@ -1,4 +1,4 @@
-import { baseDataTableConfig } from '../modules/dataTableConfig.js'
+import { baseDataTableConfig } from '../../modules/dataTableConfig.js'
 
 export function initDataTable(tableSelector, customConfig = {}) {
   const mergedConfig = {

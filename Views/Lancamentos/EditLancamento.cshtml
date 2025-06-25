@@ -37,7 +37,7 @@
             <label asp-for="PessoaId" class="form-label">Pessoa</label>
             <select asp-for="PessoaId" class="form-select">
                 <option value="">Selecione</option>
-                @foreach (var p in pessoas)
+                @foreach (var p in pessoas as List<PessoaModel> ?? new List<PessoaModel>())
                 {
                     <option value="@p.Id" selected="@Model.PessoaId == p.Id">@p.Nome</option>
                 }
@@ -47,7 +47,7 @@
             <label asp-for="PlanoContaId" class="form-label">Plano de Conta</label>
             <select asp-for="PlanoContaId" class="form-select">
                 <option value="">Selecione</option>
-                @foreach (var plano in planos)
+                @foreach (var plano in planos as List<PlanoContasModel> ?? new List<PlanoContasModel>())
                 {
                     <option value="@plano.Id" selected="@Model.PlanoContaId == plano.Id">@plano.Descricao</option>
                 }
@@ -57,7 +57,7 @@
             <label asp-for="ContaBancariaId" class="form-label">Conta Bancária</label>
             <select asp-for="ContaBancariaId" class="form-select">
                 <option value="">Selecione</option>
-                @foreach (var conta in contas)
+                @foreach (var conta in contas as List<ContaBancaria> ?? new List<ContaBancaria>())
                 {
                     <option value="@conta.Id" selected="@Model.ContaBancariaId == conta.Id">@conta.Descricao</option>
                 }

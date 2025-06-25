@@ -3,7 +3,7 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Bem Vindo(a), @User.Identity.Name</h1>
+    <h1 class="display-4">Bem Vindo(a), @(User.Identity != null && !string.IsNullOrEmpty(User.Identity.Name) ? User.Identity.Name : "Usuário")</h1>
     <p>Sistema Financeiro projetado por Leandro 😎</p>
 
 </div>

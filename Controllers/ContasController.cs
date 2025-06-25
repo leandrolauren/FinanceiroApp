@@ -21,7 +21,23 @@ public class ContasController : Controller
     public async Task<IActionResult> GetContas()
     {
         var userId = GetUserId();
-        var contas = await _context.ContasBancarias.Where(c => c.UsuarioId == userId).ToListAsync();
+        var contas = await _context
+            .ContasBancarias.Where(c => c.UsuarioId == userId)
+            .Select(c => new
+            {
+                c.Id,
+                c.Descricao,
+                c.NumeroConta,
+                c.Agencia,
+                c.DigitoAgencia,
+                c.DigitoConta,
+                Tipo = c.Tipo.ToString(),
+                c.Saldo,
+                ativa = c.Ativa ?? false,
+                c.Banco,
+                c.UsuarioId,
+            })
+            .ToListAsync();
 
         return Json(contas);
     }
@@ -51,6 +67,7 @@ public class ContasController : Controller
         }
 
         var userId = GetUserId();
+        conta.Ativa = true;
         conta.UsuarioId = userId;
         _context.Add(conta);
         await _context.SaveChangesAsync();
@@ -58,10 +75,11 @@ public class ContasController : Controller
 
         ModelState.Clear();
 
-        return View(new ContaBancaria());
+        return View(new ContaBancaria { Descricao = string.Empty });
     }
 
     // GET: Contas/Edit/id
+    [HttpGet]
     public async Task<IActionResult> EditConta(int id)
     {
         var conta = await GetAccount(id);
@@ -74,8 +92,7 @@ public class ContasController : Controller
     }
 
     // POST: Contas/Edit/id
-    [HttpPost]
-    [ValidateAntiForgeryToken]
+    [HttpPut]
     public async Task<IActionResult> EditConta(ContaBancaria conta)
     {
         var contaExiste = await GetAccount(conta.Id);
@@ -102,6 +119,7 @@ public class ContasController : Controller
     }
 
     // GET: Contas/Delete/id
+    [HttpGet]
     public async Task<IActionResult> DeleteConta(int id)
     {
         var conta = await GetAccount(id);

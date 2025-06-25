@@ -11,7 +11,7 @@ import {
 import axios from 'axios'
 import { useSnackbar } from 'notistack'
 import { createRoot } from 'react-dom/client'
-import AppWrapper from './AppWrapper'
+import AppWrapper from '../Shared/AppWrapper'
 
 function ContaDeleteModal({ open, onClose, contaId }) {
   const [conta, setConta] = useState(null)

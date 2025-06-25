@@ -49,8 +49,8 @@ public class PlanoContasController : Controller
         return new PlanoContasDto
         {
             Id = conta.Id,
-            Descricao = conta.Descricao,
-            Tipo = conta.Tipo,
+            Descricao = conta.Descricao ?? string.Empty,
+            Tipo = conta.Tipo ?? string.Empty,
             PlanoContasPaiId = conta.PlanoContasPaiId,
             Total = total,
             Filhos = filhos,
@@ -128,8 +128,8 @@ public class PlanoContasController : Controller
         var viewModel = new PlanoContasEditViewModel
         {
             Id = plano.Id,
-            Descricao = plano.Descricao,
-            Tipo = plano.Tipo,
+            Descricao = plano.Descricao ?? string.Empty,
+            Tipo = plano.Tipo ?? string.Empty,
             PlanoContasPaiId = plano.PlanoContasPaiId,
             PlanosContasPaisDisponiveis = outrosPais
                 .Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Descricao })

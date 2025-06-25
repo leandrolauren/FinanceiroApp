@@ -4,7 +4,7 @@ import { DataGrid } from '@mui/x-data-grid'
 import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
-import AppWrapper from './AppWrapper'
+import AppWrapper from '../Shared/AppWrapper'
 
 const columns = [
   { field: 'descricao', headerName: 'Descrição', flex: 1 },
@@ -110,6 +110,6 @@ if (rootElement) {
   root.render(
     <AppWrapper>
       <LancamentoDataGrid />
-    </AppWrapper>
+    </AppWrapper>,
   )
 }
