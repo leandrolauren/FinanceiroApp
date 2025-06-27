@@ -138,7 +138,7 @@ export default function PlanoContaDataGrid() {
       <Button
         variant="contained"
         href="/PlanoContas/CreatePlanoConta"
-        sx={{ mb: 3 }}
+        sx={{ marginBottom: 2 }}
       >
         Novo Plano de Contas
       </Button>

@@ -4,18 +4,22 @@
     ViewData["Title"] = "Editar Plano de Contas";
 }
 
+<head>
+    <link href="~/css/leandro.css" rel="stylesheet" />
+</head>
+
 <form asp-action="EditPlanoConta" method="post">
     <input type="hidden" asp-for="Id" />
 
     <div class="mb-3">
         <label asp-for="Descricao" class="form-label">Descrição</label>
-        <input asp-for="Descricao" class="form-control" />
+        <input asp-for="Descricao" class="input" />
         <span asp-validation-for="Descricao" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label class="form-label">Tipo</label>
-        <input class="form-control" value="@Model.Tipo" disabled />
+        <input class="input" value="@Model.Tipo" disabled />
     </div>
 
     <div class="mb-3">

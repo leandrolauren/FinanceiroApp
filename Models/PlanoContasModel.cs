@@ -23,9 +23,10 @@ public class PlanoContasEditViewModel
 {
     public int Id { get; set; }
 
-    [Required]
+    [Required(ErrorMessage = "Informe a descrição.")]
     public string Descricao { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Informe o tipo do Plano.")]
     public string Tipo { get; set; } = string.Empty;
 
     public int? PlanoContasPaiId { get; set; }

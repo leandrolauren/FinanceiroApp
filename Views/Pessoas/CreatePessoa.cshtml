@@ -14,7 +14,7 @@
         <div class="col-auto text-center">
             <div class="container">
                 <div class="tabs">
-                    <input class="form-check-input" type="radio" id="tipoFisica" name="Tipo" value="1" checked/>
+                    <input class="form-check-input" type="radio" id="tipoFisica" name="Tipo" value="1" checked />
                     <label class="tab" for="tipoFisica">Física</label>
 
                     <input class="form-check-input" type="radio" id="tipoJuridica" name="Tipo" value="2" />
@@ -23,34 +23,34 @@
                     <span class="glider"></span>
                 </div>
                 <span asp-validation-for="Tipo" class="text-danger"></span>
-            
+
             </div>
         </div>
     </div>
 
     <div id="camposJuridica">
-        <div class="row mb-3">
+        <div class="flex-grow-1 row mb-3">
             <div class="col md-2">
                 <label asp-for="Cnpj" class="control-label">CNPJ</label>
-                <input asp-for="Cnpj" class="form-control" id="Cnpj" />
+                <input asp-for="Cnpj" class="input" id="Cnpj" />
                 <span asp-validation-for="Cnpj" class="text-danger"></span>
             </div>
-            
+
             <div class="col md-2">
                 <label asp-for="RazaoSocial" class="control-label">Razão Social</label>
-                <input asp-for="RazaoSocial" class="form-control" />
+                <input asp-for="RazaoSocial" class="input" />
                 <span asp-validation-for="RazaoSocial" class="text-danger"></span>
             </div>
 
             <div class="col md-2">
                 <label asp-for="NomeFantasia" class="control-label">Nome Fantasia</label>
-                <input asp-for="NomeFantasia" class="form-control" id="NomeFantasia" />
+                <input asp-for="NomeFantasia" class="input" id="NomeFantasia" />
                 <span asp-validation-for="NomeFantasia" class="text-danger"></span>
             </div>
-            
+
             <div class="col md-2">
                 <label asp-for="InscricaoEstadual" class="control-label">Inscrição Estadual</label>
-                <input asp-for="InscricaoEstadual" class="form-control" id="InscricaoEstadual" />
+                <input asp-for="InscricaoEstadual" class="input" id="InscricaoEstadual" />
                 <span asp-validation-for="InscricaoEstadual" class="text-danger"></span>
             </div>
         </div>
@@ -60,25 +60,25 @@
         <div class="row mb-3">
             <div class="col md-3">
                 <label asp-for="Nome" class="control-label">Nome</label>
-                <input asp-for="Nome" class="form-control" />
+                <input asp-for="Nome" class="input" />
                 <span asp-validation-for="Nome" class="text-danger"></span>
             </div>
             <div class="col md-3">
                 <label asp-for="Cpf" class="control-label">CPF</label>
-                <input asp-for="Cpf" class="form-control" id="Cpf" />
+                <input asp-for="Cpf" class="input" id="Cpf" />
                 <span asp-validation-for="Cpf" class="text-danger"></span>
             </div>
 
             <div class="col md-3">
                 <label asp-for="Rg" class="control-label">RG</label>
-                <input asp-for="Rg" class="form-control" id="Rg" />
+                <input asp-for="Rg" class="input" id="Rg" />
                 <span asp-validation-for="Rg" class="text-danger"></span>
             </div>
 
 
             <div class="col md-3">
                 <label asp-for="DataNascimento" class="control-label">Data Nascimento</label>
-                <input asp-for="DataNascimento" class="form-control" type="date" id="DataNascimento" />
+                <input asp-for="DataNascimento" class="input" type="date" id="DataNascimento" />
                 <span asp-validation-for="DataNascimento" class="text-danger"></span>
             </div>
         </div>
@@ -86,56 +86,56 @@
     <div class="row mb-3">
         <div class="col md-3">
             <label asp-for="Telefone" class="control-label">Telefone</label>
-            <input asp-for="Telefone" class="form-control" id="Telefone" />
+            <input asp-for="Telefone" class="input" id="Telefone" />
             <span asp-validation-for="Telefone" class="text-danger"></span>
         </div>
 
-    
+
         <div class="col md-3">
             <label asp-for="Email" class="control-label">E-mail</label>
-            <input asp-for="Email" class="form-control" type="email" id="Email" />
+            <input asp-for="Email" class="input" type="email" id="Email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
         <div class="col md-3">
             <label asp-for="Cep" class="control-label">CEP</label>
-            <input asp-for="Cep" class="form-control" id="Cep" />
+            <input asp-for="Cep" class="input" id="Cep" />
             <span asp-validation-for="Cep" class="text-danger"></span>
         </div>
     </div>
     <div class="row mb-3">
         <div class="col md-4">
             <label asp-for="Endereco" class="control-label">Endereço</label>
-            <input asp-for="Endereco" class="form-control" id="Endereco" />
+            <input asp-for="Endereco" class="input" id="Endereco" />
             <span asp-validation-for="Endereco" class="text-danger"></span>
         </div>
 
         <div class="col md-4">
             <label asp-for="Numero" class="control-label">Número</label>
-            <input asp-for="Numero" class="form-control" id="Numero" />
+            <input asp-for="Numero" class="input" id="Numero" />
             <span asp-validation-for="Numero" class="text-danger"></span>
         </div>
 
         <div class="col md-4">
             <label asp-for="Bairro" class="control-label">Bairro</label>
-            <input asp-for="Bairro" class="form-control" id="Bairro" />
+            <input asp-for="Bairro" class="input" id="Bairro" />
             <span asp-validation-for="Bairro" class="text-danger"></span>
         </div>
     </div>
     <div class="row mb-3">
         <div class="col md-4">
             <label asp-for="Cidade" class="control-label">Cidade</label>
-            <input asp-for="Cidade" class="form-control" id="Cidade" />
+            <input asp-for="Cidade" class="input" id="Cidade" />
             <span asp-validation-for="Cidade" class="text-danger"></span>
         </div>
         <div class="col md-4">
             <label asp-for="Estado" class="control-label">Estado</label>
-            <input asp-for="Estado" class="form-control" id="Estado" />
+            <input asp-for="Estado" class="input" id="Estado" />
             <span asp-validation-for="Estado" class="text-danger"></span>
         </div>
         <div class="col md-4">
             <label asp-for="Complemento" class="control-label">Complemento</label>
-            <input asp-for="Complemento" class="form-control" id="Complemento" />
+            <input asp-for="Complemento" class="input" id="Complemento" />
             <span asp-validation-for="Complemento" class="text-danger"></span>
         </div>
     </div>

@@ -1,12 +1,17 @@
 @model FinanceiroApp.Models.LancamentoModel
 
 @{
-    ViewData["Title"] = "Lançamento";
+    ViewData["Title"] = "Novo Lançamento";
 
     var pessoas = ViewBag.Pessoas as List<PessoaModel> ?? new();
     var planos = ViewBag.PlanosConta as List<PlanoContasModel> ?? new();
     var contas = ViewBag.ContasBancarias as List<ContaBancaria> ?? new();
 }
+
+<head>
+    <link href="~/css/leandro.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
 
 <form asp-action="Create" method="post">
     <div class="row mb-3">
@@ -20,12 +25,12 @@
 
         <div class="col-md-4">
             <label asp-for="Valor" class="form-label">Valor</label>
-            <input asp-for="Valor" class="form-control" type="number" step="0.01" />
+            <input asp-for="Valor" class="input" type="number" step="0.01" />
         </div>
 
         <div class="col-md-4">
             <label asp-for="Descricao" class="form-label">Descrição</label>
-            <input asp-for="Descricao" class="form-control" />
+            <input asp-for="Descricao" class="input" />
         </div>
     </div>
 
@@ -68,12 +73,12 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="DataCompetencia" class="form-label">Data de Competência</label>
-            <input asp-for="DataCompetencia" class="form-control" type="date" />
+            <input asp-for="DataCompetencia" class="input" type="date" />
         </div>
 
         <div class="col-md-4">
             <label asp-for="DataVencimento" class="form-label">Data de Vencimento</label>
-            <input asp-for="DataVencimento" class="form-control" type="date" />
+            <input asp-for="DataVencimento" class="input" type="date" />
         </div>
 
         <div class="col-md-4">
@@ -88,7 +93,7 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="DataPagamento" class="form-label">Data de Pagamento</label>
-            <input asp-for="DataPagamento" class="form-control" type="date" />
+            <input asp-for="DataPagamento" class="input" type="date" />
         </div>
     </div>
 
