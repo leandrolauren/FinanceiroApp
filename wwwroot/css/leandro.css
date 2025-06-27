@@ -92,9 +92,6 @@
 .form-select,
 select {
   width: 100%;
-  max-width: 220px;
-  min-width: 180px;
-  height: 45px;
   padding: 12px;
   border-radius: 12px;
   border: 1.5px solid lightgrey;
@@ -125,16 +122,10 @@ select:focus {
   border: 2px solid grey;
 }
 
-select option {
-  font-size: 1rem;
-  padding: 8px 12px;
-}
-
 /* Deixe o Select2 igual ao seu input customizado */
 .select2-container--default .select2-selection--single {
   width: 100%;
-  max-width: 220px;
-  height: 45px; /* igual ao .input */
+  height: 50px;
   padding: 12px;
   border-radius: 12px;
   border: 1.5px solid lightgrey;
@@ -161,8 +152,6 @@ select option {
 
 /* Ajuste para o container do Select2 ao lado do input */
 #planoPaiSelect + .select2-container {
-  min-width: 220px;
-  max-width: 220px;
   width: 100% !important;
   margin-left: 12px;
   vertical-align: bottom;
@@ -178,6 +167,7 @@ select option {
 
 .select2-container--default
   .select2-results__option--highlighted[aria-selected] {
+  width: 100%;
   background-color: #1976d2 !important;
   color: #fff !important;
   box-shadow: 0 2px 8px #1976d233;

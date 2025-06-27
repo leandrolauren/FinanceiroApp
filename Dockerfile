@@ -19,4 +19,4 @@ COPY --from=build /app/out .
 EXPOSE 80
 
 # Inicia a aplicação
-ENTRYPOINT ["dotnet", "Cotacao.dll"]
+ENTRYPOINT ["dotnet", "Financeiro.dll"]

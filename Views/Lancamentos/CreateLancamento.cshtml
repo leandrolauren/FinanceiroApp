@@ -17,27 +17,27 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="Tipo" class="form-label">Tipo</label>
-            <select asp-for="Tipo" class="form-select">
+            <select asp-for="Tipo" class="input">
                 <option value="1">Receita</option>
                 <option value="2">Despesa</option>
             </select>
         </div>
 
         <div class="col-md-4">
-            <label asp-for="Valor" class="form-label">Valor</label>
-            <input asp-for="Valor" class="input" type="number" step="0.01" />
+            <label asp-for="Valor" class="form-label">Valor R$</label>
+            <input asp-for="Valor" class="input" id="Valor" type="text" placeholder="0,00" autocomplete="off" />
         </div>
 
         <div class="col-md-4">
             <label asp-for="Descricao" class="form-label">Descrição</label>
-            <input asp-for="Descricao" class="input" />
+            <input asp-for="Descricao" class="input" placeholder="Descrição" />
         </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="PessoaId" class="form-label">Pessoa</label>
-            <select asp-for="PessoaId" class="form-select select2">
+            <select asp-for="PessoaId" class="input select2">
                 <option value="">Selecione</option>
                 @foreach (var p in pessoas)
                 {
@@ -102,6 +102,7 @@
 </form>
 
 @section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script>
         $(document).ready(function () {
             // Inicializa o Select2
@@ -112,9 +113,18 @@
                 allowClear: true
             });
 
+            // Mascara de dinheiro para o campo Valor
+            $('#Valor').mask('000.000.000,00', { reverse: true });
+
+            // Corrige bug do input sumir ao digitar rápido
+            $('#Valor').on('input', function () {
+                var val = $(this).val();
+                if (val === '') $(this).val('');
+            });
+
             // Captura mudança no select de Tipo
             $('#Tipo').on('change', function () {
-                const tipoSelecionado = $(this).val() == "0" ? "Receita" : "Despesa";
+                const tipoSelecionado = $(this).val() == "1" ? "Receita" : "Despesa";
                 const $planoContaSelect = $('#planoContaSelect');
 
                 // Guarda as opções completas, se ainda não tiver feito
@@ -141,5 +151,4 @@
             $('#Tipo').trigger('change');
         });
     </script>
-
 }

@@ -19,24 +19,24 @@
         <div class="col-md-4">
             <label asp-for="Tipo" class="form-label">Tipo</label>
             <select asp-for="Tipo" class="input">
-                <option value="0" selected="@Model.Tipo == TipoLancamento.Receita">Receita</option>
-                <option value="1" selected="@Model.Tipo == TipoLancamento.Despesa">Despesa</option>
+                <option value="1" selected="@Model.Tipo == TipoLancamento.Receita">Receita</option>
+                <option value="2" selected="@Model.Tipo == TipoLancamento.Despesa">Despesa</option>
             </select>
         </div>
         <div class="col-md-4">
-            <label asp-for="Valor" class="form-label">Valor</label>
-            <input asp-for="Valor" class="input" type="number" step="0.01" />
+            <label asp-for="Valor" class="form-label">Valor R$</label>
+            <input asp-for="Valor" class="input" id="Valor" type="text" placeholder="0,00" autocomplete="off" />
         </div>
         <div class="col-md-4">
             <label asp-for="Descricao" class="form-label">Descrição</label>
-            <input asp-for="Descricao" class="input" />
+            <input asp-for="Descricao" class="input" placeholder="Descrição" />
         </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="PessoaId" class="form-label">Pessoa</label>
-            <select asp-for="PessoaId" class="input">
+            <select asp-for="PessoaId" class="input select2">
                 <option value="">Selecione</option>
                 @foreach (var p in pessoas as List<PessoaModel> ?? new List<PessoaModel>())
                 {
@@ -76,7 +76,7 @@
             <input asp-for="DataVencimento" class="input" type="date" />
         </div>
         <div class="col-md-4">
-            <label asp-for="Pago" class="form-select">Pago</label>
+            <label asp-for="Pago" class="form-label">Pago</label>
             <select asp-for="Pago" class="input">
                 <option value="false" selected="@(Model.Pago == false)">Não</option>
                 <option value="true" selected="@(Model.Pago == true)">Sim</option>

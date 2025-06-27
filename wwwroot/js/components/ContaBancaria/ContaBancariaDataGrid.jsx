@@ -100,27 +100,37 @@ export default function ContaBancariaDataGrid() {
           <CircularProgress />
         </Box>
       ) : (
-        <DataGrid
-          rows={contas}
-          columns={columns}
-          getRowId={(conta) => conta.id}
-          pageSize={15}
-          rowsPerPageOptions={[5, 10, 20]}
-          localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-          disableRowSelectionOnClick
-          sx={{
-            '& .MuiDataGrid-cell': { fontSize: '0.95rem' },
-            '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold' },
+        <div
+          style={{
+            resize: 'vertical',
+            overflow: 'auto',
+            minHeight: 300,
+            maxHeight: 900,
+            height: 500,
           }}
-          initialState={{
-            columns: {
-              columnVisibilityModel: {
-                acoes: true,
-                ativa: false,
+        >
+          <DataGrid
+            rows={contas}
+            columns={columns}
+            getRowId={(conta) => conta.id}
+            pageSize={15}
+            rowsPerPageOptions={[5, 10, 20]}
+            localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
+            disableRowSelectionOnClick
+            sx={{
+              '& .MuiDataGrid-cell': { fontSize: '0.95rem' },
+              '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold' },
+            }}
+            initialState={{
+              columns: {
+                columnVisibilityModel: {
+                  acoes: true,
+                  ativa: false,
+                },
               },
-            },
-          }}
-        />
+            }}
+          />
+        </div>
       )}
     </Box>
   )

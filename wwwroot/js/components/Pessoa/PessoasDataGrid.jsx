@@ -94,6 +94,15 @@ export default function PessoasDataGrid() {
           <CircularProgress />
         </Box>
       ) : (
+        <div
+        style={{
+          resize: 'vertical',
+          overflow: 'auto',
+          minHeight: 300,
+          maxHeight: 900,
+          height: 500,
+        }}
+      >
         <DataGrid
           rows={rows}
           columns={columns}
@@ -123,6 +132,7 @@ export default function PessoasDataGrid() {
             },
           }}
         />
+        </div>
       )}
     </Box>
   )

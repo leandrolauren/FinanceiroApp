@@ -101,7 +101,7 @@ export default function LancamentoDataGrid() {
     <Box sx={{ height: 500, width: '100%', padding: 1 }}>
       <Button
         variant="contained"
-        href="/Lancamentos/Create"
+        href="/Lancamentos/CreateLancamento"
         sx={{ marginBottom: 2 }}
       >
         Novo Lançamento
