@@ -8,32 +8,13 @@
     var contas = ViewBag.ContasBancarias as List<ContaBancaria> ?? new();
 }
 
-<h2 class="mb-4">@ViewData["Title"]</h2>
-
-@await Component.InvokeAsync("PopupMensagem")
-
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        <ul>
-            @foreach (var state in ViewData.ModelState.Values)
-            {
-                foreach (var error in state.Errors)
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            }
-        </ul>
-    </div>
-}
-
 <form asp-action="Create" method="post">
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="Tipo" class="form-label">Tipo</label>
             <select asp-for="Tipo" class="form-select">
-                <option value="0">Receita</option>
-                <option value="1">Despesa</option>
+                <option value="1">Receita</option>
+                <option value="2">Despesa</option>
             </select>
         </div>
 

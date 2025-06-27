@@ -1,15 +1,11 @@
 @model IEnumerable<FinanceiroApp.Models.PlanoContasModel>
 
-@{
-    ViewData["Title"] = "Plano de Contas";
+@{ViewData["Title"] = "Plano de Contas";}
 
-}
-
-@await Component.InvokeAsync("PopupMensagem")
-
+<div id="plano-conta-delete-modal-root"></div>
 <div id="planoConta-table-root"></div>
 
 @section Scripts {
+    <script src="~/js/dist/PlanoContaDeleteModal.bundle.js"></script>
     <script src="~/js/dist/PlanoContaDataGrid.bundle.js"></script>
-    </script>
 }

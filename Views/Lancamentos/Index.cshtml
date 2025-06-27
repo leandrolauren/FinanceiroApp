@@ -1,15 +1,12 @@
-@using FinanceiroApp.Models
-@model IEnumerable<LancamentoModel>
-
 @{
     ViewData["Title"] = "Lançamentos";
 }
 
-@await Component.InvokeAsync("PopupMensagem")
-
+<div id="lancamentos-delete-modal-root"></div>
 <div id="lancamentos-table-root"></div>
 
 @section Scripts {
 
+    <script src="~/js/dist/LancamentoDeleteModal.bundle.js"></script>
     <script src="~/js/dist/LancamentosDataGrid.bundle.js"></script>
 }

@@ -1,3 +1,4 @@
+using System.Data;
 using System.Security.Claims;
 using FinanceiroApp.Data;
 using FinanceiroApp.Models;
@@ -17,32 +18,33 @@ public class ContasController : Controller
     // GET: Contas
     public IActionResult Index() => View();
 
+    // GET: /Contas/GetContas
     [HttpGet]
     public async Task<IActionResult> GetContas()
     {
         var userId = GetUserId();
         var contas = await _context
             .ContasBancarias.Where(c => c.UsuarioId == userId)
-            .Select(c => new
+            .Select(c => new ContaDto
             {
-                c.Id,
-                c.Descricao,
-                c.NumeroConta,
-                c.Agencia,
-                c.DigitoAgencia,
-                c.DigitoConta,
+                Id = c.Id,
+                Descricao = c.Descricao,
+                NumeroConta = c.NumeroConta,
+                Agencia = c.Agencia,
+                DigitoAgencia = c.DigitoAgencia,
+                DigitoConta = c.DigitoConta,
                 Tipo = c.Tipo.ToString(),
-                c.Saldo,
-                ativa = c.Ativa ?? false,
-                c.Banco,
-                c.UsuarioId,
+                Saldo = c.Saldo,
+                Ativa = c.Ativa ?? false,
+                Banco = c.Banco,
+                UsuarioId = c.UsuarioId,
             })
             .ToListAsync();
 
         return Json(contas);
     }
 
-    // GET: Conta -- Recebe uma unica conta para exclusão
+    // GET: /Contas/GetContaEx -- Recebe uma unica conta para exclusão
     [HttpGet]
     public IActionResult GetContaEx(int id)
     {
@@ -55,7 +57,7 @@ public class ContasController : Controller
 
     public IActionResult CreateConta() => View();
 
-    // POST: Contas/Create
+    // POST: /Contas/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateConta(ContaBancaria conta)
@@ -78,74 +80,57 @@ public class ContasController : Controller
         return View(new ContaBancaria { Descricao = string.Empty });
     }
 
-    // GET: Contas/Edit/id
-    [HttpGet]
+    // GET: /Contas/Edit/id
     public async Task<IActionResult> EditConta(int id)
     {
-        var conta = await GetAccount(id);
-        if (conta == null)
-        {
-            return Unauthorized();
-        }
-
-        return View(conta);
+        return await GetAccountOrNotFound(id, conta => Task.FromResult<IActionResult>(View(conta)));
     }
 
     // POST: Contas/Edit/id
     [HttpPut]
     public async Task<IActionResult> EditConta(ContaBancaria conta)
     {
-        var contaExiste = await GetAccount(conta.Id);
-        if (contaExiste == null)
-            return NotFound();
-
-        if (ModelState.IsValid)
-        {
-            try
+        return await GetAccountOrNotFound(
+            conta.Id,
+            async contaExiste =>
             {
-                conta.UsuarioId = contaExiste.UsuarioId;
-                _context.Update(conta);
+                if (!ModelState.IsValid)
+                    return View(conta);
+                try
+                {
+                    conta.UsuarioId = contaExiste.UsuarioId;
 
-                await _context.SaveChangesAsync();
-                TempData["MensagemSucesso"] = "Conta Alterada.";
+                    _context.Update(conta);
+                    await _context.SaveChangesAsync();
+
+                    TempData["MensagemSucesso"] = "Conta alterada.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (DBConcurrencyException ex)
+                {
+                    Console.WriteLine($"Erro ao fazer update: {ex}");
+                    TempData["MensagemErro"] = "Erro ao salvar alterações!";
+                    return View(conta);
+                }
             }
-            catch (DbUpdateConcurrencyException ex)
-            {
-                Console.WriteLine($"Erro ao fazer update: {ex}");
-            }
-            return RedirectToAction(nameof(Index));
-        }
-        return View(conta);
-    }
-
-    // GET: Contas/Delete/id
-    [HttpGet]
-    public async Task<IActionResult> DeleteConta(int id)
-    {
-        var conta = await GetAccount(id);
-        if (conta == null)
-            return NotFound();
-
-        return View(conta);
+        );
     }
 
     // POST: Contas/Delete/id
     [HttpDelete]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var userId = GetUserId();
-        var account = await _context.ContasBancarias.FirstOrDefaultAsync(c =>
-            c.Id == id && c.UsuarioId == userId
+        return await GetAccountOrNotFound(
+            id,
+            async conta =>
+            {
+                _context.Remove(conta);
+                await _context.SaveChangesAsync();
+
+                TempData["MensagemSucesso"] = "Conta excluída.";
+                return RedirectToAction(nameof(Index));
+            }
         );
-
-        if (account == null)
-            return NotFound();
-
-        _context.Remove(account);
-        await _context.SaveChangesAsync();
-
-        TempData["MensagemSucesso"] = "Conta excluída.";
-        return RedirectToAction(nameof(Index));
     }
 
     private int GetUserId()
@@ -157,11 +142,19 @@ public class ContasController : Controller
         return int.Parse(claim.Value);
     }
 
-    private async Task<ContaBancaria?> GetAccount(int ContaId)
+    private async Task<IActionResult> GetAccountOrNotFound(
+        int contaId,
+        Func<ContaBancaria, Task<IActionResult>> onFound
+    )
     {
         var userId = GetUserId();
-        return await _context
+        var conta = await _context
             .ContasBancarias.AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == ContaId && c.UsuarioId == userId);
+            .FirstOrDefaultAsync(c => c.Id == contaId && c.UsuarioId == userId);
+
+        if (conta == null)
+            return NotFound();
+
+        return await onFound(conta);
     }
 }

@@ -47,10 +47,8 @@ public class PessoasController : Controller
     public async Task<IActionResult> CreatePessoa(PessoaModel pessoa)
     {
         if (!ModelState.IsValid)
-        {
-            TempData["MensagemErro"] = "Preencha os campos obrigatórios.";
             return View(pessoa);
-        }
+
         var userId = getUserId();
         pessoa.UsuarioId = userId;
         _context.Add(pessoa);

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Cotacao.Controllers;
 
@@ -36,6 +37,17 @@ public class PlanoContasController : Controller
             .ToList();
 
         return Ok(contasDto);
+    }
+
+    // GET: /Contas/GetContaEx -- Recebe uma unica conta para exclusão
+    [HttpGet]
+    public IActionResult GetPlanoContaEx(int id)
+    {
+        var planoConta = _context.PlanosContas.Find(id);
+        if (planoConta == null)
+            return NotFound();
+
+        return Json(planoConta);
     }
 
     private PlanoContasDto MapPlanoConta(PlanoContasModel conta)
@@ -77,7 +89,6 @@ public class PlanoContasController : Controller
 
             _context.Add(plano);
             await _context.SaveChangesAsync();
-            TempData["MensagemSucesso"] = "Plano de contas criado.";
 
             ModelState.Clear();
 
@@ -214,12 +225,56 @@ public class PlanoContasController : Controller
         bool temFilhos = await _context.PlanosContas.AnyAsync(p => p.PlanoContasPaiId == id);
         if (temFilhos)
         {
-            return BadRequest("Não é possível excluir um plano de contas que possui filhos.");
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Não é possível excluir um plano de contas que possui filhos.",
+                }
+            );
         }
-        _context.PlanosContas.Remove(conta);
-        await _context.SaveChangesAsync();
 
-        return Ok();
+        bool temLancamentos = await _context.Lancamentos.AnyAsync(l => l.PlanoContaId == id);
+
+        if (temLancamentos)
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Não é possível excluir Plano de Contas com lançamentos vinculados.",
+                }
+            );
+        }
+
+        try
+        {
+            _context.PlanosContas.Remove(conta);
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true });
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23503")
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Não é possível excluir este plano de contas pois existem registros vinculados a ele.",
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(
+                500,
+                new
+                {
+                    success = false,
+                    message = $"Ocorreu um erro inesperado ao tentar excluir o plano de contas. {ex}",
+                }
+            );
+        }
     }
 
     private int GetUserId()

@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
-import { Box, Typography, Button, CircularProgress } from '@mui/material'
+import { Box, Button, CircularProgress } from '@mui/material'
 import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AppWrapper from '../Shared/AppWrapper'
@@ -87,9 +87,6 @@ export default function ContaBancariaDataGrid() {
 
   return (
     <Box sx={{ height: 500, width: '100%', padding: 1 }}>
-      <Typography variant="h4" gutterBottom>
-        Contas Bancárias
-      </Typography>
       <Button
         variant="contained"
         href="/Contas/CreateConta"
@@ -119,6 +116,7 @@ export default function ContaBancariaDataGrid() {
             columns: {
               columnVisibilityModel: {
                 acoes: true,
+                ativa: false,
               },
             },
           }}

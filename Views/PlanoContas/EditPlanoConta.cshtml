@@ -1,23 +1,8 @@
 @model FinanceiroApp.Models.PlanoContasEditViewModel
-@if (!ViewData.ModelState.IsValid)
-{
-    <div class="alert alert-danger">
-        <ul>
-            @foreach (var state in ViewData.ModelState.Values)
-            {
-                foreach (var error in state.Errors)
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            }
-        </ul>
-    </div>
-}
+
 @{
     ViewData["Title"] = "Editar Plano de Contas";
 }
-
-<h2>@ViewData["Title"]</h2>
 
 <form asp-action="EditPlanoConta" method="post">
     <input type="hidden" asp-for="Id" />

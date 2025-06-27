@@ -3,13 +3,10 @@
     ViewData["Title"] = "Cadastro de Contas";
 }
 
-@await Component.InvokeAsync("PopupMensagem")
-
 <head>
     <link href="~/css/leandro.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<h2>@ViewData["Title"]</h2>
 
 <form asp-action="CreateConta" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>

@@ -81,9 +81,6 @@ export default function PessoasDataGrid() {
 
   return (
     <Box sx={{ height: 500, width: '100%', padding: 1 }}>
-      <Typography variant="h4" gutterBottom>
-        Pessoas
-      </Typography>
       <Button
         variant="contained"
         href="/Pessoas/CreatePessoa"

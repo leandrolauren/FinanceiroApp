@@ -101,7 +101,6 @@
 }
 
 .input:hover {
-  border: 2px solid lightgrey;
   box-shadow: 0px 0px 20px -17px;
 }
 
@@ -111,4 +110,71 @@
 
 .input:focus {
   border: 2px solid grey;
+}
+
+.form-select,
+select {
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #bdbdbd;
+  background: #fff;
+  font-size: 1rem;
+  transition: box-shadow 0.2s;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Deixe o Select2 igual ao seu input customizado */
+.select2-container--default .select2-selection--single {
+  width: 100%;
+  max-width: 220px;
+  height: 45px; /* igual ao .input */
+  padding: 12px;
+  border-radius: 12px;
+  border: 1.5px solid lightgrey;
+  outline: none;
+  font-size: 1rem;
+  background-color: #fff;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0px 0px 20px -18px;
+  display: flex;
+  align-items: center;
+}
+
+.select2-container--default .select2-selection--single:hover {
+  box-shadow: 0px 0px 20px -17px;
+}
+
+.select2-container--default .select2-selection--single:active {
+  transform: scale(0.95);
+}
+
+.select2-container--default .select2-selection--single:focus {
+  border: 2px solid grey;
+}
+
+/* Ajuste para o container do Select2 ao lado do input */
+#planoPaiSelect + .select2-container {
+  min-width: 220px;
+  max-width: 220px;
+  width: 100% !important;
+  margin-left: 12px;
+  vertical-align: bottom;
+}
+
+/* Para alinhar label/input/select verticalmente */
+.flex-grow-1,
+#planoPaiSelect + .select2-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.select2-container--default
+  .select2-results__option--highlighted[aria-selected] {
+  background-color: #1976d2 !important;
+  color: #fff !important;
+  box-shadow: 0 2px 8px #1976d233;
+  transition: background 0.4s, color 0.4s, box-shadow 0.4s;
 }

@@ -2,23 +2,14 @@
 @{
     ViewData["Title"] = "Cadastro de Plano de Contas";
 }
-@await Component.InvokeAsync("PopupMensagem")
 
 <head>
     <link href="~/css/leandro.css" rel="stylesheet" />
 </head>
-<h2>@ViewData["Title"]</h2>
-<div class="container-fluid h-custom">
-    <div class="col-md-8 col-lg-5 col-xl-6 offset-xl-2">
-        <form asp-action="CreatePlanoConta" method="post">
-            @Html.AntiForgeryToken()
-
-            <div class="mb-2">
-                <label asp-for="Descricao" class="form-outline mb-4">Descrição</label>
-                <input asp-for="Descricao" class="input" placeholder="Plano de Contas" />
-                <span asp-validation-for="Descricao" class="text-danger"></span>
-            </div>
-
+<form asp-action="CreatePlanoConta" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="row justify-content-center mb-3">
+        <div class="col-auto text-center">
             <div class="container">
                 <div class="tabs">
                     <input type="radio" id="tipoDespesa" name="Tipo" value="Despesa" checked>
@@ -31,19 +22,34 @@
                 </div>
                 <span asp-validation-for="Tipo" class="text-danger"></span>
             </div>
+        </div>
+    </div>
 
-            <div class="mb-2 mt-2">
-                <label for="PlanoContasPaiId" class="form-outline mb-4">Plano de Contas Pai (opcional)</label>
-                <select asp-for="PlanoContasPaiId" class="form-select" id="planoPaiSelect">
+
+    <div class="row mb-3 justify-content-center">
+        <div class="col-md-6 d-flex align-items-end gap-3">
+            <div class="flex-grow-1">
+                <label for="Descricao" class="form-label">Descrição</label>
+                <input asp-for="Descricao" class="input" placeholder="Plano de Contas" />
+                <span asp-validation-for="Descricao" class="text-danger"></span>
+            </div>
+            <div style="min-width: 180px; max-width: 220px;">
+                <label for="PlanoContasPaiId" class="form-label">Plano de Contas Pai</label>
+                <select asp-for="PlanoContasPaiId" id="planoPaiSelect" style="width: 100%;">
                     <option value="">Selecione..</option>
                 </select>
             </div>
-
-            <button type="submit" class="btn btn-success">Salvar</button>
-            <a asp-action="Index" class="btn btn-secondary">Voltar</a>
-        </form>
+        </div>
     </div>
-</div>
+
+    <div class="row justify-content-center mb-3">
+        <div class="col-md-6">
+            <button type="submit" class="btn btn-success">Salvar</button>
+            <a asp-action="Index" class="btn btn-secondary ms-2">Voltar</a>
+        </div>
+    </div>
+</form>
+
 
 
 @section Scripts {
@@ -52,32 +58,39 @@
     }
     <script>
         function atualizarPlanoPai(tipo) {
-            const selectPai = document.getElementById("planoPaiSelect");
-            selectPai.innerHTML = '<option value="">-- Nenhum --</option>';
+            const selectPai = $("#planoPaiSelect");
+            selectPai.empty().append('<option value="">-- Nenhum --</option>');
 
             if (tipo) {
                 fetch(`/PlanoContas/ObterPlanosPorTipo?tipo=${tipo}`)
                     .then(response => response.json())
                     .then(data => {
                         data.forEach(p => {
-                            const option = document.createElement("option");
-                            option.value = p.id;
-                            option.textContent = p.descricao;
-                            selectPai.appendChild(option);
+                            selectPai.append(new Option(p.descricao, p.id));
                         });
+                        selectPai.trigger('change.select2'); // Atualiza o Select2
                     });
             }
         }
 
-        document.querySelectorAll('input[name="Tipo"]').forEach(radio => {
-            radio.addEventListener("change", function () {
-                atualizarPlanoPai(this.value);
+        $(document).ready(function () {
+            // Inicializa o Select2
+            $("#planoPaiSelect").select2({
+                placeholder: "Selecione...",
+                allowClear: true,
+                width: '100%',
+                language: "pt-BR"
             });
 
-            if (radio.checked) {
-                atualizarPlanoPai(radio.value);
-            }
+            // Atualiza ao trocar o tipo
+            document.querySelectorAll('input[name="Tipo"]').forEach(radio => {
+                radio.addEventListener("change", function () {
+                    atualizarPlanoPai(this.value);
+                });
+                if (radio.checked) {
+                    atualizarPlanoPai(radio.value);
+                }
+            });
         });
     </script>
-
 }

@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import AppWrapper from '../Shared/AppWrapper'
 import {
   Box,
-  Typography,
   Button,
   CircularProgress,
   IconButton,
@@ -45,29 +44,18 @@ export default function PlanoContaDataGrid() {
     fetchData()
   }, [])
 
+  useEffect(() => {
+    window.atualizarTabelaPlanoContas = (idRemovido) => {
+      setContas((prevContas) => prevContas.filter((l) => l.id !== idRemovido))
+    }
+  }, [])
+
   const calcularTotalRecursivo = (conta) => {
     const totalLancamentos =
       conta.lancamentos?.reduce((sum, l) => sum + l.valor, 0) || 0
     const totalFilhos =
       conta.filhos?.reduce((sum, f) => sum + calcularTotalRecursivo(f), 0) || 0
     return totalLancamentos + totalFilhos
-  }
-
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este plano de contas?'))
-      return
-
-    try {
-      await axios.delete(`/PlanoContas/DeleteConfirmed/${id}`)
-      setContas(contas.filter((c) => c.id !== id))
-      enqueueSnackbar('Plano de contas excluído com sucesso', {
-        variant: 'success',
-      })
-    } catch (err) {
-      enqueueSnackbar('Plano de contas pai não pode ser excluído.', {
-        variant: 'error',
-      })
-    }
   }
 
   const renderConta = (conta, nivel = 0) => {
@@ -118,7 +106,7 @@ export default function PlanoContaDataGrid() {
             </IconButton>
             <IconButton
               color="error"
-              onClick={() => handleDelete(conta.id)}
+              onClick={() => window.abrirModalExclusaoPlanoConta(conta.id)}
               size="small"
             >
               <Delete />
@@ -140,10 +128,6 @@ export default function PlanoContaDataGrid() {
 
   return (
     <Box sx={{ padding: 2 }}>
-      <Typography variant="h4" gutterBottom>
-        Plano de Contas
-      </Typography>
-
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           <AlertTitle>Erro</AlertTitle>

@@ -9,8 +9,12 @@ module.exports = {
     PessoasDataGrid: './wwwroot/js/components/Pessoa/PessoasDataGrid.jsx',
     PlanoContaDataGrid:
       './wwwroot/js/components/PlanoConta/PlanoContaDataGrid.jsx',
+    PlanoContaDeleteModal:
+      './wwwroot/js/components/PlanoConta/PlanoContaDeleteModal.jsx',
     FormRegister: './wwwroot/js/components/Usuario/FormRegister.jsx',
     PessoaDeleteModal: './wwwroot/js/components/Pessoa/PessoaDeleteModal.jsx',
+    LancamentoDeleteModal:
+      './wwwroot/js/components/Lancamento/LancamentoDeleteModal.jsx',
     ContaDeleteModal:
       './wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx',
   },

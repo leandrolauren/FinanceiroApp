@@ -7,11 +7,7 @@
     var contas = ViewBag.ContasBancarias as List<ContaBancaria>;
 }
 
-<h2>@ViewData["Title"]</h2>
-
-@await Component.InvokeAsync("PopupMensagem")
-
-<form asp-action="EditLancamento" method="put">
+<form asp-action="EditLancamento" method="post">
     <input type="hidden" asp-for="Id" />
 
     <div class="row mb-3">

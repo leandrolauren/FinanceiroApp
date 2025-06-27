@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FinanceiroApp.Data;
+using FinanceiroApp.Dtos;
 using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +30,38 @@ public class LancamentosController : Controller
             .Include(l => l.Pessoa)
             .Where(l => l.UsuarioId == userId)
             .OrderByDescending(l => l.DataLancamento)
+            .Select(l => new LancamentoDto
+            {
+                Id = l.Id,
+                Descricao = l.Descricao,
+                Tipo = l.Tipo.ToString(),
+                Valor = l.Valor,
+                DataCompetencia = l.DataCompetencia,
+                DataVencimento = l.DataVencimento,
+                DataPagamento = l.DataPagamento,
+                DataLancamento = l.DataLancamento,
+                Pago = l.Pago,
+                Pessoa =
+                    l.Pessoa == null
+                        ? null
+                        : new PessoaLancamentoDto { Id = l.Pessoa.Id, Nome = l.Pessoa.Nome },
+                PlanoContas =
+                    l.PlanoContas == null
+                        ? null
+                        : new PlanoContasLancamentoDto
+                        {
+                            Id = l.PlanoContas.Id,
+                            Descricao = l.PlanoContas.Descricao,
+                        },
+                ContaBancaria =
+                    l.ContaBancaria == null
+                        ? null
+                        : new ContaDto
+                        {
+                            Id = l.ContaBancaria.Id,
+                            Descricao = l.ContaBancaria.Descricao,
+                        },
+            })
             .ToListAsync();
 
         return Json(lancamentos);
@@ -81,7 +114,7 @@ public class LancamentosController : Controller
     }
 
     // POST: Lancamentos/Edit/id
-    [HttpPut]
+    [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditLancamento(LancamentoModel lancamento)
     {
@@ -96,7 +129,6 @@ public class LancamentosController : Controller
         if (!ModelState.IsValid)
         {
             await PreencherViewBags();
-            TempData["MensagemErro"] = "Preencha os campos obrigatórios.";
             return View(lancamento);
         }
 
@@ -117,12 +149,11 @@ public class LancamentosController : Controller
         if (lancamento == null)
             return NotFound();
 
-        return View(lancamento);
+        return Json(lancamento);
     }
 
     // POST: Lancamentos/DeleteConfirmed
     [HttpDelete]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var lancamento = await ObterLancamento(id);
@@ -138,7 +169,6 @@ public class LancamentosController : Controller
         _context.Lancamentos.Remove(lancamento);
         await _context.SaveChangesAsync();
 
-        TempData["MensagemSucesso"] = "Lançamento excluído com sucesso.";
         return RedirectToAction(nameof(Index));
     }
 
