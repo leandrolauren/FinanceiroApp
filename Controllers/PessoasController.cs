@@ -72,7 +72,7 @@ public class PessoasController : Controller
     }
 
     // POST: Pessoas/Edit/id
-    [HttpPut]
+    [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPessoa(PessoaModel pessoa)
     {

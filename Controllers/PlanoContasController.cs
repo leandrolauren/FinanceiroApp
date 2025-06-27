@@ -26,9 +26,11 @@ public class PlanoContasController : Controller
     [HttpGet]
     public async Task<IActionResult> GetPlanoContas()
     {
+        var userId = GetUserId();
         var contas = await _context
             .PlanosContas.Include(p => p.Filhos)
             .Include(p => p.Lancamentos)
+            .Where(p => p.UsuarioId == userId)
             .ToListAsync();
 
         var contasDto = contas
@@ -43,6 +45,7 @@ public class PlanoContasController : Controller
     [HttpGet]
     public IActionResult GetPlanoContaEx(int id)
     {
+        var userId = GetUserId();
         var planoConta = _context.PlanosContas.Find(id);
         if (planoConta == null)
             return NotFound();

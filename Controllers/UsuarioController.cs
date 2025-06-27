@@ -18,10 +18,19 @@ public class UsuarioController : Controller
 
     // POST: Usuario/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(UsuarioCreateViewModel model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
+        {
+            Console.WriteLine("ModelState inválido.");
+            foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+            {
+                Console.WriteLine($"Erro: {error.ErrorMessage}");
+            }
+            ModelState.AddModelError("", "Por favor, preencha todos os campos corretamente.");
+            return View(model);
+        }
+        try
         {
             var usuario = new UsuarioModel
             {
@@ -35,6 +44,10 @@ public class UsuarioController : Controller
 
             TempData["MensagemSucesso"] = "Usuário cadastrado!";
             return RedirectToAction("Index", "Home");
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", $"Erro ao cadastrar usuário: {ex.Message}");
         }
 
         return View(model);

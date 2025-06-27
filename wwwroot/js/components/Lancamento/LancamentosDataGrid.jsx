@@ -9,7 +9,7 @@ import AppWrapper from '../Shared/AppWrapper'
 const columns = [
   { field: 'descricao', headerName: 'Descrição', flex: 1 },
   { field: 'tipo', headerName: 'Tipo', flex: 1 },
-  { field: 'valor', headerName: 'Valor', flex: 1, type: Number },
+  { field: 'valor', headerName: 'Valor R$', flex: 1, type: Number },
   { field: 'pessoaNome', headerName: 'Pessoa', flex: 1 },
   { field: 'dataCompetencia', headerName: 'Data Competência', flex: 1 },
   { field: 'dataVencimento', headerName: 'Data Vencimento', flex: 1 },
@@ -75,10 +75,8 @@ export default function LancamentoDataGrid() {
           dataLancamento: formatarData(item.dataLancamento),
           valor:
             item.valor != null
-              ? new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                }).format(Number(item.valor))
+              ? new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 2}
+                ).format(Number(item.valor))
               : '--',
         }))
 

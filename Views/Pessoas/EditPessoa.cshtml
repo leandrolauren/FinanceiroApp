@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 
-<form asp-action="EditPessoa">
+<form asp-action="EditPessoa" method="post">
     <input type="hidden" asp-for="Tipo" id="tipoPessoaHidden" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -17,13 +17,13 @@
         <div class="row mb-3">
             <div class="col md-2">
                 <label asp-for="RazaoSocial" class="control-label">Razão Social</label>
-                <input asp-for="RazaoSocial" class="input" />
+                <input asp-for="RazaoSocial" class="input" placeholder="Razão Social" />
                 <span asp-validation-for="RazaoSocial" class="text-danger"></span>
             </div>
 
             <div class="col md-2">
                 <label asp-for="NomeFantasia" class="control-label">Nome Fantasia</label>
-                <input asp-for="NomeFantasia" class="input" id="NomeFantasia" />
+                <input asp-for="NomeFantasia" class="input" id="NomeFantasia" placeholder="Nome Fantasia" />
                 <span asp-validation-for="NomeFantasia" class="text-danger"></span>
             </div>
 
@@ -35,7 +35,8 @@
 
             <div class="col md-2">
                 <label asp-for="InscricaoEstadual" class="control-label">Inscrição Estadual</label>
-                <input asp-for="InscricaoEstadual" class="input" id="InscricaoEstadual" />
+                <input asp-for="InscricaoEstadual" class="input" id="InscricaoEstadual"
+                    placeholder="Inscrição Estadual" />
                 <span asp-validation-for="InscricaoEstadual" class="text-danger"></span>
             </div>
         </div>
@@ -45,7 +46,7 @@
         <div class="row mb-3">
             <div class="col md-3">
                 <label asp-for="Nome" class="control-label">Nome</label>
-                <input asp-for="Nome" class="input" />
+                <input asp-for="Nome" class="input" placeholder="Nome" />
                 <span asp-validation-for="Nome" class="text-danger"></span>
             </div>
             <div class="col md-3">
@@ -78,7 +79,7 @@
 
         <div class="col md-3">
             <label asp-for="Email" class="control-label">E-mail</label>
-            <input asp-for="Email" class="input" type="email" id="Email" />
+            <input asp-for="Email" class="input" type="email" id="Email" placeholder="E-mail" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
@@ -90,37 +91,37 @@
     </div>
     <div class="row mb-3">
         <div class="col md-4">
-            <label asp-for="Endereco" class="control-label">Endereço</label>
-            <input asp-for="Endereco" class="input" id="Endereco" />
+            <label asp-for="Endereco" class="control-label">Rua</label>
+            <input asp-for="Endereco" class="input" id="Endereco" placeholder="Rua" />
             <span asp-validation-for="Endereco" class="text-danger"></span>
         </div>
 
         <div class="col md-4">
             <label asp-for="Numero" class="control-label">Número</label>
-            <input asp-for="Numero" class="input" id="Numero" />
+            <input asp-for="Numero" class="input" id="Numero" placeholder="Número" />
             <span asp-validation-for="Numero" class="text-danger"></span>
         </div>
 
         <div class="col md-4">
             <label asp-for="Bairro" class="control-label">Bairro</label>
-            <input asp-for="Bairro" class="input" id="Bairro" />
+            <input asp-for="Bairro" class="input" id="Bairro" placeholder="Bairro" />
             <span asp-validation-for="Bairro" class="text-danger"></span>
         </div>
     </div>
     <div class="row mb-3">
         <div class="col md-4">
             <label asp-for="Cidade" class="control-label">Cidade</label>
-            <input asp-for="Cidade" class="input" id="Cidade" />
+            <input asp-for="Cidade" class="input" id="Cidade" placeholder="Cidade" />
             <span asp-validation-for="Cidade" class="text-danger"></span>
         </div>
         <div class="col md-4">
             <label asp-for="Estado" class="control-label">Estado</label>
-            <input asp-for="Estado" class="input" id="Estado" />
+            <input asp-for="Estado" class="input" id="Estado" placeholder="Estado" />
             <span asp-validation-for="Estado" class="text-danger"></span>
         </div>
         <div class="col md-4">
             <label asp-for="Complemento" class="control-label">Complemento</label>
-            <input asp-for="Complemento" class="input" id="Complemento" />
+            <input asp-for="Complemento" class="input" id="Complemento" placeholder="Complemento" />
             <span asp-validation-for="Complemento" class="text-danger"></span>
         </div>
     </div>

@@ -64,17 +64,17 @@ export default function FormRegister(props) {
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('')
   const [passwordError, setPasswordError] = React.useState(false)
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('')
-  const [nameError, setNameError] = React.useState(false)
-  const [nameErrorMessage, setNameErrorMessage] = React.useState('')
+  const [nomeError, setNomeError] = React.useState(false)
+  const [nomeErrorMessage, setNomeErrorMessage] = React.useState('')
 
   const validateInputs = () => {
-    const email = document.getElementById('email')
-    const password = document.getElementById('password')
-    const name = document.getElementById('name')
+    const Email = document.getElementById('Email')
+    const Senha = document.getElementById('Senha')
+    const Nome = document.getElementById('Nome')
 
     let isValid = true
 
-    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+    if (!Email.value || !/\S+@\S+\.\S+/.test(Email.value)) {
       setEmailError(true)
       setEmailErrorMessage('Por favor, digite um email válido.')
       isValid = false
@@ -83,7 +83,7 @@ export default function FormRegister(props) {
       setEmailErrorMessage('')
     }
 
-    if (!password.value || password.value.length < 6) {
+    if (!Senha.value || Senha.value.length < 6) {
       setPasswordError(true)
       setPasswordErrorMessage('Senha deve conter pelo menos 6 caracteres.')
       isValid = false
@@ -92,46 +92,21 @@ export default function FormRegister(props) {
       setPasswordErrorMessage('')
     }
 
-    if (!name.value || name.value.length < 1) {
-      setNameError(true)
-      setNameErrorMessage('Nome é obrigatório.')
+    if (!Nome.value || Nome.value.length < 1) {
+      setNomeError(true)
+      setNomeErrorMessage('Nome é obrigatório.')
       isValid = false
     } else {
-      setNameError(false)
-      setNameErrorMessage('')
+      setNomeError(false)
+      setNomeErrorMessage('')
     }
 
     return isValid
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-
-    if (!validateInputs()) return
-    const data = new FormData(event.currentTarget)
-
-    const payload = {
-      Nome: data.get('name'),
-      Email: data.get('email'),
-      Senha: data.get('password'),
-    }
-
-    try {
-      const token = document
-        .querySelector('meta[name="csrf-token"]')
-        .getAttribute('content')
-
-      await axios.post('/Usuario/Create', payload, {
-        headers: {
-          RequestVerificationToken: token,
-        },
-      })
-
-      alert('Usuário cadastrado com sucesso!')
-      window.location.href = '/Home/Index'
-    } catch (error) {
-      alert('Erro ao cadastrar usuário.')
-      console.error(error)
+  const handleSubmit = (event) => {
+    if (!validateInputs()) {
+      event.preventDefault();
     }
   }
 
@@ -156,42 +131,44 @@ export default function FormRegister(props) {
             component="form"
             onSubmit={handleSubmit}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            method="post"
+            action="/Usuario/Create"
           >
             <FormControl>
               <TextField
                 autoComplete="name"
-                name="name"
+                name="Nome"
                 required
                 fullWidth
-                id="name"
+                id="Nome"
                 placeholder="Nome completo"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
+                error={nomeError}
+                helperText={nomeErrorMessage}
+                color={nomeError ? 'error' : 'primary'}
               />
             </FormControl>
             <FormControl>
               <TextField
                 required
                 fullWidth
-                id="email"
+                id="Email"
                 placeholder="Email"
-                name="email"
+                name="Email"
                 autoComplete="email"
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                color={emailError ? 'error' : 'primary'}
               />
             </FormControl>
             <FormControl>
               <TextField
                 required
                 fullWidth
-                name="password"
+                name="Senha"
                 placeholder="Digite sua senha."
                 type="password"
-                id="password"
+                id="Senha"
                 autoComplete="new-password"
                 variant="outlined"
                 error={passwordError}

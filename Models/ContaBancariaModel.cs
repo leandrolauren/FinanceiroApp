@@ -12,6 +12,8 @@ public class ContaBancaria
     public string? Agencia { get; set; }
     public string? DigitoAgencia { get; set; }
     public string? DigitoConta { get; set; }
+
+    [Required(ErrorMessage = "Informe o tipo da conta.")]
     public TipoConta Tipo { get; set; }
     public decimal Saldo { get; set; }
     public bool? Ativa { get; set; }

@@ -88,41 +88,46 @@
   }
 }
 
-.input {
+.input,
+.form-select,
+select {
   width: 100%;
   max-width: 220px;
+  min-width: 180px;
   height: 45px;
   padding: 12px;
   border-radius: 12px;
   border: 1.5px solid lightgrey;
   outline: none;
+  font-size: 1rem;
+  background-color: #fff;
   transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
   box-shadow: 0px 0px 20px -18px;
+  display: flex;
+  align-items: center;
 }
 
-.input:hover {
+.input:hover,
+.form-select:hover,
+select:hover {
   box-shadow: 0px 0px 20px -17px;
 }
 
-.input:active {
+.input:active,
+.form-select:active,
+select:active {
   transform: scale(0.95);
 }
 
-.input:focus {
+.input:focus,
+.form-select:focus,
+select:focus {
   border: 2px solid grey;
 }
 
-.form-select,
-select {
-  width: 100%;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  border: 1px solid #bdbdbd;
-  background: #fff;
+select option {
   font-size: 1rem;
-  transition: box-shadow 0.2s;
-  outline: none;
-  cursor: pointer;
+  padding: 8px 12px;
 }
 
 /* Deixe o Select2 igual ao seu input customizado */
