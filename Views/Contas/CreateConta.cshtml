@@ -35,10 +35,10 @@
         </div>
     </div>
 
-    <div class="flex-grow-1 row mb-3">
+    <div class="row mb-3">
         <div class="col md-2">
             <label asp-for="Descricao" class="control-label">Descrição</label>
-            <input asp-for="Descricao" class="input" id="Descricao" />
+            <input asp-for="Descricao" class="input" id="DescricaoConta" maxlength="25"/>
             <span asp-validation-for="Descricao" class="text-danger"></span>
         </div>
 
@@ -50,7 +50,7 @@
 
         <div class="col md-2">
             <label asp-for="DigitoConta" class="control-label">Digito Conta</label>
-            <input asp-for="DigitoConta" class="input" id="NomeFantasia" />
+            <input asp-for="DigitoConta" class="input" id="DigitoConta" maxlength="2"/>
             <span asp-validation-for="DigitoConta" class="text-danger"></span>
         </div>
     </div>
@@ -70,7 +70,7 @@
 
         <div class="col md-2">
             <label asp-for="Banco" class="control-label">Banco</label>
-            <input asp-for="Banco" class="input" id="DigitoAgencia" />
+            <input asp-for="Banco" class="input" id="Banco" />
             <span asp-validation-for="Banco" class="text-danger"></span>
         </div>
     </div>

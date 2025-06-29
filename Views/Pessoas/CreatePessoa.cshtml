@@ -38,20 +38,19 @@
 
             <div class="col md-2">
                 <label asp-for="RazaoSocial" class="control-label">Razão Social</label>
-                <input asp-for="RazaoSocial" class="input" placeholder="Razão Social" />
+                <input asp-for="RazaoSocial" class="input" id="RazaoSocial" />
                 <span asp-validation-for="RazaoSocial" class="text-danger"></span>
             </div>
 
             <div class="col md-2">
                 <label asp-for="NomeFantasia" class="control-label">Nome Fantasia</label>
-                <input asp-for="NomeFantasia" class="input" id="NomeFantasia" placeholder="Nome Fantasia" />
+                <input asp-for="NomeFantasia" class="input" id="NomeFantasia" />
                 <span asp-validation-for="NomeFantasia" class="text-danger"></span>
             </div>
 
             <div class="col md-2">
                 <label asp-for="InscricaoEstadual" class="control-label">Inscrição Estadual</label>
-                <input asp-for="InscricaoEstadual" class="input" id="InscricaoEstadual"
-                    placeholder="Inscrição Estadual" />
+                <input asp-for="InscricaoEstadual" class="input" id="InscricaoEstadual" />
                 <span asp-validation-for="InscricaoEstadual" class="text-danger"></span>
             </div>
         </div>
@@ -61,18 +60,18 @@
         <div class="row mb-3">
             <div class="col md-3">
                 <label asp-for="Nome" class="control-label">Nome</label>
-                <input asp-for="Nome" class="input" id="Nome" placeholder="Nome" />
+                <input asp-for="Nome" class="input" id="Nome"/>
                 <span asp-validation-for="Nome" class="text-danger"></span>
             </div>
             <div class="col md-3">
                 <label asp-for="Cpf" class="control-label">CPF</label>
-                <input asp-for="Cpf" class="input" id="Cpf" placeholder="CPF" />
+                <input asp-for="Cpf" class="input" id="Cpf" />
                 <span asp-validation-for="Cpf" class="text-danger"></span>
             </div>
 
             <div class="col md-3">
                 <label asp-for="Rg" class="control-label">RG</label>
-                <input asp-for="Rg" class="input" id="Rg" placeholder="RG" />
+                <input asp-for="Rg" class="input" id="Rg" />
                 <span asp-validation-for="Rg" class="text-danger"></span>
             </div>
 
@@ -94,7 +93,7 @@
 
         <div class="col md-3">
             <label asp-for="Email" class="control-label">E-mail</label>
-            <input asp-for="Email" class="input" type="email" id="Email" placeholder="Email" />
+            <input asp-for="Email" class="input" type="email" id="Email" />
             <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
@@ -107,36 +106,36 @@
     <div class="row mb-3">
         <div class="col md-4">
             <label asp-for="Endereco" class="control-label">Rua</label>
-            <input asp-for="Endereco" class="input" id="Endereco" placeholder="Rua" />
+            <input asp-for="Endereco" class="input" id="Endereco" />
             <span asp-validation-for="Endereco" class="text-danger"></span>
         </div>
 
         <div class="col md-4">
             <label asp-for="Numero" class="control-label">Número</label>
-            <input asp-for="Numero" class="input" id="Numero" placeholder="Número" />
+            <input asp-for="Numero" class="input" id="Numero" />
             <span asp-validation-for="Numero" class="text-danger"></span>
         </div>
 
         <div class="col md-4">
             <label asp-for="Bairro" class="control-label">Bairro</label>
-            <input asp-for="Bairro" class="input" id="Bairro" placeholder="Bairro" />
+            <input asp-for="Bairro" class="input" id="Bairro" />
             <span asp-validation-for="Bairro" class="text-danger"></span>
         </div>
     </div>
     <div class="row mb-3">
         <div class="col md-4">
             <label asp-for="Cidade" class="control-label">Cidade</label>
-            <input asp-for="Cidade" class="input" id="Cidade" placeholder="Cidade" />
+            <input asp-for="Cidade" class="input" id="Cidade" />
             <span asp-validation-for="Cidade" class="text-danger"></span>
         </div>
         <div class="col md-4">
             <label asp-for="Estado" class="control-label">Estado</label>
-            <input asp-for="Estado" class="input" id="Estado" placeholder="Estado" />
+            <input asp-for="Estado" class="input" id="Estado" />
             <span asp-validation-for="Estado" class="text-danger"></span>
         </div>
         <div class="col md-4">
             <label asp-for="Complemento" class="control-label">Complemento</label>
-            <input asp-for="Complemento" class="input" id="Complemento" placeholder="Complemento" />
+            <input asp-for="Complemento" class="input" id="Complemento" />
             <span asp-validation-for="Complemento" class="text-danger"></span>
         </div>
     </div>
@@ -151,12 +150,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
-    <script
-        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/4.0.0/jquery.validate.unobtrusive.min.js"></script>
     <script>
         function toggleCamposPessoa() {
             const tipoSelecionado = $('input[name="Tipo"]:checked').val();
@@ -176,124 +169,6 @@
             $('input[name="Tipo"]').on('change', function () {
                 toggleCamposPessoa();
             });
-        });
-    </script>
-
-
-    <script>
-        $(document).ready(function () {
-            $('#Cep').mask('00000-000', { placeholder: "_____-___" });
-            $('#Cnpj').mask('00.000.000/0000-00', { placeholder: "__.___.___/____-__" });
-            $('#Cpf').mask('000.000.000-00', { placeholder: "___.___.___-__" });
-            $('#Telefone').mask('(00) 00000-0000', { placeholder: "(__) _____-____" });
-            $('#Rg').mask('00.000.000-0', { placeholder: "__.___.___-_" });
-
-            let cepTimeout = null;
-            let cnpjTimeout = null;
-
-            function buscarCEP() {
-                const cep = $('#Cep').val().replace(/\D/g, '');
-
-                if (cep.length !== 8) {
-                    return;
-                }
-
-                $('#Endereco, #Bairro, #Cidade, #Estado, #Complemento').val('');
-                $('#Cep').addClass('loading');
-
-                $.get(`https://brasilapi.com.br/api/cep/v2/${cep}`)
-                    .done(function (data) {
-                        $('#Endereco').val(data.street || '');
-                        $('#Bairro').val(data.neighborhood || '');
-                        $('#Cidade').val(data.city || '');
-                        $('#Estado').val(data.state || '');
-                        $('#Complemento').val(data.complement || '');
-
-                        if ($('#Endereco').val() === '') {
-                            $('#Endereco').focus();
-                        }
-                    })
-                    .fail(function (jqXHR) {
-                        if (jqXHR.status !== 404) {
-                            alert('Erro ao consultar CEP.');
-                        }
-                    });
-
-            }
-
-            $('#Cep').on('input', function () {
-                clearTimeout(cepTimeout);
-
-                cepTimeout = setTimeout(function () {
-                    buscarCEP();
-                }, 800);
-            });
-
-            if ($('#Cep').val().replace(/\D/g, '').length === 8) {
-                buscarCEP();
-            }
-
-            function buscarCNPJ() {
-                const cnpjElement = $('#Cnpj');
-
-                if (!cnpjElement.length) {
-                    console.error('Elemento com ID "Cnpj" não encontrado');
-                    return;
-                }
-
-                const cnpjValue = cnpjElement.val();
-                if (!cnpjValue) {
-                    console.log('CNPJ está vazio');
-                    return;
-                }
-
-                const cnpj = cnpjValue.replace(/\D/g, '');
-
-                if (cnpj.length !== 14) {
-                    console.log('CNPJ incompleto');
-                    return;
-                }
-                $('#Nome, #NomeFantasia, #InscricaoEstadual, #Email, #RazaoSocial, #Telefone').val('');
-                $('#Cnpj').addClass('loading');
-
-                $.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`)
-                    .done(function (data) {
-                        $('#Estado').val(data.uf || '');
-                        $('#Cep').val(data.cep || '');
-                        $('#Email').val(data.email || '');
-                        $('#Bairro').val(data.bairro || '');
-                        $('#Numero').val(data.numero || '');
-                        $('#Cidade').val(data.municipio || '');
-                        $('#Endereco').val(data.logradouro || '');
-                        $('#Complemento').val(data.complemento || '');
-                        $('#RazaoSocial').val(data.razao_social || '');
-                        $('#NomeFantasia').val(data.nome_fantasia || '');
-                        $('#Nome').val(data.nome_fantasia || data.razao_social);
-                        $('#Telefone').val(data.ddd_telefone_1 || '');
-                        $('#DataNascimento').val(data.data_inicio_atividade || '');
-
-                        if ($('#Nome').val() === '') {
-                            $('#Nome').focus();
-                        }
-                    })
-                    .fail(function (jqXHR) {
-                        if (jqXHR.status !== 404) {
-                            alert('Erro ao consultar CNPJ.');
-                        }
-                    });
-            }
-
-            $('#Cnpj').on('input', function () {
-                clearTimeout(cnpjTimeout);
-
-                cnpjTimeout = setTimeout(function () {
-                    buscarCNPJ();
-                }, 800);
-            });
-
-            if ($('#Cnpj').val().replace(/\D/g, '').length === 14) {
-                buscarCNPJ();
-            }
         });
     </script>
 

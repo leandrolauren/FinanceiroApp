@@ -12,19 +12,16 @@
         <div class="col-auto text-center">
             <div class="container">
                 <div class="tabs">
-                    <input type="radio" id="tipoDespesa" name="Tipo" value="Despesa" checked>
+                    <input type="radio" id="tipoDespesa" name="Tipo" value="Despesa" checked />
                     <label class="tab" for="tipoDespesa">Despesa</label>
-
-                    <input type="radio" id="tipoReceita" name="Tipo" value="Receita">
+                    <input type="radio" id="tipoReceita" name="Tipo" value="Receita" />
                     <label class="tab" for="tipoReceita">Receita</label>
-
                     <span class="glider"></span>
                 </div>
                 <span asp-validation-for="Tipo" class="text-danger"></span>
             </div>
         </div>
     </div>
-
 
     <div class="row mb-3 justify-content-center">
         <div class="col-md-6 d-flex align-items-end gap-3">
@@ -35,7 +32,7 @@
             </div>
             <div style="min-width: 180px; max-width: 220px;">
                 <label for="PlanoContasPaiId" class="form-label">Plano de Contas Pai</label>
-                <select asp-for="PlanoContasPaiId" id="planoPaiSelect" style="width: 100%;">
+                <select asp-for="PlanoContasPaiId" id="planoPaiSelect" class="select2" style="width: 100%;">
                     <option value="">Selecione..</option>
                 </select>
             </div>
@@ -50,47 +47,8 @@
     </div>
 </form>
 
-
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script>
-        function atualizarPlanoPai(tipo) {
-            const selectPai = $("#planoPaiSelect");
-            selectPai.empty().append('<option value="">-- Nenhum --</option>');
-
-            if (tipo) {
-                fetch(`/PlanoContas/ObterPlanosPorTipo?tipo=${tipo}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(p => {
-                            selectPai.append(new Option(p.descricao, p.id));
-                        });
-                        selectPai.trigger('change.select2'); // Atualiza o Select2
-                    });
-            }
-        }
-
-        $(document).ready(function () {
-            // Inicializa o Select2
-            $("#planoPaiSelect").select2({
-                placeholder: "Selecione...",
-                allowClear: true,
-                width: '100%',
-                language: "pt-BR"
-            });
-
-            // Atualiza ao trocar o tipo
-            document.querySelectorAll('input[name="Tipo"]').forEach(radio => {
-                radio.addEventListener("change", function () {
-                    atualizarPlanoPai(this.value);
-                });
-                if (radio.checked) {
-                    atualizarPlanoPai(radio.value);
-                }
-            });
-        });
-    </script>
 }

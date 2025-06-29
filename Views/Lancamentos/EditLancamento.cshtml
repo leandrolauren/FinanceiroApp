@@ -18,10 +18,8 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="Tipo" class="form-label">Tipo</label>
-            <select asp-for="Tipo" class="input">
-                <option value="1" selected="@Model.Tipo == TipoLancamento.Receita">Receita</option>
-                <option value="2" selected="@Model.Tipo == TipoLancamento.Despesa">Despesa</option>
-            </select>
+            <input class="input" value="@Model.Tipo" disabled />
+            <input type="hidden" asp-for="Tipo" />
         </div>
         <div class="col-md-4">
             <label asp-for="Valor" class="form-label">Valor R$</label>

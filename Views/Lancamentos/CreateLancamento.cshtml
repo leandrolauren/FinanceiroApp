@@ -18,8 +18,8 @@
         <div class="col-md-4">
             <label asp-for="Tipo" class="form-label">Tipo</label>
             <select asp-for="Tipo" class="input">
-                <option value="1">Receita</option>
-                <option value="2">Despesa</option>
+                <option value="Receita">Receita</option>
+                <option value="Despesa">Despesa</option>
             </select>
         </div>
 
@@ -100,55 +100,3 @@
     <button type="submit" class="btn btn-success">Salvar</button>
     <a asp-action="Index" class="btn btn-secondary ms-2">Voltar</a>
 </form>
-
-@section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-    <script>
-        $(document).ready(function () {
-            // Inicializa o Select2
-            $('.select2').select2({
-                width: '100%',
-                language: 'pt-BR',
-                placeholder: 'Selecione...',
-                allowClear: true
-            });
-
-            // Mascara de dinheiro para o campo Valor
-            $('#Valor').mask('000.000.000,00', { reverse: true });
-
-            // Corrige bug do input sumir ao digitar rápido
-            $('#Valor').on('input', function () {
-                var val = $(this).val();
-                if (val === '') $(this).val('');
-            });
-
-            // Captura mudança no select de Tipo
-            $('#Tipo').on('change', function () {
-                const tipoSelecionado = $(this).val() == "1" ? "Receita" : "Despesa";
-                const $planoContaSelect = $('#planoContaSelect');
-
-                // Guarda as opções completas, se ainda não tiver feito
-                if (!$planoContaSelect.data('all-options')) {
-                    $planoContaSelect.data('all-options', $planoContaSelect.html());
-                }
-
-                // Restaura todas as opções
-                $planoContaSelect.html($planoContaSelect.data('all-options'));
-
-                // Filtra pelas opções com data-tipo correspondente
-                $planoContaSelect.find('option').each(function () {
-                    const tipo = $(this).data('tipo');
-                    if (tipo && tipo !== tipoSelecionado) {
-                        $(this).remove();
-                    }
-                });
-
-                // Limpa seleção
-                $planoContaSelect.val(null).trigger('change');
-            });
-
-            // Gatilho inicial se já vier preenchido
-            $('#Tipo').trigger('change');
-        });
-    </script>
-}
