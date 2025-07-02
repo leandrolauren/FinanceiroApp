@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using DotNetEnv;
 using FinanceiroApp.Data;
+using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,12 @@ namespace FinanceiroApp
             // Configuração do banco de dados PostgreSQL
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+            );
+            builder.Services.AddSingleton<IRabbitMqService>(new RabbitMqService("localhost"));
+            builder.Services.AddSingleton<IEmailWorker, EmailWorker>();
+
+            builder.Services.Configure<SmtpSettings>(
+                builder.Configuration.GetSection("SmtpSettings")
             );
 
             // Configuração de autenticação via Cookie
@@ -52,6 +59,9 @@ namespace FinanceiroApp
             builder.Services.AddControllersWithViews();
 
             var app = builder.Build();
+
+            var emailWorker = app.Services.GetRequiredService<IEmailWorker>();
+            Task.Run(() => emailWorker.Start());
 
             // Middlewares
             if (!app.Environment.IsDevelopment())

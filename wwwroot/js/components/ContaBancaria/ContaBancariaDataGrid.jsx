@@ -19,10 +19,9 @@ const columns = [
   { field: 'agencia', headerName: 'Agência', flex: 1 },
   { field: 'digitoAgencia', headerName: 'Dg. Agencia', flex: 1 },
   {
-    field: 'ativa',
+    field: 'ativoTexto',
     headerName: 'Ativo',
     flex: 1,
-    valueGetter: (params) => (params.row?.ativa === true ? 'Sim' : 'Não'),
   },
   { field: 'banco', headerName: 'Banco', flex: 1 },
   { field: 'saldo', headerName: 'Saldo', flex: 1, type: Number },
@@ -61,22 +60,35 @@ const columns = [
 export default function ContaBancariaDataGrid() {
   const [loading, setLoading] = useState(true)
   const [contas, setContas] = useState([])
-  const [error, setError] = useState([])
 
   useEffect(() => {
-    try {
-      fetch('/Contas/GetContas')
-        .then((res) => res.json())
-        .then((data) => {
-          setContas(data)
-          setLoading(false)
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/Contas/GetContas')
+        const data = await response.json()
+
+        const contas = data.map((item) => ({
+          ...item,
+          ativoTexto: item?.ativa ? 'Ativo' : 'Inativo',
+          saldo:
+            item.saldo != null
+              ? new Intl.NumberFormat('pt-BR', {
+                  minimumFractionDigits: 2,
+                }).format(Number(item.saldo))
+              : '--',
+        }))
+
+        setContas(contas)
+      } catch (error) {
+        enqueueSnackbar('Erro ao carregar as contas bancárias.', {
+          variant: 'error',
         })
-    } catch (err) {
-      enqueueSnackbar('Erro ao carregar as contas bancárias.', {
-        variant: 'error',
-      })
-      setError(err)
+        console.error('Erro ao carregar as Contas:', error)
+      } finally {
+        setLoading(false)
+      }
     }
+    fetchData()
   }, [])
 
   useEffect(() => {

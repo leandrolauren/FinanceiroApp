@@ -16,7 +16,7 @@ public class ContaBancaria
     [Required(ErrorMessage = "Informe o tipo da conta.")]
     public TipoConta Tipo { get; set; }
     public decimal Saldo { get; set; }
-    public bool? Ativa { get; set; }
+    public bool Ativa { get; set; }
     public string? Banco { get; set; }
     public int UsuarioId { get; set; }
     public UsuarioModel? Usuario { get; set; }

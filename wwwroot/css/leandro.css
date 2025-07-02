@@ -53,6 +53,13 @@
 .container input[id='tipoJuridica']:checked ~ .glider {
   transform: translateX(191%);
 }
+.container input[id='ativoSim']:checked ~ .glider {
+  transform: translateX(0);
+}
+
+.container input[id='ativoNao']:checked ~ .glider {
+  transform: translateX(191%);
+}
 .container input.radio-1:checked ~ .glider {
   transform: translateX(20%);
 }

@@ -49,18 +49,9 @@ function PlanoContaDeleteModal({ open, onClose, contaId }) {
   const handleDelete = async () => {
     try {
       setDeleteError(null)
-      const response = await axios.delete(
-        `/PlanoContas/DeleteConfirmed/${contaId}`,
-      )
-
-      // Se a exclusão foi bem-sucedida
+      await axios.delete(`/PlanoContas/DeleteConfirmed/${contaId}`)
       enqueueSnackbar('Plano de Contas excluído com sucesso!', {
         variant: 'success',
-        autoHideDuration: 3000,
-        anchorOrigin: {
-          vertical: 'top',
-          horizontal: 'right',
-        },
       })
       onClose()
       window.atualizarTabelaPlanoContas?.(contaId)

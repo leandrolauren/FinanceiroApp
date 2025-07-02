@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<LancamentoModel> Lancamentos { get; set; }
     public DbSet<UsuarioModel> Usuarios { get; set; }
     public DbSet<ContaBancaria> ContasBancarias { get; set; }
+    public DbSet<UsuarioPendenteModel> UsuariosPendentes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,7 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new LancamentoMap());
         modelBuilder.ApplyConfiguration(new UsuarioMap());
         modelBuilder.ApplyConfiguration(new ContaBancariaMap());
+        modelBuilder.ApplyConfiguration(new UsuarioPendenteMap());
 
         var brazilTimeZone = TZConvert.GetTimeZoneInfo("America/Sao_Paulo");
 

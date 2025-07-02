@@ -5,6 +5,7 @@ import { Box, Typography, Button, CircularProgress } from '@mui/material'
 import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AppWrapper from '../Shared/AppWrapper'
+import { enqueueSnackbar } from 'notistack'
 
 const columns = [
   { field: 'nome', headerName: 'Nome', width: 185 },
@@ -60,17 +61,37 @@ const columns = [
   },
 ]
 
+const formatarData = (data) => {
+  if (!data) return '---'
+  return new Date(data).toLocaleDateString('pt-BR')
+}
+
 export default function PessoasDataGrid() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/Pessoas/GetPessoas')
-      .then((res) => res.json())
-      .then((data) => {
-        setRows(data)
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/Pessoas/GetPessoas')
+        const data = await response.json()
+
+        const rows = data.map((item) => ({
+          ...item,
+          dataNascimento: formatarData(item.dataNascimento),
+        }))
+
+        setRows(rows)
+      } catch (error) {
+        enqueueSnackbar('Erro ao carregar as Pessoas', {
+          variant: 'error',
+        })
+        console.error('Erro ao carregar as Pessoas: ', error)
+      } finally {
         setLoading(false)
-      })
+      }
+    }
+    fetchData()
   }, [])
 
   useEffect(() => {
@@ -95,43 +116,43 @@ export default function PessoasDataGrid() {
         </Box>
       ) : (
         <div
-        style={{
-          resize: 'vertical',
-          overflow: 'auto',
-          minHeight: 300,
-          maxHeight: 900,
-          height: 500,
-        }}
-      >
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          getRowId={(row) => row.id}
-          pageSize={25}
-          rowsPerPageOptions={[5, 10, 20]}
-          localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
-          disableRowSelectionOnClick
-          sx={{
-            '& .MuiDataGrid-cell': { fontSize: '0.95rem' },
-            '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold' },
+          style={{
+            resize: 'vertical',
+            overflow: 'auto',
+            minHeight: 300,
+            maxHeight: 900,
+            height: 500,
           }}
-          initialState={{
-            columns: {
-              columnVisibilityModel: {
-                nomeFantasia: false,
-                rg: false,
-                dataNascimento: false,
-                numero: false,
-                cep: false,
-                endereco: false,
-                bairro: false,
-                complemento: false,
-                inscricaoEstadual: false,
-                acoes: true,
+        >
+          <DataGrid
+            rows={rows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            pageSize={25}
+            rowsPerPageOptions={[5, 10, 20]}
+            localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
+            disableRowSelectionOnClick
+            sx={{
+              '& .MuiDataGrid-cell': { fontSize: '0.95rem' },
+              '& .MuiDataGrid-columnHeaders': { fontWeight: 'bold' },
+            }}
+            initialState={{
+              columns: {
+                columnVisibilityModel: {
+                  nomeFantasia: false,
+                  rg: false,
+                  dataNascimento: false,
+                  numero: false,
+                  cep: false,
+                  endereco: false,
+                  bairro: false,
+                  complemento: false,
+                  inscricaoEstadual: false,
+                  acoes: true,
+                },
               },
-            },
-          }}
-        />
+            }}
+          />
         </div>
       )}
     </Box>

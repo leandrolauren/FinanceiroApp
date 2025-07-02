@@ -5,6 +5,7 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace FinanceiroApp.Controllers;
 
@@ -35,7 +36,7 @@ public class ContasController : Controller
                 DigitoConta = c.DigitoConta,
                 Tipo = c.Tipo.ToString(),
                 Saldo = c.Saldo,
-                Ativa = c.Ativa ?? false,
+                Ativa = c.Ativa,
                 Banco = c.Banco,
                 UsuarioId = c.UsuarioId,
             })
@@ -87,7 +88,7 @@ public class ContasController : Controller
     }
 
     // POST: Contas/Edit/id
-    [HttpPut]
+    [HttpPost]
     public async Task<IActionResult> EditConta(ContaBancaria conta)
     {
         return await GetAccountOrNotFound(
@@ -103,13 +104,10 @@ public class ContasController : Controller
                     _context.Update(conta);
                     await _context.SaveChangesAsync();
 
-                    TempData["MensagemSucesso"] = "Conta alterada.";
                     return RedirectToAction(nameof(Index));
                 }
-                catch (DBConcurrencyException ex)
+                catch
                 {
-                    Console.WriteLine($"Erro ao fazer update: {ex}");
-                    TempData["MensagemErro"] = "Erro ao salvar alterações!";
                     return View(conta);
                 }
             }
@@ -120,17 +118,47 @@ public class ContasController : Controller
     [HttpDelete]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        return await GetAccountOrNotFound(
-            id,
-            async conta =>
-            {
-                _context.Remove(conta);
-                await _context.SaveChangesAsync();
+        var conta = await _context.ContasBancarias.FindAsync(id);
 
-                TempData["MensagemSucesso"] = "Conta excluída.";
-                return RedirectToAction(nameof(Index));
-            }
-        );
+        if (conta == null)
+            return NotFound();
+
+        bool temLancamentos = await _context.Lancamentos.AnyAsync(l => l.ContaBancariaId == id);
+        if (temLancamentos)
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Não é possível excluir uma conta bancária que possui lançamentos vinculados.",
+                }
+            );
+        }
+
+        try
+        {
+            _context.Remove(conta);
+            await _context.SaveChangesAsync();
+            return Ok(new { sucess = true });
+        }
+        catch (DbUpdateException ex)
+            when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23503")
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Não é possivel excluir essa conta bancária pois existem lançamentos vinculados a ela.",
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(
+                500,
+                new { success = false, message = $"Erro ao excluir conta. {ex}" }
+            );
+        }
     }
 
     private int GetUserId()
