@@ -171,4 +171,46 @@ $(document).ready(function () {
     })
     if ($tipoSelect.val()) atualizarPlanoContaPorTipo($tipoSelect.val())
   }
+
+  // Remove máscaras dos campos antes do submit de qualquer formulário
+  $('form').on('submit', function () {
+    // CPF
+    var $cpf = $('#Cpf')
+    if ($cpf.length) {
+      var cpfVal = $cpf.val()
+      $cpf.val(cpfVal.replace(/\D/g, ''))
+    }
+    // CNPJ
+    if ($('#Cnpj').length) {
+      $('#Cnpj').val(
+        $('#Cnpj').cleanVal
+          ? $('#Cnpj').cleanVal()
+          : $('#Cnpj').val().replace(/\D/g, ''),
+      )
+    }
+    // Telefone
+    if ($('#Telefone').length) {
+      $('#Telefone').val(
+        $('#Telefone').cleanVal
+          ? $('#Telefone').cleanVal()
+          : $('#Telefone').val().replace(/\D/g, ''),
+      )
+    }
+    // RG
+    if ($('#Rg').length) {
+      $('#Rg').val(
+        $('#Rg').cleanVal
+          ? $('#Rg').cleanVal()
+          : $('#Rg').val().replace(/\D/g, ''),
+      )
+    }
+    // CEP
+    if ($('#Cep').length) {
+      $('#Cep').val(
+        $('#Cep').cleanVal
+          ? $('#Cep').cleanVal()
+          : $('#Cep').val().replace(/\D/g, ''),
+      )
+    }
+  })
 })

@@ -3,6 +3,7 @@ using System;
 using FinanceiroApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceiroApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250702134316_column_datetime_all")]
+    partial class column_datetime_all
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,16 +92,16 @@ namespace FinanceiroApp.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("DataCompetencia")
-                        .HasColumnType("TIMESTAMP");
+                        .HasColumnType("TIMESTAMP ");
 
                     b.Property<DateTime>("DataLancamento")
-                        .HasColumnType("TIMESTAMP");
+                        .HasColumnType("TIMESTAMP ");
 
                     b.Property<DateTime?>("DataPagamento")
-                        .HasColumnType("TIMESTAMP");
+                        .HasColumnType("TIMESTAMP ");
 
                     b.Property<DateTime>("DataVencimento")
-                        .HasColumnType("TIMESTAMP");
+                        .HasColumnType("TIMESTAMP ");
 
                     b.Property<string>("Descricao")
                         .IsRequired()
@@ -322,7 +325,7 @@ namespace FinanceiroApp.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("DataCriacao")
-                        .HasColumnType("TIMESTAMP");
+                        .HasColumnType("TIMESTAMP ");
 
                     b.Property<string>("Email")
                         .IsRequired()

@@ -23,11 +23,11 @@ Este é um sistema de controle financeiro pessoal desenvolvido com **ASP.NET Cor
   - Entity Framework Core
   - PostgreSQL
   - FluentMapping
-  
 - **Frontend:**
+
   - HTML + Razor
   - JavaScript (com DataTables, Select2, etc.)
-  - React 
+  - React
 
 - **Outros:**
   - Notistack (sistema de notificações)
@@ -75,7 +75,7 @@ dotnet ef database update
 dotnet run
 ```
 
-Acesse em: [http://localhost:5000](http://localhost:5000)
+Acesse em: [http://localhost:5084](http://localhost:5084)
 
 ---
 
@@ -118,7 +118,7 @@ Sinta-se à vontade para contribuir! Sugestões de melhoria, refatoração ou no
 Desenvolvido por **Leandro Laurenzette**  
 💼 Desenvolvedor Full Stack  
 📍 Hortolândia/SP  
-📧 [www.linkedin.com/in/leandro-laurenzette-3b03a2167](https://linkedin.com/in/leandrolaurenzette)  
+📧 [www.linkedin.com/in/leandro-laurenzette-3b03a2167](https://linkedin.com/in/leandrolaurenzette)
 
 ---
 

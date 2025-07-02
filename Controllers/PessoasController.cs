@@ -49,13 +49,28 @@ public class PessoasController : Controller
         if (!ModelState.IsValid)
             return View(pessoa);
 
-        var userId = getUserId();
-        pessoa.UsuarioId = userId;
-        _context.Add(pessoa);
-        await _context.SaveChangesAsync();
-        TempData["MensagemSucesso"] = "Pessoa cadastrada.";
+        try
+        {
+            var userId = getUserId();
+            Console.WriteLine($"CPF: {pessoa.Cpf}");
+            Console.WriteLine($"RG: {pessoa.Rg}");
+            Console.WriteLine($"Telefone: {pessoa.Telefone}");
+            pessoa.UsuarioId = userId;
+            _context.Add(pessoa);
+            await _context.SaveChangesAsync();
+            TempData["MensagemSucesso"] = "Pessoa cadastrada.";
 
-        ModelState.Clear();
+            ModelState.Clear();
+        }
+        catch (DbUpdateException ex)
+        {
+            Console.WriteLine($"Erro ao fazer insert: {ex}");
+            ModelState.AddModelError(
+                "",
+                $"Ocorreu um erro ao salvar a pessoa. Tente novamente. {ex.Message}"
+            );
+            return View(pessoa);
+        }
 
         return View("CreatePessoa");
     }

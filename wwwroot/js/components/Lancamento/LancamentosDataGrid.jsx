@@ -49,9 +49,11 @@ const columns = [
   },
 ]
 
-const formatarData = (data) => {
+function formatarData(data) {
   if (!data) return '---'
-  return new Date(data).toLocaleDateString('pt-BR')
+  const d = new Date(data)
+  if (isNaN(d)) return '---'
+  return d.toLocaleDateString('pt-BR')
 }
 
 export default function LancamentoDataGrid() {
@@ -75,8 +77,9 @@ export default function LancamentoDataGrid() {
           dataLancamento: formatarData(item.dataLancamento),
           valor:
             item.valor != null
-              ? new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 2}
-                ).format(Number(item.valor))
+              ? new Intl.NumberFormat('pt-BR', {
+                  minimumFractionDigits: 2,
+                }).format(Number(item.valor))
               : '--',
         }))
 

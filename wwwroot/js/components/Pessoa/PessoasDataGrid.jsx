@@ -1,11 +1,35 @@
 import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
-import { Box, Typography, Button, CircularProgress } from '@mui/material'
+import { Box, Button, CircularProgress } from '@mui/material'
 import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AppWrapper from '../Shared/AppWrapper'
 import { enqueueSnackbar } from 'notistack'
+
+function formatarCpf(cpf) {
+  if (!cpf) return ''
+  return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+}
+
+function formatarCnpj(cnpj) {
+  if (!cnpj) return ''
+  return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+}
+
+function formatarTelefone(tel) {
+  if (!tel) return ''
+  if (tel.length === 11)
+    return tel.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3')
+  if (tel.length === 10)
+    return tel.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3')
+  return tel
+}
+
+function formatarCep(cep) {
+  if (!cep) return ''
+  return cep.replace(/^(\d{5})(\d{3})$/, '$1-$2')
+}
 
 const columns = [
   { field: 'nome', headerName: 'Nome', width: 185 },
@@ -13,7 +37,11 @@ const columns = [
   { field: 'nomeFantasia', headerName: 'Nome Fantasia', flex: 1 },
   { field: 'cnpj', headerName: 'CNPJ', flex: 1 },
   { field: 'inscricaoEstadual', headerName: 'Inscrição Estadual', flex: 1 },
-  { field: 'cpf', headerName: 'CPF', flex: 1 },
+  {
+    field: 'cpf',
+    headerName: 'CPF',
+    flex: 1,
+  },
   { field: 'rg', headerName: 'RG', flex: 1 },
   {
     field: 'dataNascimento',
@@ -79,6 +107,10 @@ export default function PessoasDataGrid() {
         const rows = data.map((item) => ({
           ...item,
           dataNascimento: formatarData(item.dataNascimento),
+          cpf: formatarCpf(item.cpf),
+          cnpj: formatarCnpj(item.cnpj),
+          telefone: formatarTelefone(item.telefone),
+          cep: formatarCep(item.cep),
         }))
 
         setRows(rows)

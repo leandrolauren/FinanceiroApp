@@ -9,7 +9,9 @@ public class LancamentoViewModel
 
     [Required(ErrorMessage = "Valor é obrigatório.")]
     public decimal Valor { get; set; }
-    public string? Descricao { get; set; }
+
+    [Required(ErrorMessage = "Descrição é obrigatória.")]
+    public required string Descricao { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Data de Vencimento é obrigatória.")]
     public DateTime DataVencimento { get; set; }

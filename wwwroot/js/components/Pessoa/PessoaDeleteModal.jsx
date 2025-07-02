@@ -13,6 +13,16 @@ import { useSnackbar } from 'notistack'
 import { createRoot } from 'react-dom/client'
 import AppWrapper from '../Shared/AppWrapper'
 
+function formatarCpf(cpf) {
+  if (!cpf) return ''
+  return cpf.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+}
+
+function formatarCnpj(cnpj) {
+  if (!cnpj) return ''
+  return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5')
+}
+
 function PessoaDeleteModal({ open, onClose, pessoaId }) {
   const [pessoa, setPessoa] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -77,8 +87,9 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
             />
             <Typography fontSize={15} justifyContent="center">
               <strong>Nome:</strong> {pessoa.nome || pessoa.nomeFantasia} <br />
-              <strong>CPF:</strong> {pessoa.cpf || '---'} <br />
-              <strong>CNPJ:</strong> {pessoa.cnpj || '---'}
+              <strong>CPF:</strong> {formatarCpf(pessoa.cpf)}
+              <br />
+              <strong>CNPJ:</strong> {formatarCnpj(pessoa.cnpj)}
             </Typography>
             <Box mt={3} display="flex" justifyContent="flex-end">
               <Button onClick={onClose} variant="outlined" sx={{ mr: 1 }}>

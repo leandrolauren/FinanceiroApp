@@ -93,7 +93,7 @@ namespace FinanceiroApp.Services
             var subject = "Confirme seu cadastro - Financeiro App";
             var body =
                 $@"
-            <h2>Bem-Vindo(a) ao <b>Financeiro App</b>!</h2>
+            <h2>Bem-Vindo(a) ao <b>Financeiro App</b>!</h2><img src='https://i.imgur.com/42QmCee.png' alt='Logo' width='30'/>
             <p>Obrigado por se cadastrar.</p>
             <p><b>Clique no botão abaixo para confirmar seu e-mail:</b></p>
             <p>
@@ -110,7 +110,7 @@ namespace FinanceiroApp.Services
                 <a href='{link}'>{link}</a>
             </p>
             <hr>
-            <img src='https://i.imgur.com/your-logo.png' alt='Logo' width='120'/>";
+            ";
 
             await EnviarEmailAsync(to, subject, body);
         }

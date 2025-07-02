@@ -13,9 +13,9 @@ namespace FinanceiroApp.Models
         public decimal Valor { get; set; }
 
         [Required(ErrorMessage = "Descrição é obrigatória.")]
-        public string? Descricao { get; set; }
+        public required string Descricao { get; set; } = string.Empty;
 
-        public DateTime DataLancamento { get; set; } = DateTime.UtcNow;
+        public DateTime DataLancamento { get; set; } = DateTime.Now;
 
         [Required(ErrorMessage = "Data de Vencimento é obrigatória.")]
         public DateTime DataVencimento { get; set; }

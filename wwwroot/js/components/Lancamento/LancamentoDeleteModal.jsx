@@ -13,6 +13,13 @@ import { useSnackbar } from 'notistack'
 import { createRoot } from 'react-dom/client'
 import AppWrapper from '../Shared/AppWrapper'
 
+function formatarDataBR(data) {
+  if (!data) return '---'
+  const d = new Date(data)
+  if (isNaN(d)) return '---'
+  return d.toLocaleDateString('pt-BR')
+}
+
 function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
   const [lancamento, setLancamento] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -79,10 +86,11 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
             />
             <Typography fontSize={15} justifyContent="center">
               <strong>Descrição:</strong> {lancamento.descricao} <br />
-              <strong>Dt. Venc.:</strong> {lancamento.dataVencimento || '---'}{' '}
+              <strong>Dt. Venc.:</strong>{' '}
+              {formatarDataBR(lancamento.dataVencimento)}
               <br />
               <strong>Dt. Pagamento:</strong>{' '}
-              {lancamento.dataPagamento || '---'}
+              {formatarDataBR(lancamento.dataPagamento)}
             </Typography>
             <Box mt={3} display="flex" justifyContent="flex-end">
               <Button onClick={onClose} variant="outlined" sx={{ mr: 1 }}>

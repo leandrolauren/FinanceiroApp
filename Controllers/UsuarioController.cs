@@ -31,6 +31,14 @@ public class UsuarioController : Controller
             return View(model);
         }
 
+        var usuarioExistente = await _context
+            .Usuarios.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Email == model.Email);
+        if (usuarioExistente != null)
+            return BadRequest(
+                new { success = false, message = "Já existe um usuário com este email." }
+            );
+
         var token = Guid.NewGuid().ToString();
 
         var usuarioPendente = new UsuarioPendenteModel
@@ -40,7 +48,7 @@ public class UsuarioController : Controller
             Email = model.Email,
             SenhaHash = GerarHash(model.Senha),
             Token = token,
-            DataCriacao = DateTime.UtcNow,
+            DataCriacao = DateTime.Now,
         };
 
         Console.WriteLine($"Data criacao {usuarioPendente.DataCriacao}");
@@ -67,14 +75,16 @@ public class UsuarioController : Controller
     public async Task<IActionResult> Confirmar(string token)
     {
         if (string.IsNullOrEmpty(token))
-            return BadRequest(new { success = false, message = "Token inválido ou ausente." });
+            return BadRequest(
+                new { success = false, message = "Token ou parâmetro de confirmação ausente." }
+            );
 
         var pendente = await _context.UsuariosPendentes.FirstOrDefaultAsync(u => u.Token == token);
 
         if (pendente == null)
             return NotFound(new { success = false, message = "Usuário pendente não encontrado." });
 
-        if (DateTime.UtcNow > pendente.DataCriacao.AddMinutes(20))
+        if (DateTime.Now > pendente.DataCriacao.AddMinutes(20))
         {
             _context.UsuariosPendentes.Remove(pendente);
             await _context.SaveChangesAsync();

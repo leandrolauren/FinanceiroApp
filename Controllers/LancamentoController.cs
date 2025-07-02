@@ -1,3 +1,4 @@
+using System.Data;
 using System.Security.Claims;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
@@ -85,17 +86,28 @@ public class LancamentosController : Controller
         {
             await PreencherViewBags();
             TempData["MensagemErro"] = "Preencha os campos obrigatórios.";
-            return View(lancamento);
+            return View("CreateLancamento", lancamento);
         }
 
-        lancamento.UsuarioId = userId;
-        lancamento.DataLancamento = DateTime.UtcNow;
+        try
+        {
+            lancamento.UsuarioId = userId;
+            lancamento.DataLancamento = DateTime.Now;
 
-        _context.Lancamentos.Add(lancamento);
-        await _context.SaveChangesAsync();
+            _context.Lancamentos.Add(lancamento);
+            await _context.SaveChangesAsync();
 
-        TempData["MensagemSucesso"] = "Lançamento cadastrado com sucesso.";
-        return RedirectToAction(nameof(Index));
+            TempData["MensagemSucesso"] = "Lançamento cadastrado com sucesso.";
+            return View("CreateLancamento", lancamento);
+        }
+        catch (DBConcurrencyException ex)
+        {
+            TempData["MensagemErro"] =
+                "Ocorreu um erro ao cadastrar o lançamento. Tente novamente.";
+            Console.WriteLine($"Erro ao cadastrar lançamento: {ex}");
+            await PreencherViewBags();
+            return View("CreateLancamento", lancamento);
+        }
     }
 
     // GET: Lancamentos/Edit/id

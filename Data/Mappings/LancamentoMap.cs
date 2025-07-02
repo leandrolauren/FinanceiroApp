@@ -18,15 +18,15 @@ namespace FinanceiroApp.Data.Mappings
 
             builder.Property(l => l.Descricao).HasMaxLength(200);
 
-            builder.Property(l => l.DataLancamento).IsRequired();
+            builder.Property(l => l.DataLancamento).IsRequired().HasColumnType("TIMESTAMP");
 
-            builder.Property(l => l.DataVencimento).IsRequired();
+            builder.Property(l => l.DataVencimento).IsRequired().HasColumnType("TIMESTAMP");
 
-            builder.Property(l => l.DataCompetencia).IsRequired();
+            builder.Property(l => l.DataCompetencia).IsRequired().HasColumnType("TIMESTAMP");
 
             builder.Property(l => l.Pago).IsRequired();
 
-            builder.Property(l => l.DataPagamento);
+            builder.Property(l => l.DataPagamento).HasColumnType("TIMESTAMP");
 
             builder
                 .HasOne(l => l.ContaBancaria)

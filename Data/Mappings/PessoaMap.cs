@@ -13,37 +13,37 @@ namespace FinanceiroApp.Data.Mappings
             builder.HasKey(p => p.Id);
             builder.Property(p => p.Id).ValueGeneratedOnAdd().UseIdentityColumn();
 
-            builder.Property(p => p.Nome).IsRequired().HasColumnType("TEXT").HasMaxLength(100);
+            builder.Property(p => p.Nome).IsRequired().HasMaxLength(100);
 
-            builder.Property(p => p.Email).HasColumnType("TEXT").HasMaxLength(100);
+            builder.Property(p => p.Email).HasMaxLength(100);
 
-            builder.Property(p => p.Telefone).HasColumnType("TEXT").HasMaxLength(15);
+            builder.Property(p => p.Telefone).HasMaxLength(15);
 
-            builder.Property(p => p.Endereco).HasColumnType("TEXT").HasMaxLength(200);
+            builder.Property(p => p.Endereco).HasMaxLength(200);
 
-            builder.Property(p => p.Numero).HasColumnType("TEXT").HasMaxLength(5);
+            builder.Property(p => p.Numero).HasMaxLength(5);
 
-            builder.Property(p => p.Bairro).HasColumnType("TEXT").HasMaxLength(100);
+            builder.Property(p => p.Bairro).HasMaxLength(100);
 
-            builder.Property(p => p.Cidade).HasColumnType("TEXT").HasMaxLength(100);
+            builder.Property(p => p.Cidade).HasMaxLength(100);
 
-            builder.Property(p => p.Estado).HasColumnType("TEXT").HasMaxLength(50);
+            builder.Property(p => p.Estado).HasMaxLength(50);
 
-            builder.Property(p => p.Complemento).HasColumnType("TEXT").HasMaxLength(150);
+            builder.Property(p => p.Complemento).HasMaxLength(150);
 
-            builder.Property(p => p.Cep).HasColumnType("TEXT").HasMaxLength(10);
+            builder.Property(p => p.Cep).HasMaxLength(10);
 
-            builder.Property(p => p.Cnpj).HasColumnType("TEXT").HasMaxLength(20);
+            builder.Property(p => p.Cnpj).HasMaxLength(20);
 
-            builder.Property(p => p.InscricaoEstadual).HasColumnType("TEXT").HasMaxLength(20);
+            builder.Property(p => p.InscricaoEstadual).HasMaxLength(20);
 
-            builder.Property(p => p.RazaoSocial).HasColumnType("TEXT").HasMaxLength(100);
+            builder.Property(p => p.RazaoSocial).HasMaxLength(100);
 
-            builder.Property(p => p.NomeFantasia).HasColumnType("TEXT").HasMaxLength(100);
+            builder.Property(p => p.NomeFantasia).HasMaxLength(100);
 
-            builder.Property(p => p.Cpf).HasColumnType("TEXT").HasMaxLength(11);
+            builder.Property(p => p.Cpf).HasMaxLength(11);
 
-            builder.Property(p => p.Rg).HasColumnType("TEXT").HasMaxLength(20);
+            builder.Property(p => p.Rg).HasMaxLength(20);
 
             builder
                 .Property(p => p.DataNascimento)

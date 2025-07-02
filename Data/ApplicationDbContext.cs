@@ -27,48 +27,6 @@ public class ApplicationDbContext : DbContext
         modelBuilder.ApplyConfiguration(new ContaBancariaMap());
         modelBuilder.ApplyConfiguration(new UsuarioPendenteMap());
 
-        var brazilTimeZone = TZConvert.GetTimeZoneInfo("America/Sao_Paulo");
-
-        var dateTimeProperties = modelBuilder
-            .Model.GetEntityTypes()
-            .SelectMany(t => t.GetProperties())
-            .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
-
-        foreach (var property in dateTimeProperties)
-        {
-            if (property.ClrType == typeof(DateTime))
-            {
-                property.SetValueConverter(
-                    new ValueConverter<DateTime, DateTime>(
-                        v =>
-                            TimeZoneInfo.ConvertTime(
-                                DateTime.SpecifyKind(v, DateTimeKind.Unspecified),
-                                brazilTimeZone
-                            ),
-                        v => TimeZoneInfo.ConvertTime(v, TimeZoneInfo.Utc, brazilTimeZone)
-                    )
-                );
-            }
-            else if (property.ClrType == typeof(DateTime?))
-            {
-                property.SetValueConverter(
-                    new ValueConverter<DateTime?, DateTime?>(
-                        v =>
-                            v.HasValue
-                                ? TimeZoneInfo.ConvertTime(
-                                    DateTime.SpecifyKind(v.Value, DateTimeKind.Unspecified),
-                                    TimeZoneInfo.Utc,
-                                    brazilTimeZone
-                                )
-                                : v,
-                        v =>
-                            v.HasValue
-                                ? TimeZoneInfo.ConvertTimeFromUtc(v.Value, brazilTimeZone)
-                                : v
-                    )
-                );
-            }
-        }
         base.OnModelCreating(modelBuilder);
     }
 }
