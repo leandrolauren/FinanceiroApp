@@ -41,11 +41,11 @@ public class ApplicationDbContext : DbContext
                 property.SetValueConverter(
                     new ValueConverter<DateTime, DateTime>(
                         v =>
-                            TimeZoneInfo.ConvertTimeToUtc(
+                            TimeZoneInfo.ConvertTime(
                                 DateTime.SpecifyKind(v, DateTimeKind.Unspecified),
                                 brazilTimeZone
                             ),
-                        v => TimeZoneInfo.ConvertTimeFromUtc(v, brazilTimeZone)
+                        v => TimeZoneInfo.ConvertTime(v, TimeZoneInfo.Utc, brazilTimeZone)
                     )
                 );
             }
@@ -55,8 +55,9 @@ public class ApplicationDbContext : DbContext
                     new ValueConverter<DateTime?, DateTime?>(
                         v =>
                             v.HasValue
-                                ? TimeZoneInfo.ConvertTimeToUtc(
+                                ? TimeZoneInfo.ConvertTime(
                                     DateTime.SpecifyKind(v.Value, DateTimeKind.Unspecified),
+                                    TimeZoneInfo.Utc,
                                     brazilTimeZone
                                 )
                                 : v,

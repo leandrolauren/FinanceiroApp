@@ -43,6 +43,8 @@ public class UsuarioController : Controller
             DataCriacao = DateTime.UtcNow,
         };
 
+        Console.WriteLine($"Data criacao {usuarioPendente.DataCriacao}");
+
         _context.UsuariosPendentes.Add(usuarioPendente);
         await _context.SaveChangesAsync();
 
