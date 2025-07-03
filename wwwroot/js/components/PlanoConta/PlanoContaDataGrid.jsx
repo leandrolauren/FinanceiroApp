@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, use } from 'react'
 import { createRoot } from 'react-dom/client'
 import AppWrapper from '../Shared/AppWrapper'
 import {
@@ -25,15 +25,28 @@ export default function PlanoContaDataGrid() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const { enqueueSnackbar } = useSnackbar()
+  const [total, setTotal] = useState(0.0)
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAllData = async () => {
       try {
-        const response = await axios.get('/PlanoContas/GetPlanoContas')
-        setContas(response.data)
-      } catch (err) {
-        setError('Erro ao carregar plano de contas')
-        enqueueSnackbar('Erro ao carregar plano de contas', {
+        setLoading(true)
+        const [contasResponse, totalResponse] = await Promise.all([
+          axios.get('/PlanoContas/GetPlanoContas'),
+          axios.get('/PlanoContas/GetTotalPorPlano'),
+        ])
+        setContas(contasResponse.data)
+
+        const totaisMap = totalResponse.data.reduce((acc, item) => {
+          acc[item.plano_conta_id] = item.total_valor
+          return acc
+        }, {})
+
+        setTotal(totaisMap)
+      } catch (error) {
+        console.error('Erro ao buscar dados do Plano de Contas:', error)
+        setError('Erro ao carregar os dados do Plano de Contas.')
+        enqueueSnackbar('Erro ao carregar os dados do Plano de Contas.', {
           variant: 'error',
         })
       } finally {
@@ -41,25 +54,14 @@ export default function PlanoContaDataGrid() {
       }
     }
 
-    fetchData()
-  }, [])
+    fetchAllData()
 
-  useEffect(() => {
     window.atualizarTabelaPlanoContas = (idRemovido) => {
       setContas((prevContas) => prevContas.filter((l) => l.id !== idRemovido))
     }
   }, [])
 
-  const calcularTotalRecursivo = (conta) => {
-    const totalLancamentos =
-      conta.lancamentos?.reduce((sum, l) => sum + l.valor, 0) || 0
-    const totalFilhos =
-      conta.filhos?.reduce((sum, f) => sum + calcularTotalRecursivo(f), 0) || 0
-    return totalLancamentos + totalFilhos
-  }
-
   const renderConta = (conta, nivel = 0) => {
-    const total = calcularTotalRecursivo(conta)
     const isPai = conta.filhos && conta.filhos.length > 0
     const isFilho = conta.planoContasPaiId !== null
 
@@ -80,6 +82,8 @@ export default function PlanoContaDataGrid() {
       style = { fontStyle: 'italic', color: '#555' }
     }
 
+    const valorTotal = total[conta.id] || 0.0
+
     return (
       <React.Fragment key={conta.id}>
         <tr style={{ color: '#000' }}>
@@ -91,7 +95,7 @@ export default function PlanoContaDataGrid() {
           </td>
           <td>{conta.tipo}</td>
           <td>
-            {total.toLocaleString('pt-BR', {
+            {valorTotal.toLocaleString('pt-BR', {
               style: 'currency',
               currency: 'BRL',
             })}
