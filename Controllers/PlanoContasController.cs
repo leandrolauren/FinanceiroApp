@@ -297,4 +297,23 @@ public class PlanoContasController : Controller
             .PlanosContas.Include(p => p.Filhos)
             .FirstOrDefaultAsync(p => p.Id == PlanoId && p.UsuarioId == userId);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> GetTotalPorPlano()
+    {
+        var userId = GetUserId();
+
+        var result = await _context
+            .Lancamentos.Where(l => l.PlanoContas.UsuarioId == userId)
+            .GroupBy(l => new { l.PlanoContaId, l.PlanoContas.Descricao })
+            .Select(g => new
+            {
+                plano_conta_id = g.Key.PlanoContaId,
+                plano_conta_descricao = g.Key.Descricao,
+                total_valor = g.Sum(l => (decimal?)l.Valor) ?? 0,
+            })
+            .ToListAsync();
+
+        return Ok(result);
+    }
 }
