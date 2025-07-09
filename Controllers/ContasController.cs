@@ -65,7 +65,7 @@ public class ContasController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["MensagemErro"] = "Preencha os campos obrigatórios.";
+            ViewBag.NotificacaoAlerta = "Preencha os campos obrigatorios.";
             return View(conta);
         }
 
@@ -74,7 +74,7 @@ public class ContasController : Controller
         conta.UsuarioId = userId;
         _context.Add(conta);
         await _context.SaveChangesAsync();
-        TempData["MensagemSucesso"] = "Conta criada.";
+        ViewBag.NotificacaoSucesso = "Conta criada.";
 
         ModelState.Clear();
 
@@ -104,6 +104,7 @@ public class ContasController : Controller
                     _context.Update(conta);
                     await _context.SaveChangesAsync();
 
+                    ViewBag.NotificacaoAlerta = "Conta alterada!";
                     return RedirectToAction(nameof(Index));
                 }
                 catch

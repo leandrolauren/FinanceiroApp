@@ -17,10 +17,12 @@ module.exports = {
       './wwwroot/js/components/Lancamento/LancamentoDeleteModal.jsx',
     ContaDeleteModal:
       './wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx',
+    Notificacao: './wwwroot/js/components/Shared/Notificacao.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'wwwroot/js/dist'),
     filename: '[name].bundle.js',
+    clean: true, // limpa arquivos antigos no build
   },
   module: {
     rules: [
@@ -37,6 +39,26 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.jsx'],
+  },
+  optimization: {
+    splitChunks: {
+      chunks: 'all',
+      name: 'vendors',
+      cacheGroups: {
+        defaultVendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+          priority: -10,
+        },
+      },
+    },
+  },
+  externals: {
+    react: 'React',
+    'react-dom': 'ReactDOM',
+    '@emotion/react': 'emotionReact',
+    '@emotion/styled': 'emotionStyled',
   },
   mode: 'development',
 }

@@ -8,11 +8,6 @@
     var contas = ViewBag.ContasBancarias as List<ContaBancaria> ?? new();
 }
 
-<head>
-    <link href="~/css/leandro.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-
 <form asp-action="Create" method="post">
     <div class="row mb-3">
         <div class="col-md-4">
@@ -25,19 +20,19 @@
 
         <div class="col-md-4">
             <label asp-for="Valor" class="form-label">Valor R$</label>
-            <input asp-for="Valor" class="input" id="Valor" type="text" placeholder="0,00" autocomplete="off" />
+            <input asp-for="Valor" class="input" id="Valor" type="text" placeholder="0,00" autocomplete="off" required/>
         </div>
 
         <div class="col-md-4">
             <label asp-for="Descricao" class="form-label">Descrição</label>
-            <input asp-for="Descricao" class="input" placeholder="Descrição" />
+            <input asp-for="Descricao" class="input" placeholder="Descrição" required/>
         </div>
     </div>
 
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="PessoaId" class="form-label">Pessoa</label>
-            <select asp-for="PessoaId" class="input select2">
+            <select asp-for="PessoaId" class="input select2" required>
                 <option value="">Selecione</option>
                 @foreach (var p in pessoas)
                 {
@@ -48,19 +43,18 @@
 
         <div class="col-md-4">
             <label asp-for="PlanoContaId" class="form-label">Plano de Conta</label>
-            <select asp-for="PlanoContaId" class="form-select select2" id="planoContaSelect">
+            <select asp-for="PlanoContaId" class="form-select select2" id="planoContaSelect" required>
                 <option value="">Selecione</option>
                 @foreach (var plano in planos)
                 {
                     <option value="@plano.Id" data-tipo="@plano.Tipo">@plano.Descricao</option>
                 }
             </select>
-
         </div>
 
         <div class="col-md-4">
             <label asp-for="ContaBancariaId" class="form-label">Conta Bancária</label>
-            <select asp-for="ContaBancariaId" class="form-select select2">
+            <select asp-for="ContaBancariaId" class="form-select select2" required>
                 <option value="">Selecione</option>
                 @foreach (var conta in contas)
                 {
@@ -73,12 +67,12 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="DataCompetencia" class="form-label">Data de Competência</label>
-            <input asp-for="DataCompetencia" class="input" type="date" />
+            <input asp-for="DataCompetencia" class="input" type="date" required/>
         </div>
 
         <div class="col-md-4">
             <label asp-for="DataVencimento" class="form-label">Data de Vencimento</label>
-            <input asp-for="DataVencimento" class="input" type="date" />
+            <input asp-for="DataVencimento" class="input" type="date" required/>
         </div>
 
         <div class="col-md-4">
@@ -100,3 +94,8 @@
     <button type="submit" class="btn btn-success">Salvar</button>
     <a asp-action="Index" class="btn btn-secondary ms-2">Voltar</a>
 </form>
+
+@section Scripts{
+    <script src="~/js/dist/vendors.bundle.js"></script>
+    <script src="~/js/dist/Notificacao.bundle.js"></script>
+}

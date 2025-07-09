@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Threading.Tasks;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
 using FinanceiroApp.Models;
@@ -14,52 +15,85 @@ namespace Cotacao.Controllers;
 public class PlanoContasController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<PlanoContasController> _logger;
 
-    public PlanoContasController(ApplicationDbContext context)
+    public PlanoContasController(
+        ApplicationDbContext context,
+        ILogger<PlanoContasController> logger
+    )
     {
         _context = context;
+        _logger = logger;
     }
 
     // Exibe a árvore de planos de contas
     public IActionResult Index() => View();
 
+    // GET: /PlanoContas/GetPlanoContas -- Busca todos os planos de contas do usuário
     [HttpGet]
     public async Task<IActionResult> GetPlanoContas()
     {
-        var userId = GetUserId();
-        var contas = await _context
-            .PlanosContas.Include(p => p.Filhos)
-            .Include(p => p.Lancamentos)
-            .Where(p => p.UsuarioId == userId)
-            .ToListAsync();
+        try
+        {
+            var userId = GetUserId();
+            // 1. Busca de todas as contas e seus lançamentos em uma única consulta
+            var todasContas = await _context
+                .PlanosContas.AsNoTracking()
+                .Include(p => p.Lancamentos)
+                .Where(p => p.UsuarioId == userId)
+                .ToListAsync();
 
-        var contasDto = contas
-            .Where(c => c.PlanoContasPaiId == null)
-            .Select(c => MapPlanoConta(c))
-            .ToList();
+            // 2. Cria estrutura de dicionário para acesso rápido
+            var contasPorId = todasContas.ToDictionary(c => c.Id);
 
-        return Ok(contasDto);
-    }
+            // 3. Reconstrói a hierarquia pai-filho em memória
+            foreach (var conta in todasContas.Where(c => c.PlanoContasPaiId.HasValue))
+            {
+                if (contasPorId.TryGetValue(conta.PlanoContasPaiId.Value, out var pai))
+                {
+                    pai.Filhos ??= new List<PlanoContasModel>();
+                    pai.Filhos.Add(conta);
+                }
+            }
 
-    // GET: /Contas/GetContaEx -- Recebe uma unica conta para exclusão
-    [HttpGet]
-    public IActionResult GetPlanoContaEx(int id)
-    {
-        var userId = GetUserId();
-        var planoConta = _context.PlanosContas.Find(id);
-        if (planoConta == null)
-            return NotFound();
+            // 4. Aplica o mapeamento personalizado apenas nas contas raiz
+            var contasDto = todasContas
+                .Where(c => c.PlanoContasPaiId == null)
+                .Select(c => MapPlanoConta(c))
+                .ToList();
 
-        return Json(planoConta);
+            return Ok(contasDto);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Erro ao buscar planos de contas para o usuário {UserId}",
+                GetUserId()
+            );
+            return StatusCode(
+                500,
+                new
+                {
+                    Mensagem = "Ocorreu um erro ao processar sua requisição",
+                    Detalhes = ex.Message,
+                }
+            );
+        }
     }
 
     private PlanoContasDto MapPlanoConta(PlanoContasModel conta)
     {
+        // Calcula totais de lançamentos da conta atual
         var totalLancamentos = conta.Lancamentos?.Sum(l => l.Valor) ?? 0;
-        var filhos = conta.Filhos?.Select(f => MapPlanoConta(f)).ToList() ?? new();
 
-        var totalFilhos = filhos.Sum(f => f.Total);
-        var total = totalLancamentos + totalFilhos;
+        // Mapeia filhos recursivamente
+        var filhosDto =
+            conta.Filhos?.Select(f => MapPlanoConta(f)).ToList() ?? new List<PlanoContasDto>();
+
+        // Calcula totais hierárquicos
+        var totalFilhos = filhosDto.Sum(f => f.Total);
+        var totalGeral = totalLancamentos + totalFilhos;
 
         return new PlanoContasDto
         {
@@ -67,8 +101,9 @@ public class PlanoContasController : Controller
             Descricao = conta.Descricao ?? string.Empty,
             Tipo = conta.Tipo ?? string.Empty,
             PlanoContasPaiId = conta.PlanoContasPaiId,
-            Total = total,
-            Filhos = filhos,
+            Total = totalGeral,
+            Filhos = filhosDto,
+            // Adicione outras propriedades conforme necessário
         };
     }
 
@@ -86,30 +121,43 @@ public class PlanoContasController : Controller
     public async Task<IActionResult> CreatePlanoConta(PlanoContasModel plano)
     {
         var userId = GetUserId();
-        if (ModelState.IsValid)
+        try
         {
-            plano.UsuarioId = userId;
+            if (ModelState.IsValid)
+            {
+                plano.UsuarioId = userId;
 
-            _context.Add(plano);
-            await _context.SaveChangesAsync();
+                _context.Add(plano);
+                await _context.SaveChangesAsync();
 
-            ModelState.Clear();
+                TempData["Notificacao"] =
+                    $"Plano de contas '{plano.Descricao}' criado com sucesso!";
 
-            // Retorna uma nova instancia pra limpar os campos
-            ViewBag.Pais = await _context
-                .PlanosContas.Where(p =>
-                    p.Tipo == plano.Tipo && p.UsuarioId == userId && p.Id != plano.Id
-                )
-                .ToListAsync();
+                ModelState.Clear();
 
-            return View(new PlanoContasModel());
+                // Retorna uma nova instancia pra limpar os campos
+                ViewBag.Pais = await _context
+                    .PlanosContas.Where(p =>
+                        p.Tipo == plano.Tipo && p.UsuarioId == userId && p.Id != plano.Id
+                    )
+                    .ToListAsync();
+
+                return View(new PlanoContasModel());
+            }
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Erro ao criar plano de contas");
+            ModelState.AddModelError(
+                "",
+                "Ocorreu um erro ao salvar o plano de contas. Tente novamente."
+            );
         }
 
-        var usuarioId = GetUserId();
         // Se não for valido o modestate, recarrega a lista de pais
         ViewBag.Pais = await _context
             .PlanosContas.Where(p =>
-                p.Tipo == plano.Tipo && p.UsuarioId == usuarioId && p.Id != plano.Id
+                p.Tipo == plano.Tipo && p.UsuarioId == userId && p.Id != plano.Id
             )
             .ToListAsync();
 
@@ -117,6 +165,7 @@ public class PlanoContasController : Controller
     }
 
     // GET: /PlanoContas/EditPlanoConta/id
+    [HttpGet]
     public async Task<IActionResult> EditPlanoConta(int id)
     {
         var userId = GetUserId();
@@ -154,11 +203,13 @@ public class PlanoContasController : Controller
     }
 
     // POST: /PlanoContas/EditPlanoConta/id
-    [HttpPut]
+    [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPlanoConta(PlanoContasEditViewModel model)
     {
         var userId = GetUserId();
+
+        ModelState.Remove("Tipo");
         if (!ModelState.IsValid)
         {
             // Carrega novamente os pais
@@ -172,22 +223,37 @@ public class PlanoContasController : Controller
                 .Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Descricao })
                 .ToList();
 
+            _logger.LogWarning("Modelo inválido ao editar plano de contas");
+            ModelState.AddModelError("", "Por favor, corrija os erros abaixo.");
+
             return View(model);
         }
+        try
+        {
+            var plano = await _context.PlanosContas.FirstOrDefaultAsync(p =>
+                p.Id == model.Id && p.UsuarioId == userId
+            );
 
-        var plano = await _context.PlanosContas.FirstOrDefaultAsync(p =>
-            p.Id == model.Id && p.UsuarioId == userId
-        );
-        if (plano == null)
-            return NotFound();
+            if (plano == null)
+                return NotFound();
 
-        plano.Descricao = model.Descricao;
-        plano.PlanoContasPaiId = model.PlanoContasPaiId;
+            plano.Descricao = model.Descricao;
+            plano.PlanoContasPaiId = model.PlanoContasPaiId;
 
-        _context.Update(plano);
-        await _context.SaveChangesAsync();
+            _context.Entry(plano).Property(p => p.Descricao).IsModified = true;
+            _context.Entry(plano).Property(p => p.PlanoContasPaiId).IsModified = true;
 
-        return RedirectToAction("Index");
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao editar plano de contas, ID: {PlanoId}", model.Id);
+            ModelState.AddModelError("", "Não foi possível editar o plano de contas.");
+
+            return View(model);
+        }
     }
 
     [HttpGet]
@@ -220,13 +286,21 @@ public class PlanoContasController : Controller
     [HttpDelete("PlanoContas/DeleteConfirmed/{id}")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var conta = await _context.PlanosContas.FindAsync(id);
-        if (conta == null)
+        var userId = GetUserId();
+        var contaComFilhos = await _context
+            .PlanosContas.Where(p => p.Id == id && p.UsuarioId == userId)
+            .Select(p => new
+            {
+                Conta = p,
+                TemFilhos = _context.PlanosContas.Any(f => f.PlanoContasPaiId == id),
+            })
+            .FirstOrDefaultAsync();
+
+        if (contaComFilhos == null)
             return NotFound();
 
         // regra de validação: não pode excluir se tiver filhos
-        bool temFilhos = await _context.PlanosContas.AnyAsync(p => p.PlanoContasPaiId == id);
-        if (temFilhos)
+        if (contaComFilhos.TemFilhos)
         {
             return BadRequest(
                 new
@@ -252,7 +326,7 @@ public class PlanoContasController : Controller
 
         try
         {
-            _context.PlanosContas.Remove(conta);
+            _context.PlanosContas.Remove(contaComFilhos.Conta);
             await _context.SaveChangesAsync();
             return Ok(new { success = true });
         }
@@ -299,21 +373,75 @@ public class PlanoContasController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetTotalPorPlano()
+    public async Task<IActionResult> GetTotalPorPlano(
+        DateTime? dataInicio = null,
+        DateTime? dataFim = null,
+        string tipoData = "vencimento"
+    )
     {
-        var userId = GetUserId();
+        try
+        {
+            var userId = GetUserId();
 
-        var result = await _context
-            .Lancamentos.Where(l => l.PlanoContas.UsuarioId == userId)
-            .GroupBy(l => new { l.PlanoContaId, l.PlanoContas.Descricao })
-            .Select(g => new
+            // if (!dataInicio.HasValue || !dataFim.HasValue)
+            // {
+            //     var hoje = DateTime.Today;
+            //     dataInicio = new DateTime(hoje.Year, hoje.Month, 1);
+            //     dataFim = dataInicio.Value.AddMonths(1).AddDays(-1);
+            // }
+            if (dataInicio.HasValue)
+                dataInicio = DateTime.SpecifyKind(dataInicio.Value, DateTimeKind.Unspecified);
+
+            if (dataFim.HasValue)
+                dataFim = DateTime.SpecifyKind(dataFim.Value, DateTimeKind.Unspecified);
+
+            var query = _context
+                .Lancamentos.AsNoTracking()
+                .Where(l => l.PlanoContas.UsuarioId == userId)
+                .AsQueryable();
+
+            if (dataInicio.HasValue && dataFim.HasValue)
             {
-                plano_conta_id = g.Key.PlanoContaId,
-                plano_conta_descricao = g.Key.Descricao,
-                total_valor = g.Sum(l => (decimal?)l.Valor) ?? 0,
-            })
-            .ToListAsync();
+                query = tipoData.ToLower() switch
+                {
+                    "competencia" => query.Where(l =>
+                        l.DataCompetencia >= dataInicio.Value && l.DataCompetencia <= dataFim.Value
+                    ),
+                    "lancamento" => query.Where(l =>
+                        l.DataLancamento >= dataInicio.Value && l.DataLancamento <= dataFim.Value
+                    ),
+                    "pagamento" => query.Where(l =>
+                        l.DataPagamento >= dataInicio.Value && l.DataPagamento <= dataFim.Value
+                    ),
+                    _ => query.Where(l =>
+                        l.DataVencimento >= dataInicio.Value && l.DataVencimento <= dataFim.Value
+                    ),
+                };
+            }
 
-        return Ok(result);
+            var result = await query
+                .GroupBy(l => new { l.PlanoContaId, l.PlanoContas.Descricao })
+                .Select(g => new
+                {
+                    plano_conta_id = g.Key.PlanoContaId,
+                    plano_conta_descricao = g.Key.Descricao,
+                    total_valor = g.Sum(l => (decimal?)l.Valor) ?? 0,
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao obter total por plano de contas");
+            return StatusCode(
+                500,
+                new
+                {
+                    Mensagem = "Ocorreu um erro ao processar sua requisição",
+                    Detalhes = ex.Message,
+                }
+            );
+        }
     }
 }

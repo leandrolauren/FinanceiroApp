@@ -1,9 +1,25 @@
 @{
     Layout = null;
 }
+@if (ViewBag.NotificacaoSucesso != null)
+{
+    <script>window.__notificacao_sucesso = '@ViewBag.NotificacaoSucesso';</script>
+}
+@if (ViewBag.NotificacaoAlerta != null)
+{
+    <script>window.__notificacao_alerta = '@ViewBag.NotificacaoAlerta';</script>
+}
+@if (ViewBag.NotificacaoErro != null)
+{
+    <script>window.__notificacao_erro = '@ViewBag.NotificacaoErro';</script>
+}
 
 <!DOCTYPE html>
 <html lang="pt-br">
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@@emotion/react@11.14.0/dist/emotion-react.umd.min.js"></script>
+    <script src="https://unpkg.com/@@emotion/styled@11.14.1/dist/emotion-styled.umd.min.js"></script>
 
 <head>
     <meta charset="utf-8" />
@@ -45,7 +61,7 @@
         <i class="fas fa-angle-up"></i>
     </a>
 
-
+    
     @RenderSection("Scripts", required: false)
 </body>
 

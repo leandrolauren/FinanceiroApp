@@ -31,6 +31,11 @@ function formatarCep(cep) {
   return cep.replace(/^(\d{5})(\d{3})$/, '$1-$2')
 }
 
+const formatarData = (data) => {
+  if (!data) return '---'
+  return new Date(data).toLocaleDateString('pt-BR')
+}
+
 const columns = [
   { field: 'nome', headerName: 'Nome', width: 185 },
   { field: 'razaoSocial', headerName: 'Razão Social', flex: 1 },
@@ -66,13 +71,13 @@ const columns = [
     hideable: false,
     pinned: false,
     resizable: false,
-    renderCell: (params) => (
+    renderCell: (pessoa) => (
       <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
         <Button
           variant="outlined"
           color="warning"
           size="small"
-          href={`/Pessoas/EditPessoa/${params.id}`}
+          href={`/Pessoas/EditPessoa/${pessoa.id}`}
         >
           Editar
         </Button>
@@ -80,7 +85,7 @@ const columns = [
           variant="outlined"
           color="error"
           size="small"
-          onClick={() => window.abrirModalExclusaoPessoa(params.id)}
+          onClick={() => window.abrirModalExclusaoPessoa(pessoa)}
         >
           Excluir
         </Button>
@@ -88,11 +93,6 @@ const columns = [
     ),
   },
 ]
-
-const formatarData = (data) => {
-  if (!data) return '---'
-  return new Date(data).toLocaleDateString('pt-BR')
-}
 
 export default function PessoasDataGrid() {
   const [rows, setRows] = useState([])

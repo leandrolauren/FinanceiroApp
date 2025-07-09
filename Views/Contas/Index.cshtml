@@ -1,12 +1,16 @@
 @{
     ViewData["Title"] = "Contas";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 <div id="conta-delete-modal-root"></div>
 <div id="conta-table-root"></div>
 
 @section Scripts {
+    <script src="~/js/dist/vendors.bundle.js"></script>
+
     <script src="~/js/dist/ContaDeleteModal.bundle.js"></script>
     <script src="~/js/dist/ContaBancariaDataGrid.bundle.js"></script>
+    
+    <script src="~/js/dist/Notificacao.bundle.js"></script>
 }
 

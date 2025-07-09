@@ -9,6 +9,9 @@ import {
   Alert,
   AlertTitle,
   Collapse,
+  Grid,
+  TextField,
+  MenuItem,
 } from '@mui/material'
 import {
   Folder,
@@ -19,6 +22,11 @@ import {
 } from '@mui/icons-material'
 import { useSnackbar } from 'notistack'
 import axios from 'axios'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import ptBR from 'date-fns/locale/pt-BR'
+import { FilterAlt } from '@mui/icons-material'
 
 export default function PlanoContaDataGrid() {
   const [contas, setContas] = useState([])
@@ -26,40 +34,100 @@ export default function PlanoContaDataGrid() {
   const [error, setError] = useState(null)
   const { enqueueSnackbar } = useSnackbar()
   const [total, setTotal] = useState(0.0)
+  const [filtros, setFiltros] = useState({
+    tipoData: 'vencimento',
+    dataInicio: null,
+    dataFim: null,
+  })
+
+  const [filtrosEditando, setFiltrosEditando] = useState({
+    tipoData: 'vencimento',
+    dataInicio: null,
+    dataFim: null,
+  })
+  const [filtrosAtivos, setFiltrosAtivos] = useState({
+    tipoData: 'vencimento',
+    dataInicio: null,
+    dataFim: null,
+  })
+
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
   useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        setLoading(true)
-        const [contasResponse, totalResponse] = await Promise.all([
-          axios.get('/PlanoContas/GetPlanoContas'),
-          axios.get('/PlanoContas/GetTotalPorPlano'),
-        ])
-        setContas(contasResponse.data)
+    const hoje = new Date()
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)
 
-        const totaisMap = totalResponse.data.reduce((acc, item) => {
-          acc[item.plano_conta_id] = item.total_valor
-          return acc
-        }, {})
-
-        setTotal(totaisMap)
-      } catch (error) {
-        console.error('Erro ao buscar dados do Plano de Contas:', error)
-        setError('Erro ao carregar os dados do Plano de Contas.')
-        enqueueSnackbar('Erro ao carregar os dados do Plano de Contas.', {
-          variant: 'error',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchAllData()
-
-    window.atualizarTabelaPlanoContas = (idRemovido) => {
-      setContas((prevContas) => prevContas.filter((l) => l.id !== idRemovido))
-    }
+    setFiltros((prev) => ({
+      ...prev,
+      dataInicio: primeiroDiaMes,
+      dataFim: ultimoDiaMes,
+    }))
   }, [])
+
+  const buscarDados = async () => {
+    try {
+      setLoading(true)
+
+      const params = {
+        tipoData: filtrosAtivos.tipoData,
+        dataInicio: filtrosAtivos.dataInicio?.toISOString(),
+        dataFim: filtrosAtivos.dataFim?.toISOString(),
+      }
+
+      const [contasResponse, totalResponse] = await Promise.all([
+        axios.get('/PlanoContas/GetPlanoContas'),
+        axios.get('/PlanoContas/GetTotalPorPlano', { params }),
+      ])
+
+      setContas(contasResponse.data)
+
+      const totaisMap = totalResponse.data.reduce((acc, item) => {
+        acc[item.plano_conta_id] = item.total_valor
+        return acc
+      }, {})
+
+      setTotal(totaisMap)
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error)
+      setError('Erro ao carregar os dados.')
+      enqueueSnackbar('Erro ao carregar os dados.', { variant: 'error' })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    buscarDados()
+  }, [filtrosAtivos])
+
+  const handleFiltroChange = (event) => {
+    const { name, value } = event.target
+    setFiltrosEditando((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleDataChange = (name, value) => {
+    setFiltrosEditando((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const aplicarFiltro = () => {
+    setFiltrosAtivos(filtrosEditando)
+  }
+
+  const resetarFiltro = () => {
+    const hoje = new Date()
+    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
+    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)
+
+    const novosFiltros = {
+      tipoData: 'vencimento',
+      dataInicio: primeiroDiaMes,
+      dataFim: ultimoDiaMes,
+    }
+
+    setFiltrosEditando(novosFiltros)
+    setFiltrosAtivos(novosFiltros)
+  }
 
   const renderConta = (conta, nivel = 0) => {
     const isPai = conta.filhos && conta.filhos.length > 0
@@ -110,7 +178,7 @@ export default function PlanoContaDataGrid() {
             </IconButton>
             <IconButton
               color="error"
-              onClick={() => window.abrirModalExclusaoPlanoConta(conta.id)}
+              onClick={() => window.abrirModalExclusaoPlanoConta(conta)}
               size="small"
             >
               <Delete />
@@ -132,20 +200,117 @@ export default function PlanoContaDataGrid() {
 
   return (
     <Box sx={{ padding: 2 }}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <AlertTitle>Erro</AlertTitle>
+            {error}
+          </Alert>
+        )}
+
+        <Button
+          variant="contained"
+          href="/PlanoContas/CreatePlanoConta"
+          sx={{ marginBottom: 2 }}
+        >
+          Novo Plano de Contas
+        </Button>
+
+        <Button
+          variant="outlined"
+          startIcon={<FilterAlt />}
+          onClick={() => setMostrarFiltros(!mostrarFiltros)}
+          sx={{
+            backgroundColor: mostrarFiltros ? 'action.selected' : 'inherit',
+            '&:hover': {
+              backgroundColor: mostrarFiltros ? 'action.hover' : 'inherit',
+            },
+          }}
+        >
+          Filtros {mostrarFiltros ? '▲' : '▼'}
+        </Button>
+      </Box>
+
+      <Collapse in={mostrarFiltros}>
+        <Box
+          sx={{
+            p: 2,
+            mb: 2,
+            border: '1px solid #ddd',
+            borderRadius: 1,
+            backgroundColor: 'background.paper',
+          }}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                select
+                fullWidth
+                label="Tipo de Data"
+                name="tipoData"
+                value={filtrosEditando.tipoData}
+                onChange={handleFiltroChange}
+              >
+                <MenuItem value="vencimento">Vencimento</MenuItem>
+                <MenuItem value="competencia">Competência</MenuItem>
+                <MenuItem value="lancamento">Lançamento</MenuItem>
+                <MenuItem value="pagamento">Pagamento</MenuItem>
+              </TextField>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={ptBR}
+              >
+                <DatePicker
+                  label="Data Início"
+                  value={filtrosEditando.dataInicio}
+                  onChange={(date) => handleDataChange('dataInicio', date)}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={ptBR}
+              >
+                <DatePicker
+                  label="Data Fim"
+                  value={filtrosEditando.dataFim}
+                  onChange={(date) => handleDataChange('dataFim', date)}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box display="flex" justifyContent="flex-end" gap={1}>
+                <Button variant="outlined" onClick={resetarFiltro}>
+                  Redefinir
+                </Button>
+                <Button variant="contained" onClick={aplicarFiltro}>
+                  Aplicar Filtro
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Collapse>
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           <AlertTitle>Erro</AlertTitle>
           {error}
         </Alert>
       )}
-
-      <Button
-        variant="contained"
-        href="/PlanoContas/CreatePlanoConta"
-        sx={{ marginBottom: 2 }}
-      >
-        Novo Plano de Contas
-      </Button>
 
       <Box sx={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>

@@ -10,10 +10,11 @@ namespace FinanceiroApp.Models
         public TipoLancamento Tipo { get; set; } // Receita ou Despesa
 
         [Required(ErrorMessage = "Valor é obrigatório.")]
+        [Display(Name = "Valor")]
         public decimal Valor { get; set; }
 
         [Required(ErrorMessage = "Descrição é obrigatória.")]
-        public required string Descricao { get; set; } = string.Empty;
+        public string Descricao { get; set; } = string.Empty;
 
         public DateTime DataLancamento { get; set; } = DateTime.Now;
 
@@ -21,6 +22,9 @@ namespace FinanceiroApp.Models
         public DateTime DataVencimento { get; set; }
 
         [Required(ErrorMessage = "Data de Competência é obrigatória.")]
+        [Display(Name = "Data de Competência")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime DataCompetencia { get; set; }
 
         public int ContaBancariaId { get; set; }

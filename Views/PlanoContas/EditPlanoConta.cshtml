@@ -4,10 +4,6 @@
     ViewData["Title"] = "Editar Plano de Contas";
 }
 
-<head>
-    <link href="~/css/leandro.css" rel="stylesheet" />
-</head>
-
 <form asp-action="EditPlanoConta" method="post">
     <input type="hidden" asp-for="Id" />
 
@@ -19,7 +15,7 @@
 
     <div class="mb-3">
         <label class="form-label">Tipo</label>
-        <input class="input" value="@Model.Tipo" disabled />
+        <input class="input" value="@Model.Tipo" disabled readonly/>
     </div>
 
     <div class="mb-3">
@@ -32,3 +28,8 @@
     <button type="submit" class="btn btn-success">Salvar</button>
     <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
 </form>
+
+@section Scripts{
+    <script src="~/js/dist/vendors.bundle.js"></script>
+    <script src="~/js/dist/Notificacao.bundle.js"></script>
+}

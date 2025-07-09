@@ -4,11 +4,6 @@
     ViewData["Title"] = "Editar Pessoa";
 }
 
-<head>
-    <link href="~/css/leandro.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-
 <form asp-action="EditPessoa" method="post">
     <input type="hidden" asp-for="Tipo" id="tipoPessoaHidden" />
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -135,6 +130,8 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/dist/vendors.bundle.js"></script>
+    <script src="~/js/dist/Notificacao.bundle.js"></script>
 
     <script>
         $(document).ready(function () {

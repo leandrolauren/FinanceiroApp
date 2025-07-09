@@ -6,6 +6,9 @@
 <head>
     <link href="~/css/leandro.css" rel="stylesheet" />
 </head>
+
+<div id="notificacao_root"></div> 
+
 <form asp-action="CreatePlanoConta" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <div class="row justify-content-center mb-3">
@@ -51,4 +54,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script src="~/js/dist/vendors.bundle.js"></script>
+    <script src="~/js/dist/Notificacao.bundle.js"></script>
 }

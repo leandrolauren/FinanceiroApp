@@ -10,21 +10,24 @@
                 <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
                     class="img-fluid" alt="Sample image">
             </div>
+            
             <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
                 <form method="POST">
 
                     <!-- Email input -->
                     <div data-mdb-input-init class="form-outline mb-4">
-                        <input asp-for="Email" type="email" id="Email" class="form-control form-control-lg"
-                            placeholder="Digite seu email" />
                         <label class="form-label" asp-validation-for="Email">Email</label>
+                        <input asp-for="Email" type="email" id="Email" class="form-control form-control-lg"
+                            placeholder="Digite seu email" required />
+                        <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
 
                     <!-- Password input -->
                     <div data-mdb-input-init class="form-outline mb-3">
-                        <input asp-for="Senha" type="password" id="Senha" class="form-control form-control-lg"
-                            placeholder="Digite a senha" />
                         <label asp-for="Senha" class="form-label" for="form3Example4">Senha</label>
+                        <input asp-for="Senha" type="password" id="Senha" class="form-control form-control-lg"
+                            placeholder="Digite a senha" required />
+                        <span asp-validation-for="Senha" class="text-danger"></span>
                     </div>
 
                     <div class="d-flex justify-content-between align-items-center">
@@ -44,3 +47,9 @@
         </div>
     </div>
 </section>
+
+@section Scripts{
+    <!-- Bundle de libs comuns -->
+    <script src="~/js/dist/vendors.bundle.js"></script>
+    <script src="~/js/dist/Notificacao.bundle.js"></script>
+}

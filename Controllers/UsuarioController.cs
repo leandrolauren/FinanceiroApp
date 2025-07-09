@@ -27,6 +27,7 @@ public class UsuarioController : Controller
     {
         if (!ModelState.IsValid)
         {
+            ViewBag.NotificacaoAlerta = "Por favor, preencha todos os campos corretamente.";
             ModelState.AddModelError("", "Por favor, preencha todos os campos corretamente.");
             return View(model);
         }
@@ -35,9 +36,12 @@ public class UsuarioController : Controller
             .Usuarios.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == model.Email);
         if (usuarioExistente != null)
+        {
+            ViewBag.NotificacaoAlerta = "Ja existe um usuario com este email!";
             return BadRequest(
                 new { success = false, message = "Já existe um usuário com este email." }
             );
+        }
 
         var token = Guid.NewGuid().ToString();
 
@@ -56,6 +60,8 @@ public class UsuarioController : Controller
         _context.UsuariosPendentes.Add(usuarioPendente);
         await _context.SaveChangesAsync();
 
+        ViewBag.NotificacaoAlerta = "Confira seu email para ativar o seu acesso.";
+
         // Publica no RabbitMQ
         var mensagem = new EmailConfirmacaoMessage
         {
@@ -65,7 +71,7 @@ public class UsuarioController : Controller
 
         _rabbitMqService.PublicarMensagem("email_confirmacao_queue", mensagem);
 
-        TempData["MensagemSucesso"] = "Usuário pendente de confirmação, verifique seu e-mail!";
+        ViewBag.NotificacaoAlerta = "Usuário pendente de confirmação, verifique seu e-mail!";
 
         return RedirectToAction("Index", "Home");
     }
@@ -108,7 +114,7 @@ public class UsuarioController : Controller
 
             _rabbitMqService.PublicarMensagem("email_confirmacao_queue", mensagem);
 
-            TempData["MensagemSucesso"] = "Usuário cadastrado!";
+            ViewBag.NotificacaoSucesso = "Usuário cadastrado!";
             return RedirectToAction("Index", "Home");
         }
         catch (Exception ex)

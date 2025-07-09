@@ -21,14 +21,13 @@ public class LoginController : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["MensagemErro"] = "Usuário ou senha inválidos.";
+            ViewBag.NotificacaoErro = "Usuario ou senha invalidos.";
             return View(model);
         }
         var user = _context.Usuarios.FirstOrDefault(u => u.Email == model.Email);
         if (user == null || !BCrypt.Net.BCrypt.Verify(model.Senha, user.SenhaHash))
         {
-            ModelState.AddModelError(string.Empty, "Usuário ou senha inválidos.");
-            TempData["MensagemErro"] = "Usuário ou senha inválidos.";
+            ViewBag.NotificacaoErro = "Usuario ou senha invalidos.";
             return View(model);
         }
 

@@ -85,7 +85,7 @@ public class LancamentosController : Controller
         if (!ModelState.IsValid)
         {
             await PreencherViewBags();
-            TempData["MensagemErro"] = "Preencha os campos obrigatórios.";
+            ViewBag.NotificacaoErro = "Preencha os campos obrigatorios.";
             return View("CreateLancamento", lancamento);
         }
 
@@ -97,14 +97,15 @@ public class LancamentosController : Controller
             _context.Lancamentos.Add(lancamento);
             await _context.SaveChangesAsync();
 
-            TempData["MensagemSucesso"] = "Lançamento cadastrado com sucesso.";
-            return View("CreateLancamento", lancamento);
+            ViewBag.NotificacaoSucesso = "Lancamento efetivado com sucesso.";
+
+            return RedirectToAction("CreateLancamento");
         }
         catch (DBConcurrencyException ex)
         {
-            TempData["MensagemErro"] =
-                "Ocorreu um erro ao cadastrar o lançamento. Tente novamente.";
+            ViewBag.NotificacaoErro = "Ocorreu um erro ao cadastrar o lançamento. Tente novamente.";
             Console.WriteLine($"Erro ao cadastrar lançamento: {ex}");
+
             await PreencherViewBags();
             return View("CreateLancamento", lancamento);
         }
@@ -140,17 +141,18 @@ public class LancamentosController : Controller
 
         if (!ModelState.IsValid)
         {
+            ViewBag.NotificacaoErro = "Preencha os campos obrigatorios.";
             await PreencherViewBags();
             return View(lancamento);
         }
 
         lancamento.UsuarioId = userId;
-        lancamento.DataLancamento = lancamentoExistente.DataLancamento; // manter original
+        lancamento.DataLancamento = lancamentoExistente.DataLancamento;
 
         _context.Entry(lancamentoExistente).CurrentValues.SetValues(lancamento);
         await _context.SaveChangesAsync();
 
-        TempData["MensagemSucesso"] = "Lançamento atualizado com sucesso.";
+        ViewBag.NotificacaoSucesso = "Lançamento atualizado com sucesso.";
         return RedirectToAction(nameof(Index));
     }
 
@@ -174,12 +176,13 @@ public class LancamentosController : Controller
 
         if (lancamento.Parcelas?.Any() == true)
         {
-            TempData["MensagemErro"] = "Este lançamento possui parcelas e não pode ser excluído.";
+            ViewBag.NotificacaoAlerta = "Este lançamento possui parcelas e não pode ser excluído.";
             return RedirectToAction(nameof(Index));
         }
 
         _context.Lancamentos.Remove(lancamento);
         await _context.SaveChangesAsync();
+        ViewBag.NotificacaoSucesso = "Lancamento removido.";
 
         return RedirectToAction(nameof(Index));
     }

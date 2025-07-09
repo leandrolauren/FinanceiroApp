@@ -2,6 +2,18 @@
     Layout = null;
     var isLoginPage = Context.Request.Path.StartsWithSegments("/Login", StringComparison.OrdinalIgnoreCase);
 }
+@if (ViewBag.NotificacaoSucesso != null)
+{
+    <script>window.__notificacao_sucesso = '@ViewBag.NotificacaoSucesso';</script>
+}
+@if (ViewBag.NotificacaoAlerta != null)
+{
+    <script>window.__notificacao_alerta = '@ViewBag.NotificacaoAlerta';</script>
+}
+@if (ViewBag.NotificacaoErro != null)
+{
+    <script>window.__notificacao_erro = '@ViewBag.NotificacaoErro';</script>
+}
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -32,6 +44,11 @@
 
     <!-- CSS customizado do projeto -->
     <link href="~/css/leandro.css" rel="stylesheet" />
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@@emotion/react@11.14.0/dist/emotion-react.umd.min.js"></script>
+    <script src="https://unpkg.com/@@emotion/styled@11.14.1/dist/emotion-styled.umd.min.js"></script>
 
     <!-- CSS para sidebar responsivo e ajustes gerais -->
     <style>
@@ -134,6 +151,8 @@
 
     <!-- JS do tema (customizações do template) -->
     <script src="~/js/sb-admin-2.min.js"></script>
+
+    <div id="notificacao_root" ></div>
 
     @RenderSection("Scripts", required: false)
 </body>

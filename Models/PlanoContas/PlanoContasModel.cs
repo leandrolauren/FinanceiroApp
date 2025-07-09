@@ -6,8 +6,12 @@ namespace FinanceiroApp.Models;
 public class PlanoContasModel
 {
     public int Id { get; set; }
-    public string? Descricao { get; set; }
-    public string? Tipo { get; set; }
+
+    [Required(ErrorMessage = "Informe a descrição.")]
+    public string Descricao { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Informe o tipo do Plano.")]
+    public string Tipo { get; set; } = string.Empty;
     public int UsuarioId { get; set; }
     public UsuarioModel? Usuario { get; set; }
     public int? PlanoContasPaiId { get; set; }
