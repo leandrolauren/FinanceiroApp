@@ -101,7 +101,6 @@ Acesse em: [http://localhost:5084](http://localhost:5084)
 
 ## 🌎 Observações
 
-- Todas as datas são armazenadas em **UTC no banco** e convertidas para **fuso horário brasileiro (America/Sao_Paulo)** no back-end e front-end.
 - O projeto utiliza uma abordagem híbrida: **Razor tradicional com componentes React em pontos específicos** para maior interatividade.
 - O layout base é baseado no **SB Admin 2 (Bootstrap)**.
 

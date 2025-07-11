@@ -1,5 +1,5 @@
 {
-  "name": "cotacao",
+  "name": "financeiroapp",
   "version": "1.0.0",
   "main": "webpack.config.js",
   "scripts": {
@@ -14,6 +14,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.2",
     "@mui/material": "^7.1.2",
+    "@mui/x-charts": "^8.8.0",
     "@mui/x-data-grid": "^8.5.3",
     "@mui/x-date-pickers": "^8.7.0",
     "axios": "^1.10.0",

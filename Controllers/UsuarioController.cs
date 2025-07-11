@@ -17,21 +17,32 @@ public class UsuarioController : Controller
         _context = context;
         _rabbitMqService = rabbitMqService;
     }
-
-    // GET: Usuario/Create
+        // GET: Usuario/Create
     public IActionResult Create() => View();
 
     // POST: Usuario/Create
     [HttpPost]
-    public async Task<IActionResult> Create(UsuarioCreateViewModel model)
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> Create([FromBody] UsuarioCreateViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.NotificacaoAlerta = "Por favor, preencha todos os campos corretamente.";
-            ModelState.AddModelError("", "Por favor, preencha todos os campos corretamente.");
-            return View(model);
-        }
+            Console.WriteLine(model.Nome, model.Email, model.Senha);
+            var errors = ModelState
+                .Values.SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
 
+            ViewBag.NotificacaoAlerta = "Preencha os campos corretamente!";
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Por favor, preencha todos os campos corretamente.",
+                    errors,
+                }
+            );
+        }
         var usuarioExistente = await _context
             .Usuarios.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == model.Email);

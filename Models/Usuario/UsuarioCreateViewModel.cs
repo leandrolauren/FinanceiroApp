@@ -2,18 +2,18 @@ using System.ComponentModel.DataAnnotations;
 
 public class UsuarioCreateViewModel
 {
-    [Required]
-    [Display(Name = "Nome")]
-    public string Nome { get; set; } = string.Empty;
+    [Required(ErrorMessage = "O nome é obrigatório.")]
+    public required string Nome { get; set; }
 
-    [Required]
-    [EmailAddress(ErrorMessage = "Informe um email válido.")]
-    [Display(Name = "E-mail")]
-    public string Email { get; set; } = string.Empty;
+    [Required(ErrorMessage = "O email é obrigatório.")]
+    [EmailAddress(ErrorMessage = "Por favor, digite um email válido.")]
+    public required string Email { get; set; }
 
-    [Required]
-    [DataType(DataType.Password)]
-    [MinLength(6)]
-    [Display(Name = "Senha")]
-    public string Senha { get; set; } = string.Empty;
+    [Required(ErrorMessage = "A senha é obrigatória.")]
+    [StringLength(
+        100,
+        MinimumLength = 6,
+        ErrorMessage = "A senha deve ter pelo menos 6 caracteres."
+    )]
+    public required string Senha { get; set; }
 }

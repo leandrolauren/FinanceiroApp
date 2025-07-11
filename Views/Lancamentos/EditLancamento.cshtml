@@ -29,62 +29,47 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="PessoaId" class="form-label">Pessoa</label>
-            <select asp-for="PessoaId" class="input select2">
+            <select asp-for="PessoaId" class="input select2" asp-items="@(new SelectList(pessoas, "Id", "Nome", Model.PessoaId))">
                 <option value="">Selecione</option>
-                @foreach (var p in pessoas as List<PessoaModel> ?? new List<PessoaModel>())
-                {
-                    <option value="@p.Id" selected="@Model.PessoaId == p.Id">@p.Nome</option>
-                }
             </select>
         </div>
         <div class="col-md-4">
             <label asp-for="PlanoContaId" class="form-label">Plano de Conta</label>
-            <select asp-for="PlanoContaId" class="input">
+            <select asp-for="PlanoContaId" class="input select2" asp-items="@(new SelectList(planos, "Id", "Descricao", Model.PlanoContaId))">
                 <option value="">Selecione</option>
-                @foreach (var plano in planos as List<PlanoContasModel> ?? new List<PlanoContasModel>())
-                {
-                    <option value="@plano.Id" selected="@Model.PlanoContaId == plano.Id">@plano.Descricao</option>
-                }
             </select>
         </div>
         <div class="col-md-4">
             <label asp-for="ContaBancariaId" class="form-label">Conta Bancária</label>
-            <select asp-for="ContaBancariaId" class="input">
+            <select asp-for="ContaBancariaId" class="input select2" asp-items="@(new SelectList(contas, "Id", "Descricao", Model.ContaBancariaId))">
                 <option value="">Selecione</option>
-                @foreach (var conta in contas as List<ContaBancaria> ?? new List<ContaBancaria>())
-                {
-                    <option value="@conta.Id" selected="@Model.ContaBancariaId == conta.Id">@conta.Descricao</option>
-                }
             </select>
         </div>
     </div>
 
     <div class="row mb-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label asp-for="DataCompetencia" class="form-label">Competência</label>
             <input asp-for="DataCompetencia" class="input" type="date" />
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label asp-for="DataVencimento" class="form-label">Vencimento</label>
             <input asp-for="DataVencimento" class="input" type="date" />
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label asp-for="Pago" class="form-label">Pago</label>
             <select asp-for="Pago" class="input">
                 <option value="false" selected="@(Model.Pago == false)">Não</option>
                 <option value="true" selected="@(Model.Pago == true)">Sim</option>
             </select>
         </div>
-    </div>
-
-    <div class="row mb-3">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <label asp-for="DataPagamento" class="form-label">Data de Pagamento</label>
             <input asp-for="DataPagamento" class="input" type="date" />
         </div>
     </div>
 
-    <button type="submit" class="btn btn-success">Salvar Alterações</button>
+    <button type="submit" class="btn btn-success">Salvar</button>
     <a asp-action="Index" class="btn btn-secondary">Voltar</a>
 </form>
 

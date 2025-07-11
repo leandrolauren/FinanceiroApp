@@ -18,6 +18,7 @@ module.exports = {
     ContaDeleteModal:
       './wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx',
     Notificacao: './wwwroot/js/components/Shared/Notificacao.jsx',
+    EntradaeSaida: './wwwroot/js/components/Graficos/EntradaeSaida.jsx',
   },
   output: {
     path: path.resolve(__dirname, 'wwwroot/js/dist'),

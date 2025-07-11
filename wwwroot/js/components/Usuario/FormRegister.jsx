@@ -66,6 +66,7 @@ export default function FormRegister(props) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('')
   const [nomeError, setNomeError] = React.useState(false)
   const [nomeErrorMessage, setNomeErrorMessage] = React.useState('')
+  const [generalError, setGeneralError] = React.useState('')
 
   const validateInputs = () => {
     const Email = document.getElementById('Email')
@@ -92,7 +93,7 @@ export default function FormRegister(props) {
       setPasswordErrorMessage('')
     }
 
-    if (!Nome.value || Nome.value.length < 1) {
+    if (!Nome.value || Nome.value.length < 3) {
       setNomeError(true)
       setNomeErrorMessage('Nome é obrigatório.')
       isValid = false
@@ -104,9 +105,58 @@ export default function FormRegister(props) {
     return isValid
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    event.stopPropagation()
+    console.log('Iniciando submissão do formulário...')
+
     if (!validateInputs()) {
-      event.preventDefault();
+      console.log('Validação local falhou')
+      return
+    }
+
+    const Nome = document.getElementById('Nome').value
+    const Email = document.getElementById('Email').value
+    const Senha = document.getElementById('Senha').value
+
+    console.log('Dados enviados:', { Nome, Email, Senha })
+
+    try {
+      const response = await axios.post('/Usuario/Create', {
+        Nome,
+        Email,
+        Senha,
+      })
+      console.log('Resposta do servidor:', response.status, response.data)
+
+      if (response.status === 200) {
+        setGeneralError('')
+        console.log('Cadastro bem-sucedido, redirecionando para /Home/Index')
+        window.location.href = '/Home/Index'
+      } else {
+        console.log('Resposta inesperada:', response.status)
+        setGeneralError('Resposta inesperada do servidor.')
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error)
+      if (error.response) {
+        console.error(
+          'Resposta do servidor:',
+          error.response.status,
+          error.response.data,
+        )
+        setGeneralError(
+          error.response.data.message || 'Erro ao cadastrar usuário.',
+        )
+      } else if (error.request) {
+        console.error('Nenhuma resposta recebida:', error.request)
+        setGeneralError(
+          'Não foi possível conectar ao servidor. Tente novamente.',
+        )
+      } else {
+        console.error('Erro ao configurar a requisição:', error.message)
+        setGeneralError('Ocorreu um erro inesperado. Tente novamente.')
+      }
     }
   }
 
@@ -127,12 +177,15 @@ export default function FormRegister(props) {
           >
             Cadastre-se
           </Typography>
+          {generalError && (
+            <Typography color="error" sx={{ textAlign: 'center', mt: 2 }}>
+              {generalError}
+            </Typography>
+          )}
           <Box
             component="form"
             onSubmit={handleSubmit}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-            method="post"
-            action="/Usuario/Create"
           >
             <FormControl>
               <TextField

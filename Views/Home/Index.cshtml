@@ -5,10 +5,14 @@
 <div class="text-center">
     <h1 class="display-4">Bem Vindo(a), @(User.Identity != null && !string.IsNullOrEmpty(User.Identity.Name) ? User.Identity.Name : "Usuário")</h1>
     <p>Sistema Financeiro projetado por Leandro 😎</p>
+    
+    <p>Apenas um Exemplo gráfico para implementar!</del></p>
+    <div id="entrada-saida-root"></div>
 
 </div>
 
 @section Scripts{
     <script src="~/js/dist/vendors.bundle.js"></script>
     <script src="~/js/dist/Notificacao.bundle.js"></script>
+    <script src="~/js/dist/EntradaeSaida.bundle.js"></script>
 }
