@@ -7,6 +7,8 @@ out/
 
 lib/
 
+css/
+
 # User-specific files
 *.user
 *.suo
