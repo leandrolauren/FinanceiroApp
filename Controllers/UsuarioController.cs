@@ -27,7 +27,6 @@ public class UsuarioController : Controller
     {
         if (!ModelState.IsValid)
         {
-            Console.WriteLine(model.Nome, model.Email, model.Senha);
             var errors = ModelState
                 .Values.SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
@@ -65,8 +64,6 @@ public class UsuarioController : Controller
             Token = token,
             DataCriacao = DateTime.Now,
         };
-
-        Console.WriteLine($"Data criacao {usuarioPendente.DataCriacao}");
 
         _context.UsuariosPendentes.Add(usuarioPendente);
         await _context.SaveChangesAsync();

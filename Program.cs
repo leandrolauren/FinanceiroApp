@@ -27,7 +27,7 @@ namespace FinanceiroApp
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
-            builder.Services.AddSingleton<IRabbitMqService>(new RabbitMqService("localhost"));
+            builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
             builder.Services.AddSingleton<IEmailWorker, EmailWorker>();
 
             builder.Services.Configure<SmtpSettings>(

@@ -18,11 +18,31 @@ namespace FinanceiroApp.Services
         {
             _smtpSettings = smtpSettings.Value;
 
+            var rabbitMqUrl = Environment.GetEnvironmentVariable("RABBITMQ_URL");
+
+            if (string.IsNullOrEmpty(rabbitMqUrl))
+                throw new InvalidOperationException("RABBITMQ_URL não está configurada");
+
             _factory = new ConnectionFactory
             {
-                HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost",
+                Uri = new Uri(rabbitMqUrl),
                 DispatchConsumersAsync = true,
             };
+
+            // _factory = new ConnectionFactory
+            // {
+            //     HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST"),
+            //     Port = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT")),
+            //     UserName = Environment.GetEnvironmentVariable("RABBITMQ_USER"),
+            //     Password = Environment.GetEnvironmentVariable("RABBITMQ_PASS"),
+            //     VirtualHost = Environment.GetEnvironmentVariable("RABBITMQ_USER"),
+            //     Ssl = new SslOption
+            //     {
+            //         Enabled = true,
+            //         ServerName = Environment.GetEnvironmentVariable("RABBITMQ_HOST"),
+            //     },
+            //     DispatchConsumersAsync = true,
+            // };
         }
 
         public void Start()
@@ -89,7 +109,8 @@ namespace FinanceiroApp.Services
 
         private async Task EnviarEmailConfirmacaoAsync(string to, string token)
         {
-            var link = $"http://localhost:5084/usuario/confirmar?token={token}";
+            var SERVER_HOST = Environment.GetEnvironmentVariable("SERVER_HOST") ?? "localhost";
+            var link = $"{SERVER_HOST}/usuario/confirmar?token={token}";
             var subject = "Confirme seu cadastro - Financeiro App";
             var body =
                 $@"
