@@ -70,6 +70,6 @@ $RECYCLE.BIN/
 .env
 
 node_modules/
-dist/
+dist/*.txt
 
 vendor/
