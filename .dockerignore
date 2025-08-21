@@ -1,5 +1,34 @@
+# Ignorar binários e build intermediário do .NET
 bin/
 obj/
-.vscode/
-*.md
+out/
+
+# Ignorar diretórios de publicação locais
+/app/publish/
+*.dll
+*.exe
+*.pdb
+
+# Ignorar arquivos do usuário / IDE
 *.user
+*.suo
+*.cache
+*.log
+*.vs/
+.vscode/
+.idea/
+
+# Ignorar dependências Node (serão reinstaladas no container)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes

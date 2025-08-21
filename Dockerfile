@@ -1,22 +1,29 @@
-# Etapa 1 - build
+# Etapa 1: Build do backend .NET
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copia csproj e restaura dependências
+# Copia csproj e restaura
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copia tudo e compila
-COPY . ./
-RUN dotnet publish -c Release -o out
+# Copia o restante do código
+COPY . .
 
-# Etapa 2 - runtime
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+# Publica a aplicação
+RUN dotnet publish -c Release -o /app/publish
+
+
+# Etapa 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-COPY --from=build /app/out .
 
-# Porta que será exposta
-EXPOSE 80
+# Copia aplicação publicada
+COPY --from=build /app/publish .
 
-# Inicia a aplicação
-ENTRYPOINT ["dotnet", "Financeiro.dll"]
+# Copia os bundles já prontos do front
+COPY ./wwwroot/js/dist ./wwwroot/js/dist
+
+# Expõe porta do Kestrel
+EXPOSE 8080
+
+ENTRYPOINT ["dotnet", "FinanceiroApp.dll"]
