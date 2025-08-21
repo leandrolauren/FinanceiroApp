@@ -7,8 +7,6 @@ out/
 
 lib/
 
-css/
-
 # User-specific files
 *.user
 *.suo
@@ -70,6 +68,5 @@ $RECYCLE.BIN/
 .env
 
 node_modules/
-dist/*.txt
 
 vendor/
