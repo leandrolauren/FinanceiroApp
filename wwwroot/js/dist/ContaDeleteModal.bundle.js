@@ -1,2 +1,257 @@
-/*! For license information please see ContaDeleteModal.bundle.js.LICENSE.txt */
-(()=>{"use strict";var e,t,r,n={41594:e=>{e.exports=React},41787:e=>{e.exports=emotionReact},48400:(e,t,r)=>{var n=r(41594),o=r.n(n),a=r(55008),i=r(34477),c=r(17210),u=r(88943),l=r(35124),s=r(15548),f=r(48227),d=r(33319),p=r(7514),v=r(5338);function m(e){var t=e.children;return o().createElement(p.n,{maxSnack:3,autoHideDuration:3e3,anchorOrigin:{vertical:"top",horizontal:"right"},preventDuplicate:!0},t)}function y(){var e,t,r="function"==typeof Symbol?Symbol:{},n=r.iterator||"@@iterator",o=r.toStringTag||"@@toStringTag";function a(r,n,o,a){var u=n&&n.prototype instanceof c?n:c,l=Object.create(u.prototype);return b(l,"_invoke",function(r,n,o){var a,c,u,l=0,s=o||[],f=!1,d={p:0,n:0,v:e,a:p,f:p.bind(e,4),d:function(t,r){return a=t,c=0,u=e,d.n=r,i}};function p(r,n){for(c=r,u=n,t=0;!f&&l&&!o&&t<s.length;t++){var o,a=s[t],p=d.p,v=a[2];r>3?(o=v===n)&&(u=a[(c=a[4])?5:(c=3,3)],a[4]=a[5]=e):a[0]<=p&&((o=r<2&&p<a[1])?(c=0,d.v=n,d.n=a[1]):p<v&&(o=r<3||a[0]>n||n>v)&&(a[4]=r,a[5]=n,d.n=v,c=0))}if(o||r>1)return i;throw f=!0,n}return function(o,s,v){if(l>1)throw TypeError("Generator is already running");for(f&&1===s&&p(s,v),c=s,u=v;(t=c<2?e:u)||!f;){a||(c?c<3?(c>1&&(d.n=-1),p(c,u)):d.n=u:d.v=u);try{if(l=2,a){if(c||(o="next"),t=a[o]){if(!(t=t.call(a,u)))throw TypeError("iterator result is not an object");if(!t.done)return t;u=t.value,c<2&&(c=0)}else 1===c&&(t=a.return)&&t.call(a),c<2&&(u=TypeError("The iterator does not provide a '"+o+"' method"),c=1);a=e}else if((t=(f=d.n<0)?u:r.call(n,d))!==i)break}catch(t){a=e,c=1,u=t}finally{l=1}}return{value:t,done:f}}}(r,o,a),!0),l}var i={};function c(){}function u(){}function l(){}t=Object.getPrototypeOf;var s=[][n]?t(t([][n]())):(b(t={},n,function(){return this}),t),f=l.prototype=c.prototype=Object.create(s);function d(e){return Object.setPrototypeOf?Object.setPrototypeOf(e,l):(e.__proto__=l,b(e,o,"GeneratorFunction")),e.prototype=Object.create(f),e}return u.prototype=l,b(f,"constructor",l),b(l,"constructor",u),u.displayName="GeneratorFunction",b(l,o,"GeneratorFunction"),b(f),b(f,o,"Generator"),b(f,n,function(){return this}),b(f,"toString",function(){return"[object Generator]"}),(y=function(){return{w:a,m:d}})()}function b(e,t,r,n){var o=Object.defineProperty;try{o({},"",{})}catch(e){o=0}b=function(e,t,r,n){if(t)o?o(e,t,{value:r,enumerable:!n,configurable:!n,writable:!n}):e[t]=r;else{var a=function(t,r){b(e,t,function(e){return this._invoke(t,r,e)})};a("next",0),a("throw",1),a("return",2)}},b(e,t,r,n)}function h(e,t,r,n,o,a,i){try{var c=e[a](i),u=c.value}catch(e){return void r(e)}c.done?t(u):Promise.resolve(u).then(n,o)}function g(e,t){return function(e){if(Array.isArray(e))return e}(e)||function(e,t){var r=null==e?null:"undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(null!=r){var n,o,a,i,c=[],u=!0,l=!1;try{if(a=(r=r.call(e)).next,0===t){if(Object(r)!==r)return;u=!1}else for(;!(u=(n=a.call(r)).done)&&(c.push(n.value),c.length!==t);u=!0);}catch(e){l=!0,o=e}finally{try{if(!u&&null!=r.return&&(i=r.return(),Object(i)!==i))return}finally{if(l)throw o}}return c}}(e,t)||function(e,t){if(e){if("string"==typeof e)return E(e,t);var r={}.toString.call(e).slice(8,-1);return"Object"===r&&e.constructor&&(r=e.constructor.name),"Map"===r||"Set"===r?Array.from(e):"Arguments"===r||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(r)?E(e,t):void 0}}(e,t)||function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function E(e,t){(null==t||t>e.length)&&(t=e.length);for(var r=0,n=Array(t);r<t;r++)n[r]=e[r];return n}function O(e){var t=e.open,r=e.onClose,v=e.contaId,m=g((0,n.useState)(null),2),b=m[0],E=m[1],O=g((0,n.useState)(!0),2),j=O[0],x=O[1],C=g((0,n.useState)(null),2),S=C[0],w=C[1],A=g((0,n.useState)(null),2),k=A[0],_=A[1],P=(0,p.dh)().enqueueSnackbar;(0,n.useEffect)(function(){t&&v&&(x(!0),w(null),_(null),d.A.get("/Contas/GetContaEx/".concat(v)).then(function(e){return E(e.data)}).catch(function(){w("Erro ao carregar os dados da conta."),P("Erro ao carregar os dados da conta!",{variant:"error"})}).finally(function(){return x(!1)}))},[v,t]);var T=function(){var e,t=(e=y().m(function e(){var t,n,o,a,i,c,u;return y().w(function(e){for(;;)switch(e.n){case 0:return e.p=0,_(null),e.n=1,d.A.delete("/Contas/DeleteConfirmed/".concat(v));case 1:P("Conta excluída com sucesso.",{variant:"success"}),r(),null===(n=(o=window).atualizarTabelaContas)||void 0===n||n.call(o,v),e.n=10;break;case 2:if(e.p=2,c=e.v,a="Erro ao excluir Conta.",i="error",!c.response){e.n=8;break}u=c.response.status,e.n=400===u?3:404===u?4:500===u?5:6;break;case 3:return a=(null===(t=c.response.data)||void 0===t?void 0:t.message)||"Não é possível excluir esta Conta",e.a(3,7);case 4:return a="Conta não encontrada",e.a(3,7);case 5:return a="Erro interno",e.a(3,7);case 6:a="Erro inesperado";case 7:e.n=9;break;case 8:a=c.request?"Sem responsta do servidor - verifique a conexão":c.message||"Erro ao enviar requisição";case 9:_(a),P(a,{variant:i,autoHideDuration:5e3,anchorOrigin:{vertical:"top",horizontal:"right"}});case 10:return e.a(2)}},e,null,[[0,2]])}),function(){var t=this,r=arguments;return new Promise(function(n,o){var a=e.apply(t,r);function i(e){h(a,n,o,i,c,"next",e)}function c(e){h(a,n,o,i,c,"throw",e)}i(void 0)})});return function(){return t.apply(this,arguments)}}();return o().createElement(a.A,{open:t,onClose:r},o().createElement(i.A,{sx:{position:"absolute",top:"50%",left:"50%",transform:"translate(-50%, -50%)",bgcolor:"background.paper",borderRadius:2,boxShadow:24,p:4,width:400}},j?o().createElement(i.A,{display:"flex",justifyContent:"center"},o().createElement(c.A,null)):S?o().createElement(u.A,{severity:"error"},S):o().createElement(o().Fragment,null,o().createElement(l.A,{variant:"h4",justifyContent:"center",gutterBottom:!0},"Confirma a exclusão?"),o().createElement(s.A,{sx:{borderBottomWidth:2,borderColor:"grey.400",my:2}}),k&&o().createElement(u.A,{severity:"error",sx:{mb:2}},k),o().createElement(l.A,{fontSize:15,justifyContent:"center"},o().createElement("strong",null,"Descrição:")," ",b.descricao," ",o().createElement("br",null),o().createElement("strong",null,"Número:")," ",b.numeroConta||"---"," ",o().createElement("br",null),o().createElement("strong",null,"Banco:")," ",b.banco||"---"),o().createElement(i.A,{mt:3,display:"flex",justifyContent:"flex-end"},o().createElement(f.A,{onClick:r,variant:"outlined",sx:{mr:1}},"Cancelar"),o().createElement(f.A,{onClick:T,variant:"contained",color:"error",disabled:!!k},"Excluir")))))}var j=document.getElementById("conta-delete-modal-root");if(j){var x=(0,v.H)(j);window.abrirModalExclusaoConta=function(e){var t=function(){var t=g((0,n.useState)(!0),2),r=t[0],a=t[1];return o().createElement(m,null,o().createElement(O,{open:r,contaId:e,onClose:function(){return a(!1)}}))};x.render(o().createElement(t,null))}}},75206:e=>{e.exports=ReactDOM},99887:e=>{e.exports=emotionStyled}},o={};function a(e){var t=o[e];if(void 0!==t)return t.exports;var r=o[e]={exports:{}};return n[e](r,r.exports,a),r.exports}a.m=n,e=[],a.O=(t,r,n,o)=>{if(!r){var i=1/0;for(s=0;s<e.length;s++){for(var[r,n,o]=e[s],c=!0,u=0;u<r.length;u++)(!1&o||i>=o)&&Object.keys(a.O).every(e=>a.O[e](r[u]))?r.splice(u--,1):(c=!1,o<i&&(i=o));if(c){e.splice(s--,1);var l=n();void 0!==l&&(t=l)}}return t}o=o||0;for(var s=e.length;s>0&&e[s-1][2]>o;s--)e[s]=e[s-1];e[s]=[r,n,o]},a.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return a.d(t,{a:t}),t},r=Object.getPrototypeOf?e=>Object.getPrototypeOf(e):e=>e.__proto__,a.t=function(e,n){if(1&n&&(e=this(e)),8&n)return e;if("object"==typeof e&&e){if(4&n&&e.__esModule)return e;if(16&n&&"function"==typeof e.then)return e}var o=Object.create(null);a.r(o);var i={};t=t||[null,r({}),r([]),r(r)];for(var c=2&n&&e;"object"==typeof c&&!~t.indexOf(c);c=r(c))Object.getOwnPropertyNames(c).forEach(t=>i[t]=()=>e[t]);return i.default=()=>e,a.d(o,i),o},a.d=(e,t)=>{for(var r in t)a.o(t,r)&&!a.o(e,r)&&Object.defineProperty(e,r,{enumerable:!0,get:t[r]})},a.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),a.r=e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},a.j=744,(()=>{var e={744:0};a.O.j=t=>0===e[t];var t=(t,r)=>{var n,o,[i,c,u]=r,l=0;if(i.some(t=>0!==e[t])){for(n in c)a.o(c,n)&&(a.m[n]=c[n]);if(u)var s=u(a)}for(t&&t(r);l<i.length;l++)o=i[l],a.o(e,o)&&e[o]&&e[o][0](),e[o]=0;return a.O(s)},r=self.webpackChunkfinanceiroapp=self.webpackChunkfinanceiroapp||[];r.forEach(t.bind(null,0)),r.push=t.bind(null,r.push.bind(r))})();var i=a.O(void 0,[96],()=>a(48400));i=a.O(i)})();
+/*
+ * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx":
+/*!******************************************************************!*\
+  !*** ./wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Modal/Modal.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Box/Box.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/CircularProgress/CircularProgress.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Alert/Alert.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Typography/Typography.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Divider/Divider.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Button/Button.js\");\n/* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! axios */ \"./node_modules/axios/lib/axios.js\");\n/* harmony import */ var notistack__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! notistack */ \"./node_modules/notistack/notistack.esm.js\");\n/* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-dom/client */ \"./node_modules/react-dom/client.js\");\n/* harmony import */ var _Shared_AppWrapper__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../Shared/AppWrapper */ \"./wwwroot/js/components/Shared/AppWrapper.jsx\");\n/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ \"./node_modules/react/jsx-runtime.js\");\nfunction _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = \"function\" == typeof Symbol ? Symbol : {}, n = r.iterator || \"@@iterator\", o = r.toStringTag || \"@@toStringTag\"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, \"_invoke\", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError(\"Generator is already running\"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = \"next\"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError(\"iterator result is not an object\"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i[\"return\"]) && t.call(i), c < 2 && (u = TypeError(\"The iterator does not provide a '\" + o + \"' method\"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, \"GeneratorFunction\")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, \"constructor\", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, \"constructor\", GeneratorFunction), GeneratorFunction.displayName = \"GeneratorFunction\", _regeneratorDefine2(GeneratorFunctionPrototype, o, \"GeneratorFunction\"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, \"Generator\"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, \"toString\", function () { return \"[object Generator]\"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }\nfunction _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, \"\", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o(\"next\", 0), o(\"throw\", 1), o(\"return\", 2); } }, _regeneratorDefine2(e, r, n, t); }\nfunction asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }\nfunction _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, \"next\", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, \"throw\", n); } _next(void 0); }); }; }\nfunction _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }\nfunction _nonIterableRest() { throw new TypeError(\"Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.\"); }\nfunction _unsupportedIterableToArray(r, a) { if (r) { if (\"string\" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return \"Object\" === t && r.constructor && (t = r.constructor.name), \"Map\" === t || \"Set\" === t ? Array.from(r) : \"Arguments\" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }\nfunction _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }\nfunction _iterableToArrayLimit(r, l) { var t = null == r ? null : \"undefined\" != typeof Symbol && r[Symbol.iterator] || r[\"@@iterator\"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t[\"return\"] && (u = t[\"return\"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }\nfunction _arrayWithHoles(r) { if (Array.isArray(r)) return r; }\n\n\n\n\n\n\n\nfunction ContaDeleteModal(_ref) {\n  var open = _ref.open,\n    onClose = _ref.onClose,\n    contaId = _ref.contaId;\n  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),\n    _useState2 = _slicedToArray(_useState, 2),\n    conta = _useState2[0],\n    setConta = _useState2[1];\n  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),\n    _useState4 = _slicedToArray(_useState3, 2),\n    loading = _useState4[0],\n    setLoading = _useState4[1];\n  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),\n    _useState6 = _slicedToArray(_useState5, 2),\n    error = _useState6[0],\n    setError = _useState6[1];\n  var _useState7 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),\n    _useState8 = _slicedToArray(_useState7, 2),\n    deleteError = _useState8[0],\n    setDeleteError = _useState8[1];\n  var _useSnackbar = (0,notistack__WEBPACK_IMPORTED_MODULE_1__.useSnackbar)(),\n    enqueueSnackbar = _useSnackbar.enqueueSnackbar;\n  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {\n    if (open && contaId) {\n      setLoading(true);\n      setError(null);\n      setDeleteError(null);\n      axios__WEBPACK_IMPORTED_MODULE_5__[\"default\"].get(\"/api/Contas/\".concat(contaId)).then(function (res) {\n        return setConta(res.data);\n      })[\"catch\"](function () {\n        setError('Erro ao carregar os dados da conta.');\n        enqueueSnackbar('Erro ao carregar os dados da conta!', {\n          variant: 'error'\n        });\n      })[\"finally\"](function () {\n        return setLoading(false);\n      });\n    }\n  }, [contaId, open]);\n  var handleDelete = /*#__PURE__*/function () {\n    var _ref2 = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {\n      var _error$response$data;\n      var _window$atualizarTabe, _window, errorMessage, variant, _t, _t2;\n      return _regenerator().w(function (_context) {\n        while (1) switch (_context.n) {\n          case 0:\n            _context.p = 0;\n            setDeleteError(null);\n            _context.n = 1;\n            return axios__WEBPACK_IMPORTED_MODULE_5__[\"default\"][\"delete\"](\"/api/Contas/Delete/\".concat(contaId));\n          case 1:\n            enqueueSnackbar('Conta excluída com sucesso.', {\n              variant: 'success'\n            });\n            onClose();\n            (_window$atualizarTabe = (_window = window).atualizarTabelaContas) === null || _window$atualizarTabe === void 0 || _window$atualizarTabe.call(_window, contaId);\n            _context.n = 10;\n            break;\n          case 2:\n            _context.p = 2;\n            _t = _context.v;\n            errorMessage = 'Erro ao excluir Conta.';\n            variant = 'error';\n            if (!_t.response) {\n              _context.n = 8;\n              break;\n            }\n            _t2 = _t.response.status;\n            _context.n = _t2 === 400 ? 3 : _t2 === 404 ? 4 : _t2 === 500 ? 5 : 6;\n            break;\n          case 3:\n            errorMessage = ((_error$response$data = _t.response.data) === null || _error$response$data === void 0 ? void 0 : _error$response$data.message) || 'Não é possível excluir esta Conta';\n            return _context.a(3, 7);\n          case 4:\n            errorMessage = 'Conta não encontrada';\n            return _context.a(3, 7);\n          case 5:\n            errorMessage = 'Erro interno';\n            return _context.a(3, 7);\n          case 6:\n            errorMessage = 'Erro inesperado';\n          case 7:\n            _context.n = 9;\n            break;\n          case 8:\n            if (_t.request) {\n              errorMessage = 'Sem responsta do servidor - verifique a conexão';\n            } else {\n              errorMessage = _t.message || 'Erro ao enviar requisição';\n            }\n          case 9:\n            setDeleteError(errorMessage);\n            enqueueSnackbar(errorMessage, {\n              variant: variant,\n              autoHideDuration: 5000,\n              anchorOrigin: {\n                vertical: 'top',\n                horizontal: 'right'\n              }\n            });\n          case 10:\n            return _context.a(2);\n        }\n      }, _callee, null, [[0, 2]]);\n    }));\n    return function handleDelete() {\n      return _ref2.apply(this, arguments);\n    };\n  }();\n  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_6__[\"default\"], {\n    open: open,\n    onClose: onClose,\n    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_7__[\"default\"], {\n      sx: {\n        position: 'absolute',\n        top: '50%',\n        left: '50%',\n        transform: 'translate(-50%, -50%)',\n        bgcolor: 'background.paper',\n        borderRadius: 2,\n        boxShadow: 24,\n        p: 4,\n        width: 400\n      },\n      children: loading ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_7__[\"default\"], {\n        display: \"flex\",\n        justifyContent: \"center\",\n        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_8__[\"default\"], {})\n      }) : error ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_9__[\"default\"], {\n        severity: \"error\",\n        children: error\n      }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.Fragment, {\n        children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_10__[\"default\"], {\n          variant: \"h4\",\n          justifyContent: \"center\",\n          gutterBottom: true,\n          children: \"Confirma a exclus\\xE3o?\"\n        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_11__[\"default\"], {\n          sx: {\n            borderBottomWidth: 2,\n            borderColor: 'grey.400',\n            my: 2\n          }\n        }), deleteError && /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_9__[\"default\"], {\n          severity: \"error\",\n          sx: {\n            mb: 2\n          },\n          children: deleteError\n        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_mui_material__WEBPACK_IMPORTED_MODULE_10__[\"default\"], {\n          fontSize: 15,\n          justifyContent: \"center\",\n          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(\"strong\", {\n            children: \"Descri\\xE7\\xE3o:\"\n          }), \" \", conta.descricao, \" \", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(\"br\", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(\"strong\", {\n            children: \"N\\xFAmero:\"\n          }), \" \", conta.numeroConta || '---', \" \", /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(\"br\", {}), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(\"strong\", {\n            children: \"Banco:\"\n          }), \" \", conta.banco || '---']\n        }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_mui_material__WEBPACK_IMPORTED_MODULE_7__[\"default\"], {\n          mt: 3,\n          display: \"flex\",\n          justifyContent: \"flex-end\",\n          children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_12__[\"default\"], {\n            onClick: onClose,\n            variant: \"outlined\",\n            sx: {\n              mr: 1\n            },\n            children: \"Cancelar\"\n          }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_12__[\"default\"], {\n            onClick: handleDelete,\n            variant: \"contained\",\n            color: \"error\",\n            disabled: !!deleteError,\n            children: \"Excluir\"\n          })]\n        })]\n      })\n    })\n  });\n}\nvar container = document.getElementById('conta-delete-modal-root');\nif (container) {\n  var root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_2__.createRoot)(container);\n  var showModal = function showModal(contaId) {\n    var ModalWrapper = function ModalWrapper() {\n      var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),\n        _useState0 = _slicedToArray(_useState9, 2),\n        open = _useState0[0],\n        setOpen = _useState0[1];\n      return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_Shared_AppWrapper__WEBPACK_IMPORTED_MODULE_3__[\"default\"], {\n        children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(ContaDeleteModal, {\n          open: open,\n          contaId: contaId,\n          onClose: function onClose() {\n            return setOpen(false);\n          }\n        })\n      });\n    };\n    root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(ModalWrapper, {}));\n  };\n  window.abrirModalExclusaoConta = showModal;\n}\n\n//# sourceURL=webpack://financeiroapp/./wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx?");
+
+/***/ }),
+
+/***/ "@emotion/react":
+/*!*******************************!*\
+  !*** external "emotionReact" ***!
+  \*******************************/
+/***/ ((module) => {
+
+module.exports = emotionReact;
+
+/***/ }),
+
+/***/ "@emotion/styled":
+/*!********************************!*\
+  !*** external "emotionStyled" ***!
+  \********************************/
+/***/ ((module) => {
+
+module.exports = emotionStyled;
+
+/***/ }),
+
+/***/ "react":
+/*!************************!*\
+  !*** external "React" ***!
+  \************************/
+/***/ ((module) => {
+
+module.exports = React;
+
+/***/ }),
+
+/***/ "react-dom":
+/*!***************************!*\
+  !*** external "ReactDOM" ***!
+  \***************************/
+/***/ ((module) => {
+
+module.exports = ReactDOM;
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/chunk loaded */
+/******/ 	(() => {
+/******/ 		var deferred = [];
+/******/ 		__webpack_require__.O = (result, chunkIds, fn, priority) => {
+/******/ 			if(chunkIds) {
+/******/ 				priority = priority || 0;
+/******/ 				for(var i = deferred.length; i > 0 && deferred[i - 1][2] > priority; i--) deferred[i] = deferred[i - 1];
+/******/ 				deferred[i] = [chunkIds, fn, priority];
+/******/ 				return;
+/******/ 			}
+/******/ 			var notFulfilled = Infinity;
+/******/ 			for (var i = 0; i < deferred.length; i++) {
+/******/ 				var [chunkIds, fn, priority] = deferred[i];
+/******/ 				var fulfilled = true;
+/******/ 				for (var j = 0; j < chunkIds.length; j++) {
+/******/ 					if ((priority & 1 === 0 || notFulfilled >= priority) && Object.keys(__webpack_require__.O).every((key) => (__webpack_require__.O[key](chunkIds[j])))) {
+/******/ 						chunkIds.splice(j--, 1);
+/******/ 					} else {
+/******/ 						fulfilled = false;
+/******/ 						if(priority < notFulfilled) notFulfilled = priority;
+/******/ 					}
+/******/ 				}
+/******/ 				if(fulfilled) {
+/******/ 					deferred.splice(i--, 1)
+/******/ 					var r = fn();
+/******/ 					if (r !== undefined) result = r;
+/******/ 				}
+/******/ 			}
+/******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	(() => {
+/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		var leafPrototypes;
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 16: return value when it's Promise-like
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if(typeof value === 'object' && value) {
+/******/ 				if((mode & 4) && value.__esModule) return value;
+/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 			}
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			var def = {};
+/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 			}
+/******/ 			def['default'] = () => (value);
+/******/ 			__webpack_require__.d(ns, def);
+/******/ 			return ns;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"ContaDeleteModal": 0
+/******/ 		};
+/******/ 		
+/******/ 		// no chunk on demand loading
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		__webpack_require__.O.j = (chunkId) => (installedChunks[chunkId] === 0);
+/******/ 		
+/******/ 		// install a JSONP callback for chunk loading
+/******/ 		var webpackJsonpCallback = (parentChunkLoadingFunction, data) => {
+/******/ 			var [chunkIds, moreModules, runtime] = data;
+/******/ 			// add "moreModules" to the modules object,
+/******/ 			// then flag all "chunkIds" as loaded and fire callback
+/******/ 			var moduleId, chunkId, i = 0;
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
+/******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
+/******/ 			}
+/******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
+/******/ 			for(;i < chunkIds.length; i++) {
+/******/ 				chunkId = chunkIds[i];
+/******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 					installedChunks[chunkId][0]();
+/******/ 				}
+/******/ 				installedChunks[chunkId] = 0;
+/******/ 			}
+/******/ 			return __webpack_require__.O(result);
+/******/ 		}
+/******/ 		
+/******/ 		var chunkLoadingGlobal = self["webpackChunkfinanceiroapp"] = self["webpackChunkfinanceiroapp"] || [];
+/******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
+/******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["vendors"], () => (__webpack_require__("./wwwroot/js/components/ContaBancaria/ContaDeleteModal.jsx")))
+/******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
+/******/ 	
+/******/ })()
+;

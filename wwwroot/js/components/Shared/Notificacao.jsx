@@ -7,19 +7,17 @@ function Notificacao() {
   const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
-    if (window.__notificacao_sucesso) {
-      enqueueSnackbar(window.__notificacao_sucesso, { variant: 'success' })
-      window.__notificacao_sucesso = null
+    const handleNotificacao = (event) => {
+      const { mensagem, variant } = event.detail
+      enqueueSnackbar(mensagem, { variant })
     }
-    if (window.__notificacao_alerta) {
-      enqueueSnackbar(window.__notificacao_alerta, { variant: 'warning' })
-      window.__notificacao_alerta = null
+
+    window.addEventListener('onNotificacao', handleNotificacao)
+
+    return () => {
+      window.removeEventListener('onNotificacao', handleNotificacao)
     }
-    if (window.__notificacao_erro) {
-      enqueueSnackbar(window.__notificacao_erro, { variant: 'error' })
-      window.__notificacao_erro = null
-    }
-  }, [])
+  }, [enqueueSnackbar])
 
   return null
 }

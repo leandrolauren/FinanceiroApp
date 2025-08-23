@@ -2,8 +2,12 @@ using System.Security.Claims;
 using FinanceiroApp.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
+[Route("[controller]")]
+[ApiController]
 public class LoginController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -14,21 +18,21 @@ public class LoginController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index() => View();
+    [AllowAnonymous]
+    public IActionResult Index()
+    {
+        return View();
+    }
 
     [HttpPost]
-    public async Task<IActionResult> Index(LoginViewModel model)
+    [AllowAnonymous]
+    public async Task<IActionResult> Login([FromBody] LoginViewModel model)
     {
-        if (!ModelState.IsValid)
-        {
-            ViewBag.NotificacaoErro = "Usuario ou senha invalidos.";
-            return View(model);
-        }
-        var user = _context.Usuarios.FirstOrDefault(u => u.Email == model.Email);
+        var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
+
         if (user == null || !BCrypt.Net.BCrypt.Verify(model.Senha, user.SenhaHash))
         {
-            ViewBag.NotificacaoErro = "Usuario ou senha invalidos.";
-            return View(model);
+            return Unauthorized(new { success = false, message = "Credenciais inválidas." });
         }
 
         var claims = new List<Claim>
@@ -38,21 +42,36 @@ public class LoginController : Controller
             new Claim(ClaimTypes.Email, user.Email),
         };
 
-        var identity = new ClaimsIdentity(
+        var claimsIdentity = new ClaimsIdentity(
             claims,
             CookieAuthenticationDefaults.AuthenticationScheme
         );
-        var principal = new ClaimsPrincipal(identity);
 
-        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+        var authProperties = new AuthenticationProperties
+        {
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2),
+        };
 
-        return RedirectToAction("Index", "Home");
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity),
+            authProperties
+        );
+
+        return Ok(new { success = true, message = "Login realizado com sucesso." });
     }
 
-    [HttpPost]
+    // POST: /Login/Logout
+    [HttpPost("Logout")]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync();
-        return RedirectToAction("Index");
+        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+        if (Request.Headers["Accept"].ToString().Contains("application/json"))
+        {
+            return Ok(new { success = true, message = "Logout realizado com sucesso." });
+        }
+        return RedirectToAction(nameof(Index));
     }
 }

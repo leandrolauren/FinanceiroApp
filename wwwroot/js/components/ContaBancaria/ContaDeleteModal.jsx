@@ -26,7 +26,7 @@ function ContaDeleteModal({ open, onClose, contaId }) {
       setError(null)
       setDeleteError(null)
       axios
-        .get(`/Contas/GetContaEx/${contaId}`)
+        .get(`/api/Contas/${contaId}`)
         .then((res) => setConta(res.data))
         .catch(() => {
           setError('Erro ao carregar os dados da conta.')
@@ -41,7 +41,7 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   const handleDelete = async () => {
     try {
       setDeleteError(null)
-      await axios.delete(`/Contas/DeleteConfirmed/${contaId}`)
+      await axios.delete(`/api/Contas/Delete/${contaId}`)
       enqueueSnackbar('Conta excluída com sucesso.', { variant: 'success' })
       onClose()
       window.atualizarTabelaContas?.(contaId)

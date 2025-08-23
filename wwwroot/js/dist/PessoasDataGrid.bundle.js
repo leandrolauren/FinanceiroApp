@@ -1,2 +1,257 @@
-/*! For license information please see PessoasDataGrid.bundle.js.LICENSE.txt */
-(()=>{"use strict";var e,t,r,n={41594:e=>{e.exports=React},41787:e=>{e.exports=emotionReact},75206:e=>{e.exports=ReactDOM},84871:(e,t,r)=>{var n=r(41594),o=r.n(n),a=r(79699),i=r(34477),l=r(48227),c=r(17210),u=r(5338),f=r(98638),s=r(7514);function d(e){var t=e.children;return o().createElement(s.n,{maxSnack:3,autoHideDuration:3e3,anchorOrigin:{vertical:"top",horizontal:"right"},preventDuplicate:!0},t)}function p(e){return p="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},p(e)}function m(){var e,t,r="function"==typeof Symbol?Symbol:{},n=r.iterator||"@@iterator",o=r.toStringTag||"@@toStringTag";function a(r,n,o,a){var c=n&&n.prototype instanceof l?n:l,u=Object.create(c.prototype);return y(u,"_invoke",function(r,n,o){var a,l,c,u=0,f=o||[],s=!1,d={p:0,n:0,v:e,a:p,f:p.bind(e,4),d:function(t,r){return a=t,l=0,c=e,d.n=r,i}};function p(r,n){for(l=r,c=n,t=0;!s&&u&&!o&&t<f.length;t++){var o,a=f[t],p=d.p,m=a[2];r>3?(o=m===n)&&(c=a[(l=a[4])?5:(l=3,3)],a[4]=a[5]=e):a[0]<=p&&((o=r<2&&p<a[1])?(l=0,d.v=n,d.n=a[1]):p<m&&(o=r<3||a[0]>n||n>m)&&(a[4]=r,a[5]=n,d.n=m,l=0))}if(o||r>1)return i;throw s=!0,n}return function(o,f,m){if(u>1)throw TypeError("Generator is already running");for(s&&1===f&&p(f,m),l=f,c=m;(t=l<2?e:c)||!s;){a||(l?l<3?(l>1&&(d.n=-1),p(l,c)):d.n=c:d.v=c);try{if(u=2,a){if(l||(o="next"),t=a[o]){if(!(t=t.call(a,c)))throw TypeError("iterator result is not an object");if(!t.done)return t;c=t.value,l<2&&(l=0)}else 1===l&&(t=a.return)&&t.call(a),l<2&&(c=TypeError("The iterator does not provide a '"+o+"' method"),l=1);a=e}else if((t=(s=d.n<0)?c:r.call(n,d))!==i)break}catch(t){a=e,l=1,c=t}finally{u=1}}return{value:t,done:s}}}(r,o,a),!0),u}var i={};function l(){}function c(){}function u(){}t=Object.getPrototypeOf;var f=[][n]?t(t([][n]())):(y(t={},n,function(){return this}),t),s=u.prototype=l.prototype=Object.create(f);function d(e){return Object.setPrototypeOf?Object.setPrototypeOf(e,u):(e.__proto__=u,y(e,o,"GeneratorFunction")),e.prototype=Object.create(s),e}return c.prototype=u,y(s,"constructor",u),y(u,"constructor",c),c.displayName="GeneratorFunction",y(u,o,"GeneratorFunction"),y(s),y(s,o,"Generator"),y(s,n,function(){return this}),y(s,"toString",function(){return"[object Generator]"}),(m=function(){return{w:a,m:d}})()}function y(e,t,r,n){var o=Object.defineProperty;try{o({},"",{})}catch(e){o=0}y=function(e,t,r,n){if(t)o?o(e,t,{value:r,enumerable:!n,configurable:!n,writable:!n}):e[t]=r;else{var a=function(t,r){y(e,t,function(e){return this._invoke(t,r,e)})};a("next",0),a("throw",1),a("return",2)}},y(e,t,r,n)}function h(e,t,r,n,o,a,i){try{var l=e[a](i),c=l.value}catch(e){return void r(e)}l.done?t(c):Promise.resolve(c).then(n,o)}function b(e,t){var r=Object.keys(e);if(Object.getOwnPropertySymbols){var n=Object.getOwnPropertySymbols(e);t&&(n=n.filter(function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable})),r.push.apply(r,n)}return r}function v(e){for(var t=1;t<arguments.length;t++){var r=null!=arguments[t]?arguments[t]:{};t%2?b(Object(r),!0).forEach(function(t){g(e,t,r[t])}):Object.getOwnPropertyDescriptors?Object.defineProperties(e,Object.getOwnPropertyDescriptors(r)):b(Object(r)).forEach(function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(r,t))})}return e}function g(e,t,r){return(t=function(e){var t=function(e){if("object"!=p(e)||!e)return e;var t=e[Symbol.toPrimitive];if(void 0!==t){var r=t.call(e,"string");if("object"!=p(r))return r;throw new TypeError("@@toPrimitive must return a primitive value.")}return String(e)}(e);return"symbol"==p(t)?t:t+""}(t))in e?Object.defineProperty(e,t,{value:r,enumerable:!0,configurable:!0,writable:!0}):e[t]=r,e}function O(e,t){return function(e){if(Array.isArray(e))return e}(e)||function(e,t){var r=null==e?null:"undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(null!=r){var n,o,a,i,l=[],c=!0,u=!1;try{if(a=(r=r.call(e)).next,0===t){if(Object(r)!==r)return;c=!1}else for(;!(c=(n=a.call(r)).done)&&(l.push(n.value),l.length!==t);c=!0);}catch(e){u=!0,o=e}finally{try{if(!c&&null!=r.return&&(i=r.return(),Object(i)!==i))return}finally{if(u)throw o}}return l}}(e,t)||function(e,t){if(e){if("string"==typeof e)return S(e,t);var r={}.toString.call(e).slice(8,-1);return"Object"===r&&e.constructor&&(r=e.constructor.name),"Map"===r||"Set"===r?Array.from(e):"Arguments"===r||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(r)?S(e,t):void 0}}(e,t)||function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function S(e,t){(null==t||t>e.length)&&(t=e.length);for(var r=0,n=Array(t);r<t;r++)n[r]=e[r];return n}var x=function(e){return e?new Date(e).toLocaleDateString("pt-BR"):"---"},w=[{field:"nome",headerName:"Nome",flex:1.5,renderCell:function(e){return n.createElement(i.A,{sx:{whiteSpace:"normal",wordBreak:"break-word",lineHeight:"1.2"}},e.value)}},{field:"razaoSocial",headerName:"Razão Social",flex:1,renderCell:function(e){return n.createElement(i.A,{sx:{whiteSpace:"normal",wordBreak:"break-word",lineHeight:"1.2"}},e.value)}},{field:"nomeFantasia",headerName:"Nome Fantasia",flex:1,renderCell:function(e){return n.createElement(i.A,{sx:{whiteSpace:"normal",wordBreak:"break-word",lineHeight:"1.2"}},e.value)}},{field:"cnpj",headerName:"CNPJ",flex:1},{field:"inscricaoEstadual",headerName:"Inscrição Estadual",flex:1},{field:"cpf",headerName:"CPF",flex:1},{field:"rg",headerName:"RG",flex:1},{field:"dataNascimento",headerName:"Data de Nascimento",flex:1},{field:"telefone",headerName:"Telefone",flex:1},{field:"email",headerName:"E-mail",flex:1,renderCell:function(e){return n.createElement(i.A,{sx:{whiteSpace:"normal",wordBreak:"break-word",lineHeight:"1.2"}},e.value)}},{field:"cep",headerName:"CEP",flex:1},{field:"endereco",headerName:"Endereço",flex:1},{field:"numero",headerName:"Número",flex:.5},{field:"bairro",headerName:"Bairro",flex:.8},{field:"cidade",headerName:"Cidade",flex:.7},{field:"estado",headerName:"Estado",flex:.4},{field:"complemento",headerName:"Complemento",flex:.7},{field:"acoes",headerName:"Ações",width:180,sortable:!1,disableColumnMenu:!0,hideable:!1,pinned:!1,resizable:!1,renderCell:function(e){return n.createElement(i.A,{sx:{display:"flex",gap:1,minWidth:240}},n.createElement(l.A,{variant:"outlined",color:"warning",size:"small",href:"/Pessoas/EditPessoa/".concat(e.id)},"Editar"),n.createElement(l.A,{variant:"outlined",color:"error",size:"small",onClick:function(){return window.abrirModalExclusaoPessoa(e)}},"Excluir"))}}];function j(){var e=O((0,n.useState)([]),2),t=e[0],r=e[1],o=O((0,n.useState)(!0),2),u=o[0],d=o[1],p=O((0,n.useState)(function(){var e=localStorage.getItem("pessoasGridState");return e?JSON.parse(e):{columns:{columnVisibilityModel:{acoes:!0}},sorting:{sortModel:[]},pagination:{pageSize:25},dimensions:{},layout:{height:500}}}),2),y=p[0],b=p[1],g=function(e){b(function(t){return v(v({},t),e)})};return(0,n.useEffect)(function(){localStorage.setItem("pessoasGridState",JSON.stringify(y))},[y]),(0,n.useEffect)(function(){var e=function(){var e,t=(e=m().m(function e(){var t,n,o,a;return m().w(function(e){for(;;)switch(e.n){case 0:return e.p=0,e.n=1,fetch("/Pessoas/GetPessoas");case 1:return t=e.v,e.n=2,t.json();case 2:n=e.v,o=n.map(function(e){return v(v({},e),{},{dataNascimento:x(e.dataNascimento),cpf:(o=e.cpf,o?o.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/,"$1.$2.$3-$4"):""),cnpj:(n=e.cnpj,n?n.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,"$1.$2.$3/$4-$5"):""),telefone:(r=e.telefone,r?11===r.length?r.replace(/^(\d{2})(\d{5})(\d{4})$/,"($1) $2-$3"):10===r.length?r.replace(/^(\d{2})(\d{4})(\d{4})$/,"($1) $2-$3"):r:""),cep:(t=e.cep,t?t.replace(/^(\d{5})(\d{3})$/,"$1-$2"):"")});var t,r,n,o}),r(o),e.n=4;break;case 3:e.p=3,a=e.v,(0,s.M8)("Erro ao carregar as Pessoas",{variant:"error"}),console.error("Erro ao carregar as Pessoas: ",a);case 4:return e.p=4,d(!1),e.f(4);case 5:return e.a(2)}},e,null,[[0,3,4,5]])}),function(){var t=this,r=arguments;return new Promise(function(n,o){var a=e.apply(t,r);function i(e){h(a,n,o,i,l,"next",e)}function l(e){h(a,n,o,i,l,"throw",e)}i(void 0)})});return function(){return t.apply(this,arguments)}}();e()},[]),(0,n.useEffect)(function(){window.atualizarTabelaPessoas=function(e){r(function(t){return t.filter(function(t){return t.id!==e})})}},[]),n.createElement(i.A,{sx:{height:"100%",display:"flex",flexDirection:"column",gap:2}},n.createElement(l.A,{variant:"contained",href:"/Pessoas/CreatePessoa",sx:{alignSelf:"flex-start"}},"Nova Pessoa"),u?n.createElement(i.A,{sx:{display:"flex",justifyContent:"center",mt:4}},n.createElement(c.A,null)):n.createElement("div",{className:"datagrid-container",style:{resize:"vertical",overflow:"auto",height:y.layout.height,minHeight:300},onMouseUp:function(){var e=document.querySelector(".datagrid-container");if(e){var t=e.clientHeight;t>300&&g({layout:v(v({},y.layout),{},{height:t})})}}},n.createElement(a.z,{rows:t,columns:w,getRowId:function(e){return e.id},rowsPerPageOptions:[5,10,20],localeText:f.F.components.MuiDataGrid.defaultProps.localeText,disableRowSelectionOnClick:!0,sx:{"& .MuiDataGrid-cell":{padding:"8px 16px",fontSize:"0.975rem"},"& .MuiDataGrid-columnHeaderTitle":{fontWeight:"bold"},"& .MuiDataGrid-columnHeader":{backgroundColor:"#f5f5f5"}},columnVisibilityModel:y.columns.columnVisibilityModel,sortModel:y.sorting.sortModel,pageSize:y.pagination.pageSize,onPageSizeChange:function(e){return g({pagination:{pageSize:e}})},onColumnVisibilityModelChange:function(e){return g({columns:v(v({},y.columns),{},{columnVisibilityModel:e})})},onSortModelChange:function(e){return g({sorting:{sortModel:e}})},initialState:{columns:{columnVisibilityModel:y.columns.columnVisibilityModel},sorting:{sortModel:y.sorting.sortModel},pagination:{pageSize:y.pagination.pageSize}}})))}var P=document.getElementById("pessoas-table-root");P&&(0,u.H)(P).render(n.createElement(d,null,n.createElement(j,null)))},99887:e=>{e.exports=emotionStyled}},o={};function a(e){var t=o[e];if(void 0!==t)return t.exports;var r=o[e]={exports:{}};return n[e](r,r.exports,a),r.exports}a.m=n,e=[],a.O=(t,r,n,o)=>{if(!r){var i=1/0;for(f=0;f<e.length;f++){for(var[r,n,o]=e[f],l=!0,c=0;c<r.length;c++)(!1&o||i>=o)&&Object.keys(a.O).every(e=>a.O[e](r[c]))?r.splice(c--,1):(l=!1,o<i&&(i=o));if(l){e.splice(f--,1);var u=n();void 0!==u&&(t=u)}}return t}o=o||0;for(var f=e.length;f>0&&e[f-1][2]>o;f--)e[f]=e[f-1];e[f]=[r,n,o]},a.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return a.d(t,{a:t}),t},r=Object.getPrototypeOf?e=>Object.getPrototypeOf(e):e=>e.__proto__,a.t=function(e,n){if(1&n&&(e=this(e)),8&n)return e;if("object"==typeof e&&e){if(4&n&&e.__esModule)return e;if(16&n&&"function"==typeof e.then)return e}var o=Object.create(null);a.r(o);var i={};t=t||[null,r({}),r([]),r(r)];for(var l=2&n&&e;"object"==typeof l&&!~t.indexOf(l);l=r(l))Object.getOwnPropertyNames(l).forEach(t=>i[t]=()=>e[t]);return i.default=()=>e,a.d(o,i),o},a.d=(e,t)=>{for(var r in t)a.o(t,r)&&!a.o(e,r)&&Object.defineProperty(e,r,{enumerable:!0,get:t[r]})},a.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),a.r=e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})},a.j=303,(()=>{var e={303:0};a.O.j=t=>0===e[t];var t=(t,r)=>{var n,o,[i,l,c]=r,u=0;if(i.some(t=>0!==e[t])){for(n in l)a.o(l,n)&&(a.m[n]=l[n]);if(c)var f=c(a)}for(t&&t(r);u<i.length;u++)o=i[u],a.o(e,o)&&e[o]&&e[o][0](),e[o]=0;return a.O(f)},r=self.webpackChunkfinanceiroapp=self.webpackChunkfinanceiroapp||[];r.forEach(t.bind(null,0)),r.push=t.bind(null,r.push.bind(r))})();var i=a.O(void 0,[96],()=>a(84871));i=a.O(i)})();
+/*
+ * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+/******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./wwwroot/js/components/Pessoa/PessoasDataGrid.jsx":
+/*!**********************************************************!*\
+  !*** ./wwwroot/js/components/Pessoa/PessoasDataGrid.jsx ***!
+  \**********************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ PessoasDataGrid)\n/* harmony export */ });\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ \"react\");\n/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);\n/* harmony import */ var _mui_x_data_grid__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! @mui/x-data-grid */ \"./node_modules/@mui/x-data-grid/esm/DataGrid/DataGrid.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Box/Box.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/Button/Button.js\");\n/* harmony import */ var _mui_material__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! @mui/material */ \"./node_modules/@mui/material/esm/CircularProgress/CircularProgress.js\");\n/* harmony import */ var react_dom_client__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom/client */ \"./node_modules/react-dom/client.js\");\n/* harmony import */ var _mui_x_data_grid_locales__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @mui/x-data-grid/locales */ \"./node_modules/@mui/x-data-grid/esm/locales/ptBR.js\");\n/* harmony import */ var _Shared_AppWrapper__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../Shared/AppWrapper */ \"./wwwroot/js/components/Shared/AppWrapper.jsx\");\n/* harmony import */ var notistack__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! notistack */ \"./node_modules/notistack/notistack.esm.js\");\n/* harmony import */ var react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react/jsx-runtime */ \"./node_modules/react/jsx-runtime.js\");\nfunction _typeof(o) { \"@babel/helpers - typeof\"; return _typeof = \"function\" == typeof Symbol && \"symbol\" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && \"function\" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? \"symbol\" : typeof o; }, _typeof(o); }\nfunction _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = \"function\" == typeof Symbol ? Symbol : {}, n = r.iterator || \"@@iterator\", o = r.toStringTag || \"@@toStringTag\"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, \"_invoke\", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError(\"Generator is already running\"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = \"next\"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError(\"iterator result is not an object\"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i[\"return\"]) && t.call(i), c < 2 && (u = TypeError(\"The iterator does not provide a '\" + o + \"' method\"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, \"GeneratorFunction\")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, \"constructor\", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, \"constructor\", GeneratorFunction), GeneratorFunction.displayName = \"GeneratorFunction\", _regeneratorDefine2(GeneratorFunctionPrototype, o, \"GeneratorFunction\"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, \"Generator\"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, \"toString\", function () { return \"[object Generator]\"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }\nfunction _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, \"\", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { if (r) i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n;else { var o = function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); }; o(\"next\", 0), o(\"throw\", 1), o(\"return\", 2); } }, _regeneratorDefine2(e, r, n, t); }\nfunction asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }\nfunction _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, \"next\", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, \"throw\", n); } _next(void 0); }); }; }\nfunction ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }\nfunction _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }\nfunction _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }\nfunction _toPropertyKey(t) { var i = _toPrimitive(t, \"string\"); return \"symbol\" == _typeof(i) ? i : i + \"\"; }\nfunction _toPrimitive(t, r) { if (\"object\" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || \"default\"); if (\"object\" != _typeof(i)) return i; throw new TypeError(\"@@toPrimitive must return a primitive value.\"); } return (\"string\" === r ? String : Number)(t); }\nfunction _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }\nfunction _nonIterableRest() { throw new TypeError(\"Invalid attempt to destructure non-iterable instance.\\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.\"); }\nfunction _unsupportedIterableToArray(r, a) { if (r) { if (\"string\" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return \"Object\" === t && r.constructor && (t = r.constructor.name), \"Map\" === t || \"Set\" === t ? Array.from(r) : \"Arguments\" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }\nfunction _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }\nfunction _iterableToArrayLimit(r, l) { var t = null == r ? null : \"undefined\" != typeof Symbol && r[Symbol.iterator] || r[\"@@iterator\"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t[\"return\"] && (u = t[\"return\"](), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }\nfunction _arrayWithHoles(r) { if (Array.isArray(r)) return r; }\n\n\n\n\n\n\n\n\n\nfunction formatarCpf(cpf) {\n  if (!cpf) return '';\n  return cpf.replace(/^(\\d{3})(\\d{3})(\\d{3})(\\d{2})$/, '$1.$2.$3-$4');\n}\nfunction formatarCnpj(cnpj) {\n  if (!cnpj) return '';\n  return cnpj.replace(/^(\\d{2})(\\d{3})(\\d{3})(\\d{4})(\\d{2})$/, '$1.$2.$3/$4-$5');\n}\nfunction formatarTelefone(tel) {\n  if (!tel) return '';\n  if (tel.length === 11) return tel.replace(/^(\\d{2})(\\d{5})(\\d{4})$/, '($1) $2-$3');\n  if (tel.length === 10) return tel.replace(/^(\\d{2})(\\d{4})(\\d{4})$/, '($1) $2-$3');\n  return tel;\n}\nfunction formatarCep(cep) {\n  if (!cep) return '';\n  return cep.replace(/^(\\d{5})(\\d{3})$/, '$1-$2');\n}\nvar formatarData = function formatarData(data) {\n  if (!data) return '---';\n  return new Date(data).toLocaleDateString('pt-BR');\n};\nvar columns = [{\n  field: 'nome',\n  headerName: 'Nome',\n  flex: 1.5,\n  renderCell: function renderCell(params) {\n    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n      sx: {\n        whiteSpace: 'normal',\n        wordBreak: 'break-word',\n        lineHeight: '1.2'\n      },\n      children: params.value\n    });\n  }\n}, {\n  field: 'razaoSocial',\n  headerName: 'Razão Social',\n  flex: 1,\n  renderCell: function renderCell(params) {\n    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n      sx: {\n        whiteSpace: 'normal',\n        wordBreak: 'break-word',\n        lineHeight: '1.2'\n      },\n      children: params.value\n    });\n  }\n}, {\n  field: 'nomeFantasia',\n  headerName: 'Nome Fantasia',\n  flex: 1,\n  renderCell: function renderCell(params) {\n    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n      sx: {\n        whiteSpace: 'normal',\n        wordBreak: 'break-word',\n        lineHeight: '1.2'\n      },\n      children: params.value\n    });\n  }\n}, {\n  field: 'cnpj',\n  headerName: 'CNPJ',\n  flex: 1\n}, {\n  field: 'inscricaoEstadual',\n  headerName: 'Inscrição Estadual',\n  flex: 1\n}, {\n  field: 'cpf',\n  headerName: 'CPF',\n  flex: 1\n}, {\n  field: 'rg',\n  headerName: 'RG',\n  flex: 1\n}, {\n  field: 'dataNascimento',\n  headerName: 'Data de Nascimento',\n  flex: 1\n}, {\n  field: 'telefone',\n  headerName: 'Telefone',\n  flex: 1\n}, {\n  field: 'email',\n  headerName: 'E-mail',\n  flex: 1,\n  renderCell: function renderCell(params) {\n    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n      sx: {\n        whiteSpace: 'normal',\n        wordBreak: 'break-word',\n        lineHeight: '1.2'\n      },\n      children: params.value\n    });\n  }\n}, {\n  field: 'cep',\n  headerName: 'CEP',\n  flex: 1\n}, {\n  field: 'endereco',\n  headerName: 'Endereço',\n  flex: 1\n}, {\n  field: 'numero',\n  headerName: 'Número',\n  flex: 0.5\n}, {\n  field: 'bairro',\n  headerName: 'Bairro',\n  flex: 0.8\n}, {\n  field: 'cidade',\n  headerName: 'Cidade',\n  flex: 0.7\n}, {\n  field: 'estado',\n  headerName: 'Estado',\n  flex: 0.4\n}, {\n  field: 'complemento',\n  headerName: 'Complemento',\n  flex: 0.7\n}, {\n  field: 'acoes',\n  headerName: 'Ações',\n  width: 180,\n  sortable: false,\n  disableColumnMenu: true,\n  hideable: false,\n  pinned: false,\n  resizable: false,\n  renderCell: function renderCell(pessoa) {\n    return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n      sx: {\n        display: 'flex',\n        gap: 1,\n        minWidth: 240\n      },\n      children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_6__[\"default\"], {\n        variant: \"outlined\",\n        color: \"warning\",\n        size: \"small\",\n        href: \"/Pessoas/EditPessoa/\".concat(pessoa.id),\n        children: \"Editar\"\n      }), /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_6__[\"default\"], {\n        variant: \"outlined\",\n        color: \"error\",\n        size: \"small\",\n        onClick: function onClick() {\n          return window.abrirModalExclusaoPessoa(pessoa);\n        },\n        children: \"Excluir\"\n      })]\n    });\n  }\n}];\nfunction PessoasDataGrid() {\n  var _useState = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),\n    _useState2 = _slicedToArray(_useState, 2),\n    rows = _useState2[0],\n    setRows = _useState2[1];\n  var _useState3 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true),\n    _useState4 = _slicedToArray(_useState3, 2),\n    loading = _useState4[0],\n    setLoading = _useState4[1];\n  var _useState5 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(function () {\n      var savedState = localStorage.getItem('pessoasGridState');\n      return savedState ? JSON.parse(savedState) : {\n        columns: {\n          columnVisibilityModel: {\n            acoes: true\n          }\n        },\n        sorting: {\n          sortModel: []\n        },\n        pagination: {\n          pageSize: 25\n        },\n        dimensions: {},\n        layout: {\n          height: 500\n        }\n      };\n    }),\n    _useState6 = _slicedToArray(_useState5, 2),\n    gridState = _useState6[0],\n    setGridState = _useState6[1];\n  var handleResize = function handleResize() {\n    var container = document.querySelector('.datagrid-container');\n    if (container) {\n      var newHeight = container.clientHeight;\n      if (newHeight > 300) {\n        handleStateChange({\n          layout: _objectSpread(_objectSpread({}, gridState.layout), {}, {\n            height: newHeight\n          })\n        });\n      }\n    }\n  };\n  var handleStateChange = function handleStateChange(newState) {\n    setGridState(function (prev) {\n      return _objectSpread(_objectSpread({}, prev), newState);\n    });\n  };\n  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {\n    localStorage.setItem('pessoasGridState', JSON.stringify(gridState));\n  }, [gridState]);\n  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {\n    var fetchData = /*#__PURE__*/function () {\n      var _ref = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {\n        var response, data, _rows, _t;\n        return _regenerator().w(function (_context) {\n          while (1) switch (_context.n) {\n            case 0:\n              _context.p = 0;\n              _context.n = 1;\n              return fetch('/Pessoas/GetPessoas');\n            case 1:\n              response = _context.v;\n              _context.n = 2;\n              return response.json();\n            case 2:\n              data = _context.v;\n              _rows = data.map(function (item) {\n                return _objectSpread(_objectSpread({}, item), {}, {\n                  dataNascimento: formatarData(item.dataNascimento),\n                  cpf: formatarCpf(item.cpf),\n                  cnpj: formatarCnpj(item.cnpj),\n                  telefone: formatarTelefone(item.telefone),\n                  cep: formatarCep(item.cep)\n                });\n              });\n              setRows(_rows);\n              _context.n = 4;\n              break;\n            case 3:\n              _context.p = 3;\n              _t = _context.v;\n              (0,notistack__WEBPACK_IMPORTED_MODULE_3__.enqueueSnackbar)('Erro ao carregar as Pessoas', {\n                variant: 'error'\n              });\n              console.error('Erro ao carregar as Pessoas: ', _t);\n            case 4:\n              _context.p = 4;\n              setLoading(false);\n              return _context.f(4);\n            case 5:\n              return _context.a(2);\n          }\n        }, _callee, null, [[0, 3, 4, 5]]);\n      }));\n      return function fetchData() {\n        return _ref.apply(this, arguments);\n      };\n    }();\n    fetchData();\n  }, []);\n  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {\n    window.atualizarTabelaPessoas = function (idRemovido) {\n      setRows(function (prevRows) {\n        return prevRows.filter(function (p) {\n          return p.id !== idRemovido;\n        });\n      });\n    };\n  }, []);\n  return /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsxs)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n    sx: {\n      height: '100%',\n      display: 'flex',\n      flexDirection: 'column',\n      gap: 2\n    },\n    children: [/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_6__[\"default\"], {\n      variant: \"contained\",\n      href: \"/Pessoas/CreatePessoa\",\n      sx: {\n        alignSelf: 'flex-start'\n      },\n      children: \"Nova Pessoa\"\n    }), loading ? /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_5__[\"default\"], {\n      sx: {\n        display: 'flex',\n        justifyContent: 'center',\n        mt: 4\n      },\n      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_material__WEBPACK_IMPORTED_MODULE_7__[\"default\"], {})\n    }) : /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(\"div\", {\n      className: \"datagrid-container\",\n      style: {\n        resize: 'vertical',\n        overflow: 'auto',\n        height: gridState.layout.height,\n        minHeight: 300\n      },\n      onMouseUp: handleResize,\n      children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_mui_x_data_grid__WEBPACK_IMPORTED_MODULE_8__.DataGrid, {\n        rows: rows,\n        columns: columns,\n        getRowId: function getRowId(row) {\n          return row.id;\n        },\n        rowsPerPageOptions: [5, 10, 20],\n        localeText: _mui_x_data_grid_locales__WEBPACK_IMPORTED_MODULE_9__.ptBR.components.MuiDataGrid.defaultProps.localeText,\n        disableRowSelectionOnClick: true,\n        sx: {\n          '& .MuiDataGrid-cell': {\n            padding: '8px 16px',\n            fontSize: '0.975rem'\n          },\n          '& .MuiDataGrid-columnHeaderTitle': {\n            fontWeight: 'bold'\n          },\n          '& .MuiDataGrid-columnHeader': {\n            backgroundColor: '#f5f5f5'\n          }\n        },\n        columnVisibilityModel: gridState.columns.columnVisibilityModel,\n        sortModel: gridState.sorting.sortModel,\n        pageSize: gridState.pagination.pageSize,\n        onPageSizeChange: function onPageSizeChange(newPageSize) {\n          return handleStateChange({\n            pagination: {\n              pageSize: newPageSize\n            }\n          });\n        },\n        onColumnVisibilityModelChange: function onColumnVisibilityModelChange(newModel) {\n          return handleStateChange({\n            columns: _objectSpread(_objectSpread({}, gridState.columns), {}, {\n              columnVisibilityModel: newModel\n            })\n          });\n        },\n        onSortModelChange: function onSortModelChange(newModel) {\n          return handleStateChange({\n            sorting: {\n              sortModel: newModel\n            }\n          });\n        },\n        initialState: {\n          columns: {\n            columnVisibilityModel: gridState.columns.columnVisibilityModel\n          },\n          sorting: {\n            sortModel: gridState.sorting.sortModel\n          },\n          pagination: {\n            pageSize: gridState.pagination.pageSize\n          }\n        }\n      })\n    })]\n  });\n}\nvar rootElement = document.getElementById('pessoas-table-root');\nif (rootElement) {\n  var root = (0,react_dom_client__WEBPACK_IMPORTED_MODULE_1__.createRoot)(rootElement);\n  root.render(/*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(_Shared_AppWrapper__WEBPACK_IMPORTED_MODULE_2__[\"default\"], {\n    children: /*#__PURE__*/(0,react_jsx_runtime__WEBPACK_IMPORTED_MODULE_4__.jsx)(PessoasDataGrid, {})\n  }));\n}\n\n//# sourceURL=webpack://financeiroapp/./wwwroot/js/components/Pessoa/PessoasDataGrid.jsx?");
+
+/***/ }),
+
+/***/ "@emotion/react":
+/*!*******************************!*\
+  !*** external "emotionReact" ***!
+  \*******************************/
+/***/ ((module) => {
+
+module.exports = emotionReact;
+
+/***/ }),
+
+/***/ "@emotion/styled":
+/*!********************************!*\
+  !*** external "emotionStyled" ***!
+  \********************************/
+/***/ ((module) => {
+
+module.exports = emotionStyled;
+
+/***/ }),
+
+/***/ "react":
+/*!************************!*\
+  !*** external "React" ***!
+  \************************/
+/***/ ((module) => {
+
+module.exports = React;
+
+/***/ }),
+
+/***/ "react-dom":
+/*!***************************!*\
+  !*** external "ReactDOM" ***!
+  \***************************/
+/***/ ((module) => {
+
+module.exports = ReactDOM;
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/chunk loaded */
+/******/ 	(() => {
+/******/ 		var deferred = [];
+/******/ 		__webpack_require__.O = (result, chunkIds, fn, priority) => {
+/******/ 			if(chunkIds) {
+/******/ 				priority = priority || 0;
+/******/ 				for(var i = deferred.length; i > 0 && deferred[i - 1][2] > priority; i--) deferred[i] = deferred[i - 1];
+/******/ 				deferred[i] = [chunkIds, fn, priority];
+/******/ 				return;
+/******/ 			}
+/******/ 			var notFulfilled = Infinity;
+/******/ 			for (var i = 0; i < deferred.length; i++) {
+/******/ 				var [chunkIds, fn, priority] = deferred[i];
+/******/ 				var fulfilled = true;
+/******/ 				for (var j = 0; j < chunkIds.length; j++) {
+/******/ 					if ((priority & 1 === 0 || notFulfilled >= priority) && Object.keys(__webpack_require__.O).every((key) => (__webpack_require__.O[key](chunkIds[j])))) {
+/******/ 						chunkIds.splice(j--, 1);
+/******/ 					} else {
+/******/ 						fulfilled = false;
+/******/ 						if(priority < notFulfilled) notFulfilled = priority;
+/******/ 					}
+/******/ 				}
+/******/ 				if(fulfilled) {
+/******/ 					deferred.splice(i--, 1)
+/******/ 					var r = fn();
+/******/ 					if (r !== undefined) result = r;
+/******/ 				}
+/******/ 			}
+/******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/create fake namespace object */
+/******/ 	(() => {
+/******/ 		var getProto = Object.getPrototypeOf ? (obj) => (Object.getPrototypeOf(obj)) : (obj) => (obj.__proto__);
+/******/ 		var leafPrototypes;
+/******/ 		// create a fake namespace object
+/******/ 		// mode & 1: value is a module id, require it
+/******/ 		// mode & 2: merge all properties of value into the ns
+/******/ 		// mode & 4: return value when already ns object
+/******/ 		// mode & 16: return value when it's Promise-like
+/******/ 		// mode & 8|1: behave like require
+/******/ 		__webpack_require__.t = function(value, mode) {
+/******/ 			if(mode & 1) value = this(value);
+/******/ 			if(mode & 8) return value;
+/******/ 			if(typeof value === 'object' && value) {
+/******/ 				if((mode & 4) && value.__esModule) return value;
+/******/ 				if((mode & 16) && typeof value.then === 'function') return value;
+/******/ 			}
+/******/ 			var ns = Object.create(null);
+/******/ 			__webpack_require__.r(ns);
+/******/ 			var def = {};
+/******/ 			leafPrototypes = leafPrototypes || [null, getProto({}), getProto([]), getProto(getProto)];
+/******/ 			for(var current = mode & 2 && value; typeof current == 'object' && !~leafPrototypes.indexOf(current); current = getProto(current)) {
+/******/ 				Object.getOwnPropertyNames(current).forEach((key) => (def[key] = () => (value[key])));
+/******/ 			}
+/******/ 			def['default'] = () => (value);
+/******/ 			__webpack_require__.d(ns, def);
+/******/ 			return ns;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"PessoasDataGrid": 0
+/******/ 		};
+/******/ 		
+/******/ 		// no chunk on demand loading
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		__webpack_require__.O.j = (chunkId) => (installedChunks[chunkId] === 0);
+/******/ 		
+/******/ 		// install a JSONP callback for chunk loading
+/******/ 		var webpackJsonpCallback = (parentChunkLoadingFunction, data) => {
+/******/ 			var [chunkIds, moreModules, runtime] = data;
+/******/ 			// add "moreModules" to the modules object,
+/******/ 			// then flag all "chunkIds" as loaded and fire callback
+/******/ 			var moduleId, chunkId, i = 0;
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
+/******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
+/******/ 			}
+/******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
+/******/ 			for(;i < chunkIds.length; i++) {
+/******/ 				chunkId = chunkIds[i];
+/******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 					installedChunks[chunkId][0]();
+/******/ 				}
+/******/ 				installedChunks[chunkId] = 0;
+/******/ 			}
+/******/ 			return __webpack_require__.O(result);
+/******/ 		}
+/******/ 		
+/******/ 		var chunkLoadingGlobal = self["webpackChunkfinanceiroapp"] = self["webpackChunkfinanceiroapp"] || [];
+/******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
+/******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["vendors"], () => (__webpack_require__("./wwwroot/js/components/Pessoa/PessoasDataGrid.jsx")))
+/******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
+/******/ 	
+/******/ })()
+;

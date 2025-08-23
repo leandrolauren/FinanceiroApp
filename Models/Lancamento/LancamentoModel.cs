@@ -7,7 +7,7 @@ namespace FinanceiroApp.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "O tipo é obrigatório.")]
-        public TipoLancamento Tipo { get; set; } // Receita ou Despesa
+        public TipoLancamento Tipo { get; set; }
 
         [Required(ErrorMessage = "Valor é obrigatório.")]
         [Display(Name = "Valor")]

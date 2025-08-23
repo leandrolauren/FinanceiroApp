@@ -50,9 +50,3 @@ export default function EntradaeSaida() {
     />
   )
 }
-
-const rootElement = document.getElementById('entrada-saida-root')
-if (rootElement) {
-  const root = createRoot(rootElement)
-  root.render(<EntradaeSaida />)
-}

@@ -6,10 +6,13 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace FinanceiroApp.Controllers;
 
 [Authorize]
+[ApiController]
+[Route("api/[controller]")]
 public class LancamentosController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -19,9 +22,7 @@ public class LancamentosController : Controller
         _context = context;
     }
 
-    // GET: Lancamentos
-    public IActionResult Index() => View();
-
+    [HttpGet]
     public async Task<IActionResult> GetLancamentos()
     {
         var userId = ObterUsuarioId();
@@ -61,130 +62,154 @@ public class LancamentosController : Controller
                         {
                             Id = l.ContaBancaria.Id,
                             Descricao = l.ContaBancaria.Descricao,
+                            Agencia = l.ContaBancaria.Agencia,
+                            Banco = l.ContaBancaria.Banco,
+                            Ativa = l.ContaBancaria.Ativa,
+                            NumeroConta = l.ContaBancaria.NumeroConta,
+                            DigitoConta = l.ContaBancaria.DigitoConta,
+                            DigitoAgencia = l.ContaBancaria.DigitoAgencia,
+                            Saldo = l.ContaBancaria.Saldo,
+                            Tipo = l.ContaBancaria.Tipo.ToString(),
+                            UsuarioId = l.ContaBancaria.UsuarioId,
                         },
             })
             .ToListAsync();
 
-        return Json(lancamentos);
+        return Ok(lancamentos);
     }
 
-    // GET: Lancamentos/Create
-    public async Task<IActionResult> CreateLancamento()
-    {
-        await PreencherViewBags();
-        return View();
-    }
-
-    // POST: Lancamentos/Create
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(LancamentoModel lancamento)
+    // Endpoint para buscar um único lançamento para edição
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetLancamento(int id)
     {
         var userId = ObterUsuarioId();
+        var lancamento = await _context
+            .Lancamentos.Include(l => l.ContaBancaria)
+            .Include(l => l.PlanoContas)
+            .Include(l => l.Pessoa)
+            .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
 
+        if (lancamento == null)
+            return NotFound(new { message = "Lançamento não encontrado." });
+
+        return Ok(lancamento);
+    }
+
+    // Novo método para criar um lançamento
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] LancamentoCreateDto dto)
+    {
         if (!ModelState.IsValid)
-        {
-            await PreencherViewBags();
-            ViewBag.NotificacaoErro = "Preencha os campos obrigatorios.";
-            return View("CreateLancamento", lancamento);
-        }
+            return BadRequest(ModelState);
 
         try
         {
-            lancamento.UsuarioId = userId;
-            lancamento.DataLancamento = DateTime.Now;
+            var userId = ObterUsuarioId();
+            var lancamento = new LancamentoModel
+            {
+                Descricao = dto.Descricao,
+                Tipo = Enum.Parse<TipoLancamento>(dto.Tipo, true),
+                Valor = dto.Valor,
+                DataCompetencia = dto.DataCompetencia,
+                DataVencimento = dto.DataVencimento,
+                DataPagamento = dto.DataPagamento,
+                Pago = dto.Pago,
+                ContaBancariaId = dto.ContaBancariaId,
+                PlanoContaId = dto.PlanoContasId,
+                PessoaId = dto.PessoaId,
+                UsuarioId = userId,
+            };
 
             _context.Lancamentos.Add(lancamento);
             await _context.SaveChangesAsync();
-
-            ViewBag.NotificacaoSucesso = "Lancamento efetivado com sucesso.";
-
-            return RedirectToAction("CreateLancamento");
+            return Ok(new { success = true, message = "Lançamento criado com sucesso!" });
         }
-        catch (DBConcurrencyException ex)
+        catch (Exception ex)
         {
-            ViewBag.NotificacaoErro = "Ocorreu um erro ao cadastrar o lançamento. Tente novamente.";
-            Console.WriteLine($"Erro ao cadastrar lançamento: {ex}");
-
-            await PreencherViewBags();
-            return View("CreateLancamento", lancamento);
+            return StatusCode(
+                500,
+                new
+                {
+                    success = false,
+                    message = "Erro ao criar lançamento.",
+                    error = ex.Message,
+                }
+            );
         }
     }
 
-    // GET: Lancamentos/Edit/id
-    public async Task<IActionResult> EditLancamento(int id)
+    // Novo método para editar um lançamento
+    [HttpPut("{id}")] // Usa HttpPut e a rota com ID
+    public async Task<IActionResult> Edit(int id, [FromBody] LancamentoEditDto dto)
     {
-        var userId = ObterUsuarioId();
-        var lancamento = await _context.Lancamentos.FirstOrDefaultAsync(l =>
-            l.Id == id && l.UsuarioId == userId
-        );
-
-        if (lancamento == null)
-            return NotFound();
-
-        await PreencherViewBags();
-        return View(lancamento);
-    }
-
-    // POST: Lancamentos/Edit/id
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> EditLancamento(LancamentoModel lancamento)
-    {
-        var userId = ObterUsuarioId();
-        var lancamentoExistente = await _context.Lancamentos.FirstOrDefaultAsync(l =>
-            l.Id == lancamento.Id && l.UsuarioId == userId
-        );
-
-        if (lancamentoExistente == null)
-            return NotFound();
+        if (id != dto.Id)
+            return BadRequest(new { success = false, message = "ID do lançamento inválido." });
 
         if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        try
         {
-            ViewBag.NotificacaoErro = "Preencha os campos obrigatorios.";
-            await PreencherViewBags();
-            return View(lancamento);
+            var userId = ObterUsuarioId();
+            var lancamento = await _context.Lancamentos.FirstOrDefaultAsync(l =>
+                l.Id == id && l.UsuarioId == userId
+            );
+
+            if (lancamento == null)
+                return NotFound(new { success = false, message = "Lançamento não encontrado." });
+
+            lancamento.Descricao = dto.Descricao;
+            lancamento.Valor = dto.Valor;
+            lancamento.DataCompetencia = dto.DataCompetencia;
+            lancamento.DataVencimento = dto.DataVencimento;
+            lancamento.DataPagamento = dto.DataPagamento;
+            lancamento.Pago = dto.Pago;
+            lancamento.ContaBancariaId = dto.ContaBancariaId;
+            lancamento.PlanoContaId = dto.PlanoContasId;
+            lancamento.PessoaId = dto.PessoaId;
+
+            _context.Lancamentos.Update(lancamento);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Lançamento atualizado com sucesso!" });
         }
-
-        lancamento.UsuarioId = userId;
-        lancamento.DataLancamento = lancamentoExistente.DataLancamento;
-
-        _context.Entry(lancamentoExistente).CurrentValues.SetValues(lancamento);
-        await _context.SaveChangesAsync();
-
-        ViewBag.NotificacaoSucesso = "Lançamento atualizado com sucesso.";
-        return RedirectToAction(nameof(Index));
+        catch (Exception ex)
+        {
+            return StatusCode(
+                500,
+                new
+                {
+                    success = false,
+                    message = "Erro ao atualizar lançamento.",
+                    error = ex.Message,
+                }
+            );
+        }
     }
 
-    // GET: Lancamentos/Delete/id
+    // Manter o método de exclusão, mas ajustar o retorno para JSON
+    [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         var lancamento = await ObterLancamento(id);
         if (lancamento == null)
-            return NotFound();
-
-        return Json(lancamento);
-    }
-
-    // POST: Lancamentos/DeleteConfirmed
-    [HttpDelete]
-    public async Task<IActionResult> DeleteConfirmed(int id)
-    {
-        var lancamento = await ObterLancamento(id);
-        if (lancamento == null)
-            return NotFound();
+            return NotFound(new { success = false, message = "Lançamento não encontrado." });
 
         if (lancamento.Parcelas?.Any() == true)
         {
-            ViewBag.NotificacaoAlerta = "Este lançamento possui parcelas e não pode ser excluído.";
-            return RedirectToAction(nameof(Index));
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Este lançamento possui parcelas e não pode ser excluído.",
+                }
+            );
         }
 
         _context.Lancamentos.Remove(lancamento);
         await _context.SaveChangesAsync();
-        ViewBag.NotificacaoSucesso = "Lancamento removido.";
 
-        return RedirectToAction(nameof(Index));
+        return Ok(new { success = true, message = "Lançamento removido." });
     }
 
     // Helpers
@@ -203,20 +228,5 @@ public class LancamentosController : Controller
         return await _context
             .Lancamentos.Include(l => l.Parcelas)
             .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
-    }
-
-    private async Task PreencherViewBags()
-    {
-        var userId = ObterUsuarioId();
-
-        ViewBag.Pessoas = await _context.Pessoas.Where(p => p.UsuarioId == userId).ToListAsync();
-
-        ViewBag.PlanosConta = await _context
-            .PlanosContas.Where(pc => pc.UsuarioId == userId)
-            .ToListAsync();
-
-        ViewBag.ContasBancarias = await _context
-            .ContasBancarias.Where(cb => cb.UsuarioId == userId)
-            .ToListAsync();
     }
 }

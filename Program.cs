@@ -6,6 +6,7 @@ using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 namespace FinanceiroApp
 {
@@ -58,6 +59,12 @@ namespace FinanceiroApp
             // Habilita Controllers e Views (MVC)
             builder.Services.AddControllersWithViews();
 
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "FinanceiroApp API", Version = "v1" });
+            });
+
             var app = builder.Build();
 
             var emailWorker = app.Services.GetRequiredService<IEmailWorker>();
@@ -68,6 +75,16 @@ namespace FinanceiroApp
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
+            }
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "FinanceiroApp API V1");
+                    c.RoutePrefix = "swagger";
+                });
             }
 
             // Cultura brasileira (pt-BR)
@@ -94,6 +111,7 @@ namespace FinanceiroApp
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"
             );
+            app.MapControllers();
 
             app.Run();
         }

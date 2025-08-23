@@ -40,7 +40,7 @@ const columns = [
           variant="outlined"
           color="warning"
           size="small"
-          href={`/Contas/EditConta/${params.id}`}
+          href={`/Contas/Edit/${params.id}`}
         >
           Editar
         </Button>
@@ -112,7 +112,7 @@ export default function ContaBancariaDataGrid() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/Contas/GetContas')
+        const response = await fetch('/api/ListaContas/')
         const data = await response.json()
 
         const contas = data.map((item) => ({
@@ -151,7 +151,7 @@ export default function ContaBancariaDataGrid() {
     >
       <Button
         variant="contained"
-        href="/Contas/CreateConta"
+        href="/Contas/Create"
         sx={{ alignSelf: 'flex-start' }}
       >
         Nova Conta
