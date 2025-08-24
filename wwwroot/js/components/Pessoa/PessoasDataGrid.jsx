@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
 import { ptBR } from '@mui/x-data-grid/locales'
-import { enqueueSnackbar } from 'notistack'
 
 import PessoaDeleteModal from './PessoaDeleteModal'
 
@@ -37,9 +36,7 @@ export default function PessoasDataGrid() {
   const [loading, setLoading] = useState(true)
   const [gridState, setGridState] = useState(() => {
     const savedState = localStorage.getItem('pessoasGridState')
-    return savedState
-      ? JSON.parse(savedState)
-      : { }
+    return savedState ? JSON.parse(savedState) : {}
   })
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -60,7 +57,7 @@ export default function PessoasDataGrid() {
 
   const fetchData = async () => {
     try {
-      if(!loading) setLoading(true);
+      if (!loading) setLoading(true)
       const response = await fetch('/api/Pessoasapi')
       const data = await response.json()
 
@@ -75,7 +72,14 @@ export default function PessoasDataGrid() {
 
       setRows(formattedRows)
     } catch (error) {
-      enqueueSnackbar('Erro ao carregar as Pessoas', { variant: 'error' })
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Erro ao carregar as Pessoas',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+
       console.error('Erro ao carregar as Pessoas: ', error)
     } finally {
       setLoading(false)
@@ -84,26 +88,26 @@ export default function PessoasDataGrid() {
 
   const handleResize = () => {}
   const handleStateChange = (newState) => {}
-  
+
   useEffect(() => {
     localStorage.setItem('pessoasGridState', JSON.stringify(gridState))
   }, [gridState])
 
   useEffect(() => {
     fetchData()
-  }, []) 
+  }, [])
 
   const columns = [
-    { field: 'nome', headerName: 'Nome', flex: 1.5, },
-    { field: 'razaoSocial', headerName: 'Razão Social', flex: 1,},
-    { field: 'nomeFantasia', headerName: 'Nome Fantasia', flex: 1,},
+    { field: 'nome', headerName: 'Nome', flex: 1.5 },
+    { field: 'razaoSocial', headerName: 'Razão Social', flex: 1 },
+    { field: 'nomeFantasia', headerName: 'Nome Fantasia', flex: 1 },
     { field: 'cnpj', headerName: 'CNPJ', flex: 1 },
     { field: 'inscricaoEstadual', headerName: 'Inscrição Estadual', flex: 1 },
     { field: 'cpf', headerName: 'CPF', flex: 1 },
     { field: 'rg', headerName: 'RG', flex: 1 },
-    { field: 'dataNascimento', headerName: 'Data de Nascimento', flex: 1, },
+    { field: 'dataNascimento', headerName: 'Data de Nascimento', flex: 1 },
     { field: 'telefone', headerName: 'Telefone', flex: 1 },
-    { field: 'email', headerName: 'E-mail', flex: 1, },
+    { field: 'email', headerName: 'E-mail', flex: 1 },
     { field: 'cep', headerName: 'CEP', flex: 1 },
     { field: 'endereco', headerName: 'Endereço', flex: 1 },
     { field: 'numero', headerName: 'Número', flex: 0.5 },
@@ -174,8 +178,17 @@ export default function PessoasDataGrid() {
             disableRowSelectionOnClick
             columnVisibilityModel={gridState.columns.columnVisibilityModel}
             sortModel={gridState.sorting.sortModel}
-            onColumnVisibilityModelChange={(newModel) => handleStateChange({ columns: { ...gridState.columns, columnVisibilityModel: newModel } })}
-            onSortModelChange={(newModel) => handleStateChange({ sorting: { sortModel: newModel } })}
+            onColumnVisibilityModelChange={(newModel) =>
+              handleStateChange({
+                columns: {
+                  ...gridState.columns,
+                  columnVisibilityModel: newModel,
+                },
+              })
+            }
+            onSortModelChange={(newModel) =>
+              handleStateChange({ sorting: { sortModel: newModel } })
+            }
           />
         </div>
       )}

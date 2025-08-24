@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -13,169 +13,205 @@ import {
   Radio,
   CircularProgress,
   InputAdornment,
-} from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import axios from 'axios';
-import { useSnackbar } from 'notistack';
-import { 
-  buscarDadosPorCnpj, 
-  buscarEnderecoPorCep, 
-  limparMascaras,
+} from '@mui/material'
+import SaveIcon from '@mui/icons-material/Save'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import axios from 'axios'
+import {
   CpfMask,
   CnpjMask,
   TelefoneMask,
-  CepMask 
-} from '../../utils/form-utils';
+  CepMask,
+  buscarDadosPorCnpj,
+  buscarEnderecoPorCep,
+  limparMascaras,
+} from '../../utils/form-utils'
 
-const PessoaEditForm = ({pessoaId}) => {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState(null);
-  const [tipoPessoa, setTipoPessoa] = useState('1'); 
+const PessoaEditForm = ({ pessoaId }) => {
+  const navigate = useNavigate()
+  const [formData, setFormData] = useState(null)
+  const [tipoPessoa, setTipoPessoa] = useState('1')
+  const [errors, setErrors] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [formSubmitting, setFormSubmitting] = useState(false)
+  const [cepLoading, setCepLoading] = useState(false)
+  const [cnpjLoading, setCnpjLoading] = useState(false)
 
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [cepLoading, setCepLoading] = useState(false);
-  const [cnpjLoading, setCnpjLoading] = useState(false);
-
-    useEffect(() => {
-      const fetchPessoa = async () => {
-        try {
-          const response = await axios.get(`/api/Pessoasapi/${pessoaId}`)
-          const data = response.data;
-            if (data.dataNascimento) {
-            data.dataNascimento = data.dataNascimento.split('T')[0];
-            }
-            setFormData(data);
-            setTipoPessoa(data.tipo.toString());
-
-        } catch (error) {
-          const eventoErro = new CustomEvent('onNotificacao', {
-            detail: {
-              mensagem: 'Erro de rede ao carregar a pessoa.',
-              variant: 'error',
-            },
-          })
-          navigate('/pessoas');
-          window.dispatchEvent(eventoErro);
-        } finally {
-          setLoading(false)
+  useEffect(() => {
+    const fetchPessoa = async () => {
+      try {
+        const response = await axios.get(`/api/pessoasapi/${pessoaId}`)
+        const data = response.data
+        if (data.dataNascimento) {
+          data.dataNascimento = data.dataNascimento.split('T')[0]
         }
+        setFormData(data)
+        setTipoPessoa(data.tipo.toString())
+      } catch (error) {
+        const eventoErro = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Erro de rede ao carregar a pessoa.',
+            variant: 'error',
+          },
+        })
+        window.dispatchEvent(eventoErro)
+        navigate('/pessoas')
+      } finally {
+        setLoading(false)
       }
-  
-      if (pessoaId) {
-        fetchPessoa()
-      }
-    }, [pessoaId, navigate])
+    }
+
+    if (pessoaId) {
+      fetchPessoa()
+    }
+  }, [pessoaId, navigate])
 
   const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value } = event.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
-  };
+  }
 
   const handleCepBlur = async () => {
-    const cep = formData.cep?.replace(/\D/g, '');
-    if (cep?.length !== 8) return;
+    const cep = formData.cep?.replace(/\D/g, '')
+    if (cep?.length !== 8) return
 
-    setCepLoading(true);
+    setCepLoading(true)
     try {
-      const data = await buscarEnderecoPorCep(formData.cep);
-      if (!data.erro) {
-        setFormData(prev => ({
-          ...prev,
-          endereco: data.logradouro,
-          bairro: data.bairro,
-          cidade: data.localidade,
-          estado: data.uf,
-        }));
-      } else {
-        enqueueSnackbar('CEP não encontrado.', { variant: 'warning' });
-      }
+      const data = await buscarEnderecoPorCep(formData.cep)
+      setFormData((prev) => ({
+        ...prev,
+        endereco: data.logradouro,
+        bairro: data.bairro,
+        cidade: data.localidade,
+        estado: data.uf,
+      }))
     } catch (error) {
-      enqueueSnackbar(error.message || 'Erro ao buscar CEP.', { variant: 'error' });
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: error.message || 'Erro ao buscar CEP.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
     } finally {
-      setCepLoading(false);
+      setCepLoading(false)
     }
-  };
+  }
 
   const handleCnpjBlur = async () => {
-    const cnpj = formData.cnpj?.replace(/\D/g, '');
-    if (cnpj?.length !== 14) return;
+    const cnpj = formData.cnpj?.replace(/\D/g, '')
+    if (cnpj?.length !== 14) return
 
-    setCnpjLoading(true);
-    try{
-        const data = await buscarDadosPorCnpj(formData.cnpj);
-        setFormData(prev => ({
-                ...prev,
-            nome: data.nome_fantasia || '',
-            razaoSocial: data.razao_social || '',
-            nomeFantasia: data.nome_fantasia || '',
-            email: data.email || prev.email,
-            telefone: data.ddd_telefone_1 || prev.telefone,
-            cep: data.cep || '',
-            endereco: data.logradouro || '',
-            numero: data.numero || '',
-            bairro: data.bairro || '',
-            cidade: data.municipio || '',
-            estado: data.uf || '',
-            complemento: data.complemento || '',
-            }));
-    }catch(error){
-        enqueueSnackbar(error.message || 'Erro ao buscar CNPJ.', { variant: 'error' });
-    }finally{
-        setCnpjLoading(false);
+    setCnpjLoading(true)
+    try {
+      const data = await buscarDadosPorCnpj(formData.cnpj)
+      setFormData((prev) => ({
+        ...prev,
+        nome: data.nome_fantasia || '',
+        razaoSocial: data.razao_social || '',
+        nomeFantasia: data.nome_fantasia || '',
+        email: data.email || prev.email,
+        telefone: data.ddd_telefone_1 || prev.telefone,
+        cep: data.cep || '',
+        endereco: data.logradouro || '',
+        numero: data.numero || '',
+        bairro: data.bairro || '',
+        cidade: data.municipio || '',
+        estado: data.uf || '',
+        complemento: data.complemento || '',
+      }))
+    } catch (error) {
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: error.message || 'Erro ao buscar CNPJ.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+    } finally {
+      setCnpjLoading(false)
     }
   }
 
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    
-    const { email } = formData;
+    event.preventDefault()
+
+    const { email } = formData
     if (email && !/\S+@\S+\.\S+/.test(email)) {
-        enqueueSnackbar('O formato do e-mail é inválido.', { variant: 'error' });
-        setErrors(prev => ({ ...prev, Email: ['O formato do e-mail é inválido.'] }));
-        return; 
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'O formato do e-mail é inválido.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+      setErrors((prev) => ({
+        ...prev,
+        Email: ['O formato do e-mail é inválido.'],
+      }))
+      return
     }
-    setFormSubmitting(true);
+    setFormSubmitting(true)
 
-    const dados = {...limparMascaras(formData), tipo: tipoPessoa,};
-    for (const key in dados){
-        if(dados[key] === ''){
-            dados[key] = null;
-        }
+    const dados = { ...limparMascaras(formData), tipo: tipoPessoa }
+    for (const key in dados) {
+      if (dados[key] === '') {
+        dados[key] = null
+      }
     }
 
-    setLoading(true);
-    
     try {
-      await axios.put(`/api/pessoasapi/${pessoaId}`, dados);
-      enqueueSnackbar('Pessoa alterada com sucesso!', { variant: 'success' });
-      setFormSubmitting(false);
-      navigate('/pessoas');
+      await axios.put(`/api/pessoasapi/${pessoaId}`, dados)
+      const eventoSucesso = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Pessoa alterada com sucesso!',
+          variant: 'success',
+        },
+      })
+      window.dispatchEvent(eventoSucesso)
+      setFormSubmitting(false)
+      navigate('/pessoas')
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        setErrors(error.response.data.errors || {});
-        enqueueSnackbar('Por favor, corrija os erros no formulário.', { variant: 'error' });
+        setErrors(error.response.data.errors || {})
+        const eventoErroForm = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Por favor, corrija os erros no formulário.',
+            variant: 'error',
+          },
+        })
+        window.dispatchEvent(eventoErroForm)
       } else {
-        enqueueSnackbar('Ocorreu um erro ao salvar a pessoa.', { variant: 'error' });
+        const eventoErroGeral = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Ocorreu um erro ao salvar a pessoa.',
+            variant: 'error',
+          },
+        })
+        window.dispatchEvent(eventoErroGeral)
       }
     } finally {
-      setFormSubmitting(false);
-      setLoading(false);
+      setFormSubmitting(false)
     }
-  };
+  }
 
-    if (loading) {
+  if (loading) {
     return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-            <CircularProgress />
-        </Box>
-        );
-    }
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    )
+  }
 
   return (
     <Box
@@ -189,7 +225,11 @@ const PessoaEditForm = ({pessoaId}) => {
 
       <FormControl component="fieldset" sx={{ mb: 3 }}>
         <FormLabel component="legend">Tipo de Pessoa</FormLabel>
-        <RadioGroup row value={tipoPessoa} onChange={(e) => setTipoPessoa(e.target.value)}>
+        <RadioGroup
+          row
+          value={tipoPessoa}
+          onChange={(e) => setTipoPessoa(e.target.value)}
+        >
           <FormControlLabel value="1" control={<Radio />} label="Física" />
           <FormControlLabel value="2" control={<Radio />} label="Jurídica" />
         </RadioGroup>
@@ -197,32 +237,88 @@ const PessoaEditForm = ({pessoaId}) => {
 
       <Grid container spacing={3}>
         {tipoPessoa === '1' && (
-          <>    
-            <Grid item xs={12} sm={6}>
-              <TextField name="nome" label="Nome Completo" value={formData.nome} onChange={handleChange} fullWidth required error={!!errors.Nome} helperText={errors.Nome?.[0]} />
+          <>
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="nome"
+                label="Nome Completo"
+                value={formData.nome || ''}
+                onChange={handleChange}
+                fullWidth
+                required
+                error={!!errors.Nome}
+                helperText={errors.Nome?.[0]}
+              />
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField name="cpf" label="CPF" value={formData.cpf} onChange={handleChange} fullWidth required slotProps={{ input: { inputComponent: CpfMask } }} error={!!errors.Cpf} helperText={errors.Cpf?.[0]} />
+            <Grid xs={12} sm={3}>
+              <TextField
+                name="cpf"
+                label="CPF"
+                value={formData.cpf || ''}
+                onChange={handleChange}
+                fullWidth
+                required
+                slotProps={{ input: { inputComponent: CpfMask } }}
+                error={!!errors.Cpf}
+                helperText={errors.Cpf?.[0]}
+              />
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField name="rg" label="RG" value={formData.rg || ''} onChange={handleChange} fullWidth />
+            <Grid xs={12} sm={3}>
+              <TextField
+                name="rg"
+                label="RG"
+                value={formData.rg || ''}
+                onChange={handleChange}
+                fullWidth
+              />
             </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField name="dataNascimento" label="Data de Nascimento" type="date" value={formData.dataNascimento || ''} onChange={handleChange} fullWidth slotProps={{ InputLabel:{shrink: true }}} />
+            <Grid xs={12} sm={3}>
+              <TextField
+                name="dataNascimento"
+                label="Data de Nascimento"
+                type="date"
+                value={formData.dataNascimento || ''}
+                onChange={handleChange}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+              />
             </Grid>
           </>
         )}
 
         {tipoPessoa === '2' && (
           <>
-            <Grid item xs={12} sm={6}>
-              <TextField name="razaoSocial" label="Razão Social" value={formData.razaoSocial || ''} onChange={handleChange} fullWidth required error={!!errors.razaoSocial} helperText={errors.razaoSocial?.[0]} />
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="razaoSocial"
+                label="Razão Social"
+                value={formData.razaoSocial || ''}
+                onChange={handleChange}
+                fullWidth
+                required
+                error={!!errors.razaoSocial}
+                helperText={errors.razaoSocial?.[0]}
+              />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField name="nomeFantasia" label="Nome Fantasia" value={formData.nomeFantasia || ''} onChange={handleChange} fullWidth />
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="nomeFantasia"
+                label="Nome Fantasia"
+                value={formData.nomeFantasia || ''}
+                onChange={handleChange}
+                fullWidth
+              />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField name="cnpj" label="CNPJ" value={formData.cnpj} onChange={handleChange} onBlur={handleCnpjBlur} fullWidth required slotProps={{
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="cnpj"
+                label="CNPJ"
+                value={formData.cnpj || ''}
+                onChange={handleChange}
+                onBlur={handleCnpjBlur}
+                fullWidth
+                required
+                slotProps={{
                   input: {
                     inputComponent: CnpjMask,
                     endAdornment: cnpjLoading && (
@@ -230,25 +326,55 @@ const PessoaEditForm = ({pessoaId}) => {
                         <CircularProgress size={20} />
                       </InputAdornment>
                     ),
-                  }
+                  },
                 }}
                 error={!!errors.Cnpj}
-                helperText={errors.Cnpj?.[0]} />
+                helperText={errors.Cnpj?.[0]}
+              />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField name="inscricaoEstadual" label="Inscrição Estadual" value={formData.inscricaoEstadual || ''} onChange={handleChange} fullWidth />
+            <Grid xs={12} sm={6}>
+              <TextField
+                name="inscricaoEstadual"
+                label="Inscrição Estadual"
+                value={formData.inscricaoEstadual || ''}
+                onChange={handleChange}
+                fullWidth
+              />
             </Grid>
           </>
         )}
 
-        <Grid item xs={12} sm={4}>
-          <TextField name="telefone" label="Telefone" value={formData.telefone} onChange={handleChange} fullWidth slotProps={{ input: { inputComponent: TelefoneMask } }} />
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="telefone"
+            label="Telefone"
+            value={formData.telefone || ''}
+            onChange={handleChange}
+            fullWidth
+            slotProps={{ input: { inputComponent: TelefoneMask } }}
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField name="email" label="E-mail" type="email" value={formData.email || ''} onChange={handleChange} fullWidth error={!!errors.Email} helperText={errors.Email?.[0]} />
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="email"
+            label="E-mail"
+            type="email"
+            value={formData.email || ''}
+            onChange={handleChange}
+            fullWidth
+            error={!!errors.Email}
+            helperText={errors.Email?.[0]}
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField name="cep" label="CEP" value={formData.cep || ''} onChange={handleChange} onBlur={handleCepBlur} fullWidth slotProps={{
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="cep"
+            label="CEP"
+            value={formData.cep || ''}
+            onChange={handleChange}
+            onBlur={handleCepBlur}
+            fullWidth
+            slotProps={{
               input: {
                 inputComponent: CepMask,
                 endAdornment: cepLoading && (
@@ -256,38 +382,81 @@ const PessoaEditForm = ({pessoaId}) => {
                     <CircularProgress size={20} />
                   </InputAdornment>
                 ),
-              }
-            }}/>
+              },
+            }}
+          />
         </Grid>
-        <Grid item xs={12} sm={8}>
-          <TextField name="endereco" label="Endereço" value={formData.endereco || ''} onChange={handleChange} fullWidth />
+        <Grid xs={12} sm={8}>
+          <TextField
+            name="endereco"
+            label="Endereço"
+            value={formData.endereco || ''}
+            onChange={handleChange}
+            fullWidth
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField name="numero" label="Número" value={formData.numero || ''} onChange={handleChange} fullWidth />
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="numero"
+            label="Número"
+            value={formData.numero || ''}
+            onChange={handleChange}
+            fullWidth
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField name="bairro" label="Bairro" value={formData.bairro || ''} onChange={handleChange} fullWidth />
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="bairro"
+            label="Bairro"
+            value={formData.bairro || ''}
+            onChange={handleChange}
+            fullWidth
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField name="cidade" label="Cidade" value={formData.cidade || ''} onChange={handleChange} fullWidth />
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="cidade"
+            label="Cidade"
+            value={formData.cidade || ''}
+            onChange={handleChange}
+            fullWidth
+          />
         </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField name="estado" label="Estado" value={formData.estado || ''} onChange={handleChange} fullWidth />
+        <Grid xs={12} sm={4}>
+          <TextField
+            name="estado"
+            label="Estado"
+            value={formData.estado || ''}
+            onChange={handleChange}
+            fullWidth
+          />
         </Grid>
-        <Grid item xs={12}>
-          <TextField name="complemento" label="Complemento" value={formData.complemento || ''} onChange={handleChange} fullWidth />
+        <Grid xs={12}>
+          <TextField
+            name="complemento"
+            label="Complemento"
+            value={formData.complemento || ''}
+            onChange={handleChange}
+            fullWidth
+          />
         </Grid>
       </Grid>
-      
+
       <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
         <Button
           type="submit"
           variant="contained"
           color="primary"
           disabled={formSubmitting}
-          startIcon={formSubmitting  ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+          startIcon={
+            formSubmitting ? (
+              <CircularProgress size={20} color="inherit" />
+            ) : (
+              <SaveIcon />
+            )
+          }
         >
-          {formSubmitting  ? 'Salvando...' : 'Salvar Alterações'}
+          {formSubmitting ? 'Salvando...' : 'Salvar Alterações'}
         </Button>
         <Button
           variant="outlined"
@@ -299,7 +468,7 @@ const PessoaEditForm = ({pessoaId}) => {
         </Button>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default PessoaEditForm;
+export default PessoaEditForm

@@ -34,16 +34,34 @@ const CreateContaForm = () => {
       const result = await response.json()
 
       if (response.ok) {
-        window.__notificacao_sucesso = 'Conta bancária cadastrada com sucesso!'
+        const eventoSucesso = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Conta bancária cadastrada com sucesso.',
+            variant: 'success',
+          },
+        })
+        window.dispatchEvent(eventoSucesso)
         setTimeout(() => {
           window.location.href = '/Contas'
         }, 2000)
       } else {
-        window.__notificacao_erro = 'Erro ao cadastrar conta bancária.'
+        const eventoErro = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Erro ao cadastrar conta bancária.',
+            variant: 'error',
+          },
+        })
+        window.dispatchEvent(eventoErro)
         console.error(result.message || result.errors.join(', '))
       }
     } catch (error) {
-      windows.__notificacao_erro = 'Erro na requisição. Tente novamente.'
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Erro na requisição, tente novamente.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
       console.error('Error:', error)
     }
   }

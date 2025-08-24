@@ -10,13 +10,27 @@ using Microsoft.EntityFrameworkCore;
 namespace FinanceiroApp.Controllers;
 
 [Authorize]
+public class LancamentosController : Controller
+{
+    public IActionResult Index() => View();
+
+    public IActionResult Create() => View();
+
+    public IActionResult Edit(int id)
+    {
+        ViewBag.Id = id;
+        return View();
+    }
+}
+
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class LancamentosController : ControllerBase
+public class LancamentosApiController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
 
-    public LancamentosController(ApplicationDbContext context)
+    public LancamentosApiController(ApplicationDbContext context)
     {
         _context = context;
     }

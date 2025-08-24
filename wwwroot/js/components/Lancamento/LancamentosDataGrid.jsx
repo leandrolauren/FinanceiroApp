@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
 import { ptBR } from '@mui/x-data-grid/locales'
-import AppWrapper from '../Shared/AppWrapper'
 
 const columns = [
   {
@@ -188,7 +187,7 @@ export default function LancamentoDataGrid() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/Lancamentos/GetLancamentos')
+        const response = await fetch('/api/Lancamentosapi')
         const data = await response.json()
 
         const rowsAdaptadas = data.map((item) => ({
@@ -227,7 +226,7 @@ export default function LancamentoDataGrid() {
     >
       <Button
         variant="contained"
-        href="/Lancamentos/CreateLancamento"
+        href="/Lancamentos/Create"
         sx={{ alignSelf: 'flex-start' }}
       >
         Novo Lançamento

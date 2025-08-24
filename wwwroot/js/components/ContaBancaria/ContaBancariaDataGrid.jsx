@@ -3,8 +3,6 @@ import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
 import { ptBR } from '@mui/x-data-grid/locales'
-import AppWrapper from '../Shared/AppWrapper'
-import { enqueueSnackbar } from 'notistack'
 
 const columns = [
   { field: 'descricao', headerName: 'Descrição', flex: 1 },
@@ -127,10 +125,13 @@ export default function ContaBancariaDataGrid() {
 
         setContas(contas)
       } catch (error) {
-        enqueueSnackbar('Erro ao carregar as contas bancárias.', {
-          variant: 'error',
+        const eventoErro = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Erro ao carregar as contas bancárias.',
+            variant: 'error',
+          },
         })
-        console.error('Erro ao carregar as Contas:', error)
+        window.dispatchEvent(eventoErro)
       } finally {
         setLoading(false)
       }

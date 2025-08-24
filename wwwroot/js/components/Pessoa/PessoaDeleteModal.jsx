@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Typography,
@@ -7,49 +7,66 @@ import {
   Alert,
   Modal,
   Divider,
-} from '@mui/material';
-import axios from 'axios';
-import { useSnackbar } from 'notistack';
+} from '@mui/material'
+import axios from 'axios'
+import { useSnackbar } from 'notistack'
 
 function PessoaDeleteModal({ open, onClose, pessoaId }) {
-  const [pessoa, setPessoa] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { enqueueSnackbar } = useSnackbar();
+  const [pessoa, setPessoa] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (open && pessoaId) {
-      setLoading(true);
-      setError(null);
+      setLoading(true)
+      setError(null)
       axios
         .get(`/api/Pessoasapi/${pessoaId}`)
         .then((response) => {
-          setPessoa(response.data);
+          setPessoa(response.data)
         })
         .catch(() => {
-          setError('Erro ao carregar os dados da pessoa.');
-          enqueueSnackbar('Erro ao carregar os dados da pessoa!', { variant: 'error' });
+          setError('Erro ao carregar os dados da pessoa.')
+          const eventoErro = new CustomEvent('onNotificacao', {
+            detail: {
+              mensagem: 'Erro ao carregar os dados da pessoa.',
+              variant: 'error',
+            },
+          })
+          window.dispatchEvent(eventoErro)
         })
         .finally(() => {
-          setLoading(false);
-        });
+          setLoading(false)
+        })
     }
-  }, [pessoaId, open]);
+  }, [pessoaId, open])
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/Pessoasapi/${pessoaId}`);
-      enqueueSnackbar('Pessoa excluída com sucesso.', { variant: 'success' });
-      onClose(true);
+      await axios.delete(`/api/Pessoasapi/${pessoaId}`)
+      const eventoSucesso = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Pessoa excluída com sucesso.',
+          variant: 'success',
+        },
+      })
+      window.dispatchEvent(eventoSucesso)
+      onClose(true)
     } catch {
-      enqueueSnackbar('Erro ao excluir a pessoa.', { variant: 'error' });
-      onClose(false);
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Erro ao excluir pessoa.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+      onClose(false)
     }
-  };
+  }
 
   const handleClose = () => {
-    onClose(false);
-  };
+    onClose(false)
+  }
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -83,14 +100,16 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
             <strong>{pessoa?.nome || 'Carregando...'}</strong>?
           </Typography>
         )}
-        
-        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+
+        <Box
+          sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}
+        >
           <Button onClick={handleClose} variant="outlined">
             Cancelar
           </Button>
-          <Button 
-            onClick={handleDelete} 
-            variant="contained" 
+          <Button
+            onClick={handleDelete}
+            variant="contained"
             color="error"
             disabled={loading || error}
           >
@@ -99,7 +118,7 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
         </Box>
       </Box>
     </Modal>
-  );
+  )
 }
 
-export default PessoaDeleteModal;
+export default PessoaDeleteModal

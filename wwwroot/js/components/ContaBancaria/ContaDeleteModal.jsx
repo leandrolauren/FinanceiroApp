@@ -9,15 +9,12 @@ import {
   Divider,
 } from '@mui/material'
 import axios from 'axios'
-import { useSnackbar } from 'notistack'
-import AppWrapper from '../Shared/AppWrapper'
 
 function ContaDeleteModal({ open, onClose, contaId }) {
   const [conta, setConta] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [deleteError, setDeleteError] = useState(null)
-  const { enqueueSnackbar } = useSnackbar()
 
   useEffect(() => {
     if (open && contaId) {
@@ -29,9 +26,13 @@ function ContaDeleteModal({ open, onClose, contaId }) {
         .then((res) => setConta(res.data))
         .catch(() => {
           setError('Erro ao carregar os dados da conta.')
-          enqueueSnackbar('Erro ao carregar os dados da conta!', {
-            variant: 'error',
+          const eventoErro = new CustomEvent('onNotificacao', {
+            detail: {
+              mensagem: 'Erro ao carregar os dados da conta.',
+              variant: 'error',
+            },
           })
+          window.dispatchEvent(eventoErro)
         })
         .finally(() => setLoading(false))
     }
@@ -41,12 +42,17 @@ function ContaDeleteModal({ open, onClose, contaId }) {
     try {
       setDeleteError(null)
       await axios.delete(`/api/Contasapi/${contaId}`)
-      enqueueSnackbar('Conta excluída com sucesso.', { variant: 'success' })
+      const eventoSucesso = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Conta excluída com sucesso.',
+          variant: 'success',
+        },
+      })
+      window.dispatchEvent(eventoSucesso)
       onClose()
       window.atualizarTabelaContas?.(contaId)
     } catch (error) {
       let errorMessage = 'Erro ao excluir Conta.'
-      let variant = 'error'
 
       if (error.response) {
         switch (error.response.status) {
@@ -71,14 +77,6 @@ function ContaDeleteModal({ open, onClose, contaId }) {
       }
 
       setDeleteError(errorMessage)
-      enqueueSnackbar(errorMessage, {
-        variant,
-        autoHideDuration: 5000,
-        anchorOrigin: {
-          vertical: 'top',
-          horizontal: 'right',
-        },
-      })
     }
   }
 
@@ -142,4 +140,4 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   )
 }
 
-export default ContaDeleteModal;
+export default ContaDeleteModal
