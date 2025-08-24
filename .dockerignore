@@ -2,6 +2,7 @@
 bin/
 obj/
 out/
+wwwroot/js/dist 
 
 # Ignorar diretórios de publicação locais
 /app/publish/

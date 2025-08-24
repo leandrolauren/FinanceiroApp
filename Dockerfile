@@ -1,29 +1,30 @@
-# Etapa 1: Build do backend .NET
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /src
+FROM node:lts-alpine AS frontend-builder
+WORKDIR /app
+COPY package*.json ./
 
-# Copia csproj e restaura
-COPY *.csproj ./
-RUN dotnet restore
+RUN npm ci
 
-# Copia o restante do código
 COPY . .
 
-# Publica a aplicação
+RUN npm run build
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS backend-builder
+WORKDIR /src
+
+COPY *.csproj .
+RUN dotnet restore
+
+COPY . .
+
 RUN dotnet publish -c Release -o /app/publish
 
-
-# Etapa 2: Runtime
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# Copia aplicação publicada
-COPY --from=build /app/publish .
+COPY --from=backend-builder /src/app/publish .
 
-# Copia os bundles já prontos do front
-COPY ./wwwroot/js/dist ./wwwroot/js/dist
+COPY --from=frontend-builder /app/wwwroot/js/dist ./wwwroot/js/dist
 
-# Expõe porta do Kestrel
 EXPOSE 8080
 
 ENTRYPOINT ["dotnet", "FinanceiroApp.dll"]
