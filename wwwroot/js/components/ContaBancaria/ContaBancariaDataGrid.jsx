@@ -2,7 +2,6 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
-import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AppWrapper from '../Shared/AppWrapper'
 import { enqueueSnackbar } from 'notistack'
@@ -112,7 +111,7 @@ export default function ContaBancariaDataGrid() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/ListaContas/')
+        const response = await fetch('/api/contasapi')
         const data = await response.json()
 
         const contas = data.map((item) => ({
@@ -223,15 +222,5 @@ export default function ContaBancariaDataGrid() {
         </div>
       )}
     </Box>
-  )
-}
-
-const rootElement = document.getElementById('conta-table-root')
-if (rootElement) {
-  const root = createRoot(rootElement)
-  root.render(
-    <AppWrapper>
-      <ContaBancariaDataGrid />
-    </AppWrapper>,
   )
 }

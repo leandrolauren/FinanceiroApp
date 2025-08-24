@@ -1,9 +1,5 @@
-using System;
-using System.Security.Cryptography;
-using System.Text;
 using FinanceiroApp.Data;
 using FinanceiroApp.Models;
-using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +13,8 @@ public class UsuarioController : Controller
         _context = context;
         _rabbitMqService = rabbitMqService;
     }
-        // GET: Usuario/Create
+
+    // GET: Usuario/Create
     public IActionResult Create() => View();
 
     // POST: Usuario/Create
@@ -32,7 +29,6 @@ public class UsuarioController : Controller
                 .Select(e => e.ErrorMessage)
                 .ToList();
 
-            ViewBag.NotificacaoAlerta = "Preencha os campos corretamente!";
             return BadRequest(
                 new
                 {
@@ -45,13 +41,11 @@ public class UsuarioController : Controller
         var usuarioExistente = await _context
             .Usuarios.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == model.Email);
+
         if (usuarioExistente != null)
-        {
-            ViewBag.NotificacaoAlerta = "Ja existe um usuario com este email!";
             return BadRequest(
                 new { success = false, message = "Já existe um usuário com este email." }
             );
-        }
 
         var token = Guid.NewGuid().ToString();
 
@@ -68,8 +62,6 @@ public class UsuarioController : Controller
         _context.UsuariosPendentes.Add(usuarioPendente);
         await _context.SaveChangesAsync();
 
-        ViewBag.NotificacaoAlerta = "Confira seu email para ativar o seu acesso.";
-
         // Publica no RabbitMQ
         var mensagem = new EmailConfirmacaoMessage
         {
@@ -79,9 +71,13 @@ public class UsuarioController : Controller
 
         _rabbitMqService.PublicarMensagem("email_confirmacao_queue", mensagem);
 
-        ViewBag.NotificacaoAlerta = "Usuário pendente de confirmação, verifique seu e-mail!";
-
-        return RedirectToAction("Index", "Home");
+        return Ok(
+            new
+            {
+                success = true,
+                message = "Usuário pendente de confirmação, verifique seu e-mail!",
+            }
+        );
     }
 
     // GET: Usuario/Confirmar?token=

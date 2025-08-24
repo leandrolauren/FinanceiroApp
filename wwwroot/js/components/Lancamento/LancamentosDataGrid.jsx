@@ -2,7 +2,6 @@ import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
-import { createRoot } from 'react-dom/client'
 import { ptBR } from '@mui/x-data-grid/locales'
 import AppWrapper from '../Shared/AppWrapper'
 
@@ -300,15 +299,5 @@ export default function LancamentoDataGrid() {
         </div>
       )}
     </Box>
-  )
-}
-
-const rootElement = document.getElementById('lancamentos-table-root')
-if (rootElement) {
-  const root = createRoot(rootElement)
-  root.render(
-    <AppWrapper>
-      <LancamentoDataGrid />
-    </AppWrapper>,
   )
 }

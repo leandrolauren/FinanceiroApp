@@ -1,24 +1,13 @@
 import { useState, useEffect } from 'react'
-import ReactDOM from 'react-dom/client'
 
 const EditContaForm = ({ contaId }) => {
-  const [formData, setFormData] = useState({
-    id: contaId,
-    descricao: '',
-    numeroConta: '',
-    agencia: '',
-    digitoAgencia: '',
-    digitoConta: '',
-    tipo: '',
-    ativa: false,
-    banco: '',
-  })
+  const [formData, setFormData] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchConta = async () => {
       try {
-        const response = await fetch(`/api/Contas/${contaId}`)
+        const response = await fetch(`/api/Contasapi/${contaId}`)
         const data = await response.json()
         if (response.ok) {
           setFormData(data)
@@ -69,8 +58,8 @@ const EditContaForm = ({ contaId }) => {
     e.preventDefault()
 
     try {
-      const response = await fetch(`/api/Contas/Edit/${formData.id}`, {
-        method: 'PATCH',
+      const response = await fetch(`/api/Contasapi/${formData.id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -289,9 +278,4 @@ const EditContaForm = ({ contaId }) => {
   )
 }
 
-const rootElement = document.getElementById('edit-conta-form-root')
-if (rootElement) {
-  const contaId = parseInt(rootElement.dataset.contaId, 10)
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(<EditContaForm contaId={contaId} />)
-}
+export default EditContaForm;

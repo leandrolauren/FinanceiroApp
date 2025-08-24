@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import ReactDOM from 'react-dom/client'
-import axios from 'axios'
 
 const CreateContaForm = () => {
   const [formData, setFormData] = useState({
@@ -25,7 +23,7 @@ const CreateContaForm = () => {
     e.preventDefault()
 
     try {
-      const response = await fetch('/api/contas/create', {
+      const response = await fetch('/api/contasapi', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,7 +208,4 @@ const CreateContaForm = () => {
   )
 }
 
-const root = ReactDOM.createRoot(
-  document.getElementById('create-conta-form-root'),
-)
-root.render(<CreateContaForm />)
+export default CreateContaForm

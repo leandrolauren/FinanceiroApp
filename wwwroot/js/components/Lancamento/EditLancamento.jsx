@@ -1,5 +1,4 @@
 import React from 'react'
-import { createRoot } from 'react-dom/client'
 import LancamentoForm from './LancamentoForm'
 
 const EditLancamento = () => {
@@ -26,10 +25,4 @@ const EditLancamento = () => {
   )
 }
 
-export default EditLancamento
-
-if (document.getElementById('edit-lancamento-root')) {
-  const container = document.getElementById('edit-lancamento-root')
-  const root = createRoot(container)
-  root.render(<EditLancamento />)
-}
+export default EditLancamento;

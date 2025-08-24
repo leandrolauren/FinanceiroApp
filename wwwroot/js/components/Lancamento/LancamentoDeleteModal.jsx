@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -7,56 +7,53 @@ import {
   Alert,
   Modal,
   Divider,
-} from '@mui/material'
-import axios from 'axios'
-import { useSnackbar } from 'notistack'
-import { createRoot } from 'react-dom/client'
-import AppWrapper from '../Shared/AppWrapper'
+} from '@mui/material';
+import axios from 'axios';
+import { useSnackbar } from 'notistack';
 
 function formatarDataBR(data) {
-  if (!data) return '---'
-  const d = new Date(data)
-  if (isNaN(d)) return '---'
-  return d.toLocaleDateString('pt-BR')
+  if (!data) return '---';
+  const d = new Date(data);
+  if (isNaN(d)) return '---';
+  return d.toLocaleDateString('pt-BR');
 }
 
 function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
-  const [lancamento, setLancamento] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const { enqueueSnackbar } = useSnackbar()
+  const [lancamento, setLancamento] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (open && lancamentoId) {
-      setLoading(true)
+      setLoading(true);
       axios
         .get(`/Lancamentos/Delete/${lancamentoId}`)
         .then((res) => setLancamento(res.data))
         .catch(() => {
-          setError('Erro ao carregar os dados do lançamento.')
+          setError('Erro ao carregar os dados do lançamento.');
           enqueueSnackbar('Erro ao carregar os dados do lançamento!', {
             variant: 'error',
-          })
+          });
         })
-        .finally(() => setLoading(false))
+        .finally(() => setLoading(false));
     }
-  }, [lancamentoId, open])
+  }, [lancamentoId, open]);
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/Lancamentos/DeleteConfirmed/${lancamentoId}`)
+      await axios.delete(`/Lancamentos/DeleteConfirmed/${lancamentoId}`);
       enqueueSnackbar('Lançamento excluído com sucesso.', {
         variant: 'success',
-      })
-      onClose()
-      window.atualizarTabelaLancamentos?.(lancamentoId)
+      });
+      onClose(true);
     } catch {
-      enqueueSnackbar('Erro ao excluir lançamento.', { variant: 'error' })
+      enqueueSnackbar('Erro ao excluir lançamento.', { variant: 'error' });
     }
-  }
+  };
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={() => onClose(false)}>
       <Box
         sx={{
           position: 'absolute',
@@ -81,19 +78,17 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
             <Typography variant="h4" justifyContent="center" gutterBottom>
               Confirma a exclusão?
             </Typography>
-            <Divider
-              sx={{ borderBottomWidth: 2, borderColor: 'grey.400', my: 2 }}
-            />
+            <Divider sx={{ borderBottomWidth: 2, borderColor: 'grey.400', my: 2 }} />
             <Typography fontSize={15} justifyContent="center">
-              <strong>Descrição:</strong> {lancamento.descricao} <br />
+              <strong>Descrição:</strong> {lancamento?.descricao} <br />
               <strong>Dt. Venc.:</strong>{' '}
-              {formatarDataBR(lancamento.dataVencimento)}
+              {formatarDataBR(lancamento?.dataVencimento)}
               <br />
               <strong>Dt. Pagamento:</strong>{' '}
-              {formatarDataBR(lancamento.dataPagamento)}
+              {formatarDataBR(lancamento?.dataPagamento)}
             </Typography>
             <Box mt={3} display="flex" justifyContent="flex-end">
-              <Button onClick={onClose} variant="outlined" sx={{ mr: 1 }}>
+              <Button onClick={() => onClose(false)} variant="outlined" sx={{ mr: 1 }}>
                 Cancelar
               </Button>
               <Button onClick={handleDelete} variant="contained" color="error">
@@ -104,29 +99,7 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
         )}
       </Box>
     </Modal>
-  )
+  );
 }
 
-const container = document.getElementById('lancamentos-delete-modal-root')
-if (container) {
-  const root = createRoot(container)
-
-  const showModal = (lancamentoId) => {
-    const ModalWrapper = () => {
-      const [open, setOpen] = useState(true)
-      return (
-        <AppWrapper>
-          <LancamentoDeleteModal
-            open={open}
-            lancamentoId={lancamentoId}
-            onClose={() => setOpen(false)}
-          />
-        </AppWrapper>
-      )
-    }
-
-    root.render(<ModalWrapper />)
-  }
-
-  window.abrirModalExclusaoLancamento = showModal
-}
+export default LancamentoDeleteModal;

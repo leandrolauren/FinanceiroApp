@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { BarChart } from '@mui/x-charts/BarChart'
-import { createRoot } from 'react-dom/client'
 
 const despesas = [
   -4000, -3500, -5800, -4920, -1890, -12090, -3490, -14000, -3500, -12000,

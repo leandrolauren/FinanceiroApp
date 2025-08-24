@@ -1,35 +1,3 @@
-@model FinanceiroApp.Models.PlanoContasEditViewModel
-
 @{
     ViewData["Title"] = "Editar Plano de Contas";
-}
-
-<form asp-action="EditPlanoConta" method="post">
-    <input type="hidden" asp-for="Id" />
-
-    <div class="mb-3">
-        <label asp-for="Descricao" class="form-label">Descrição</label>
-        <input asp-for="Descricao" class="input" />
-        <span asp-validation-for="Descricao" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Tipo</label>
-        <input class="input" value="@Model.Tipo" disabled readonly/>
-    </div>
-
-    <div class="mb-3">
-        <label asp-for="PlanoContasPaiId" class="form-label">Plano de Contas Pai</label>
-        <select asp-for="PlanoContasPaiId" class="form-select" asp-items="Model.PlanosContasPaisDisponiveis">
-            <option value="">Selecione..</option>
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-success">Salvar</button>
-    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
-</form>
-
-@section Scripts{
-    <script src="~/js/dist/vendors.bundle.js"></script>
-    <script src="~/js/dist/Notificacao.bundle.js"></script>
 }

@@ -383,12 +383,12 @@ public class PlanoContasController : Controller
         {
             var userId = GetUserId();
 
-            // if (!dataInicio.HasValue || !dataFim.HasValue)
-            // {
-            //     var hoje = DateTime.Today;
-            //     dataInicio = new DateTime(hoje.Year, hoje.Month, 1);
-            //     dataFim = dataInicio.Value.AddMonths(1).AddDays(-1);
-            // }
+            if (!dataInicio.HasValue || !dataFim.HasValue)
+            {
+                var hoje = DateTime.Today;
+                dataInicio = new DateTime(hoje.Year, hoje.Month, 1);
+                dataFim = dataInicio.Value.AddMonths(1).AddDays(-1);
+            }
             if (dataInicio.HasValue)
                 dataInicio = DateTime.SpecifyKind(dataInicio.Value, DateTimeKind.Unspecified);
 

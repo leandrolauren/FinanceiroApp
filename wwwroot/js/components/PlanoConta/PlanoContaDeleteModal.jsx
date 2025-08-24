@@ -2,8 +2,6 @@ import React, { useState } from 'react'
 import { Box, Typography, Button, Alert, Modal, Divider } from '@mui/material'
 import axios from 'axios'
 import { useSnackbar } from 'notistack'
-import { createRoot } from 'react-dom/client'
-import AppWrapper from '../Shared/AppWrapper'
 
 function PlanoContaDeleteModal({ open, onClose, conta }) {
   const [deleteError, setDeleteError] = useState(null)
@@ -104,26 +102,4 @@ function PlanoContaDeleteModal({ open, onClose, conta }) {
   )
 }
 
-const container = document.getElementById('plano-conta-delete-modal-root')
-if (container) {
-  const root = createRoot(container)
-
-  const showModal = (conta) => {
-    const ModalWrapper = () => {
-      const [open, setOpen] = useState(true)
-      return (
-        <AppWrapper>
-          <PlanoContaDeleteModal
-            open={open}
-            conta={conta}
-            onClose={() => setOpen(false)}
-          />
-        </AppWrapper>
-      )
-    }
-
-    root.render(<ModalWrapper />)
-  }
-
-  window.abrirModalExclusaoPlanoConta = showModal
-}
+export default PlanoContaDeleteModal;

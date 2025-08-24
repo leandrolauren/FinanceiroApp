@@ -13,7 +13,6 @@ import Stack from '@mui/material/Stack'
 import MuiCard from '@mui/material/Card'
 import { styled } from '@mui/material/styles'
 import { GoogleIcon } from '../Shared/CustomIcons'
-import { createRoot } from 'react-dom/client'
 import axios from 'axios'
 import AppWrapper from '../Shared/AppWrapper'
 
@@ -259,15 +258,5 @@ export default function FormRegister(props) {
         </Card>
       </SignUpContainer>
     </>
-  )
-}
-
-const rootElement = document.getElementById('formRegister-root')
-if (rootElement) {
-  const root = createRoot(rootElement)
-  root.render(
-    <AppWrapper>
-      <FormRegister />
-    </AppWrapper>,
   )
 }

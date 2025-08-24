@@ -6,14 +6,13 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace FinanceiroApp.Controllers;
 
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class LancamentosController : Controller
+public class LancamentosController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
 
@@ -78,7 +77,6 @@ public class LancamentosController : Controller
         return Ok(lancamentos);
     }
 
-    // Endpoint para buscar um único lançamento para edição
     [HttpGet("{id}")]
     public async Task<IActionResult> GetLancamento(int id)
     {
@@ -95,7 +93,6 @@ public class LancamentosController : Controller
         return Ok(lancamento);
     }
 
-    // Novo método para criar um lançamento
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] LancamentoCreateDto dto)
     {
@@ -138,8 +135,7 @@ public class LancamentosController : Controller
         }
     }
 
-    // Novo método para editar um lançamento
-    [HttpPut("{id}")] // Usa HttpPut e a rota com ID
+    [HttpPut("{id}")]
     public async Task<IActionResult> Edit(int id, [FromBody] LancamentoEditDto dto)
     {
         if (id != dto.Id)
@@ -187,7 +183,6 @@ public class LancamentosController : Controller
         }
     }
 
-    // Manter o método de exclusão, mas ajustar o retorno para JSON
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {

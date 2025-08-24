@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { createRoot } from 'react-dom/client'
 import LancamentosDataGrid from './LancamentosDataGrid'
 import LancamentoForm from './LancamentoForm'
 
@@ -54,10 +53,4 @@ const Lancamentos = () => {
   )
 }
 
-export default Lancamentos
-
-if (document.getElementById('lancamentos-root')) {
-  const container = document.getElementById('lancamentos-root')
-  const root = createRoot(container)
-  root.render(<Lancamentos />)
-}
+export default Lancamentos;

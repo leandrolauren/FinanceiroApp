@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { createRoot } from 'react-dom/client'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -132,11 +131,4 @@ const Login = () => {
   )
 }
 
-// Renderiza o componente na div com id 'login-root'
-const rootElement = document.getElementById('login-root')
-if (rootElement) {
-  const root = createRoot(rootElement)
-  root.render(<Login />)
-}
-
-export default Login
+export default Login;

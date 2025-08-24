@@ -10,7 +10,6 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 import { useSnackbar } from 'notistack'
-import { createRoot } from 'react-dom/client'
 import AppWrapper from '../Shared/AppWrapper'
 
 function ContaDeleteModal({ open, onClose, contaId }) {
@@ -26,7 +25,7 @@ function ContaDeleteModal({ open, onClose, contaId }) {
       setError(null)
       setDeleteError(null)
       axios
-        .get(`/api/Contas/${contaId}`)
+        .get(`/api/Contasapi/${contaId}`)
         .then((res) => setConta(res.data))
         .catch(() => {
           setError('Erro ao carregar os dados da conta.')
@@ -41,7 +40,7 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   const handleDelete = async () => {
     try {
       setDeleteError(null)
-      await axios.delete(`/api/Contas/Delete/${contaId}`)
+      await axios.delete(`/api/Contasapi/${contaId}`)
       enqueueSnackbar('Conta excluída com sucesso.', { variant: 'success' })
       onClose()
       window.atualizarTabelaContas?.(contaId)
@@ -143,26 +142,4 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   )
 }
 
-const container = document.getElementById('conta-delete-modal-root')
-if (container) {
-  const root = createRoot(container)
-
-  const showModal = (contaId) => {
-    const ModalWrapper = () => {
-      const [open, setOpen] = useState(true)
-      return (
-        <AppWrapper>
-          <ContaDeleteModal
-            open={open}
-            contaId={contaId}
-            onClose={() => setOpen(false)}
-          />
-        </AppWrapper>
-      )
-    }
-
-    root.render(<ModalWrapper />)
-  }
-
-  window.abrirModalExclusaoConta = showModal
-}
+export default ContaDeleteModal;

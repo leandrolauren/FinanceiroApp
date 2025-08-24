@@ -1,14 +1,3 @@
 ﻿@{
     ViewData["Title"] = "Início";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Bem Vindo(a), @(User.Identity != null && !string.IsNullOrEmpty(User.Identity.Name) ? User.Identity.Name : "Usuário")</h1>
-
-    <div id="homepage-root"></div>
-</div>
-
-@section Scripts {
-    <script src="~/js/dist/vendors.bundle.js"></script>
-    <script src="~/js/dist/HomePage.bundle.js"></script>
-}

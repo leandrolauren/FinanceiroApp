@@ -1,4 +1,3 @@
-import ReactDOM from 'react-dom/client'
 import EntradaeSaida from '../Graficos/EntradaeSaida'
 
 const HomePage = () => {
@@ -12,10 +11,5 @@ const HomePage = () => {
   )
 }
 
-const rootElement = document.getElementById('homepage-root')
-if (rootElement) {
-  const root = ReactDOM.createRoot(rootElement)
-  root.render(<HomePage />)
-}
 
-export default HomePage
+export default HomePage;

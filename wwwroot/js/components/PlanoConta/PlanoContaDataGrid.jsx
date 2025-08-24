@@ -1,5 +1,4 @@
 import React, { useState, useEffect, use } from 'react'
-import { createRoot } from 'react-dom/client'
 import AppWrapper from '../Shared/AppWrapper'
 import {
   Box,
@@ -330,15 +329,5 @@ export default function PlanoContaDataGrid() {
         </table>
       </Box>
     </Box>
-  )
-}
-
-const rootElement = document.getElementById('planoConta-table-root')
-if (rootElement) {
-  const root = createRoot(rootElement)
-  root.render(
-    <AppWrapper>
-      <PlanoContaDataGrid />
-    </AppWrapper>,
   )
 }

@@ -5,226 +5,213 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
-namespace FinanceiroApp.Controllers;
-
-[Authorize]
-public class ContasController : Controller
+namespace FinanceiroApp.Controllers
 {
-    private readonly ApplicationDbContext _context;
-
-    public ContasController(ApplicationDbContext context) => _context = context;
-
-    // GET: Contas
-    public IActionResult Index() => View();
-
-    // GET: Contas/Create
-    public IActionResult Create() => View();
-
-    // GET: Contas/Edit/5
-    public IActionResult Edit(int id)
+    [Authorize]
+    public class ContasController : Controller
     {
-        ViewBag.Id = id;
-        return View();
-    }
+        public IActionResult Index() => View();
 
-    [HttpGet("/api/ListaContas")]
-    public async Task<IActionResult> GetContas()
-    {
-        var userId = GetUserId();
-        var contas = await _context
-            .ContasBancarias.Where(c => c.UsuarioId == userId)
-            .Select(c => new ListaContaDto
-            {
-                Id = c.Id,
-                Descricao = c.Descricao,
-                NumeroConta = c.NumeroConta,
-                Agencia = c.Agencia,
-                DigitoAgencia = c.DigitoAgencia,
-                DigitoConta = c.DigitoConta,
-                Tipo = c.Tipo,
-                Saldo = c.Saldo,
-                Ativa = c.Ativa,
-                Banco = c.Banco,
-                UsuarioId = c.UsuarioId,
-            })
-            .ToListAsync();
+        public IActionResult Create() => View();
 
-        return Json(contas);
-    }
-
-    // GET: /Contas/{id}
-    [HttpGet("/api/Contas/{id}")]
-    public async Task<IActionResult> GetConta(int id)
-    {
-        var userId = GetUserId();
-        var conta = await _context
-            .ContasBancarias.Where(c => c.Id == id && c.UsuarioId == userId)
-            .Select(c => new ContaBancaria
-            {
-                Id = c.Id,
-                Descricao = c.Descricao,
-                NumeroConta = c.NumeroConta,
-                Agencia = c.Agencia,
-                DigitoAgencia = c.DigitoAgencia,
-                DigitoConta = c.DigitoConta,
-                Tipo = c.Tipo,
-                Saldo = c.Saldo,
-                Ativa = c.Ativa,
-                Banco = c.Banco,
-            })
-            .FirstOrDefaultAsync();
-
-        if (conta == null)
+        public IActionResult Edit(int id)
         {
-            return NotFound(new { success = false, message = "Conta não encontrada." });
+            ViewBag.Id = id;
+            return View();
+        }
+    }
+
+    [Authorize]
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ContasApiController : ControllerBase
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<ContasApiController> _logger;
+
+        public ContasApiController(
+            ApplicationDbContext context,
+            ILogger<ContasApiController> logger
+        )
+        {
+            _context = context;
+            _logger = logger;
         }
 
-        return Ok(conta);
-    }
-
-    // POST: Contas/Create
-    [HttpPost("/api/contas/Create")]
-    public async Task<IActionResult> CreateConta([FromBody] CreateContaDto conta)
-    {
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Values.SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-
-            return BadRequest(new { success = false, errors = errors });
-        }
-        try
+        // GET: api/Contas
+        [HttpGet]
+        public async Task<IActionResult> GetContas()
         {
             var userId = GetUserId();
-            var contaBancaria = new ContaBancaria
+            var contas = await _context
+                .ContasBancarias.Where(c => c.UsuarioId == userId)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var resultado = contas
+                .Select(c => new ContaBancaria
+                {
+                    Id = c.Id,
+                    Descricao = c.Descricao,
+                    NumeroConta = c.NumeroConta,
+                    DigitoConta = c.DigitoConta,
+                    Agencia = c.Agencia,
+                    DigitoAgencia = c.DigitoAgencia,
+                    Ativa = c.Ativa,
+                    Banco = c.Banco,
+                    Tipo = c.Tipo,
+                    Saldo = c.Saldo,
+                })
+                .ToList();
+
+            return Ok(resultado);
+        }
+
+        // GET: api/Contas/{id}
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetConta(int id)
+        {
+            var userId = GetUserId();
+            var conta = await _context
+                .ContasBancarias.AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id && c.UsuarioId == userId);
+
+            if (conta == null)
+                return NotFound(new { success = false, message = "Conta não encontrada." });
+
+            var resultado = new ContaBancaria
             {
+                Id = conta.Id,
                 Descricao = conta.Descricao,
                 NumeroConta = conta.NumeroConta,
+                DigitoConta = conta.DigitoConta,
                 Agencia = conta.Agencia,
                 DigitoAgencia = conta.DigitoAgencia,
-                DigitoConta = conta.DigitoConta,
-                Tipo = conta.Tipo,
                 Ativa = conta.Ativa,
                 Banco = conta.Banco,
-                UsuarioId = userId,
+                Tipo = conta.Tipo,
+                Saldo = conta.Saldo,
             };
-            _context.ContasBancarias.Add(contaBancaria);
-            await _context.SaveChangesAsync();
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(
-                500,
-                new { success = false, message = $"Erro ao cadastrar conta: {ex.Message}" }
-            );
-        }
-    }
 
-    // PATCH: Contas/Edit/5
-    [HttpPatch("/api/Contas/Edit/{id}")]
-    public async Task<IActionResult> EditConta(int id, [FromBody] EditContaDto conta)
-    {
-        if (id <= 0)
-            return BadRequest(new { success = false, message = "ID inválido." });
-
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState
-                .Values.SelectMany(v => v.Errors)
-                .Select(e => e.ErrorMessage)
-                .ToList();
-
-            return BadRequest(new { success = false, errors = errors });
+            return Ok(resultado);
         }
-        try
+
+        // POST: api/Contas
+        [HttpPost]
+        public async Task<IActionResult> CreateConta([FromBody] CreateContaDto dto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                var userId = GetUserId();
+                var contaBancaria = new ContaBancaria
+                {
+                    // Mapeamento do DTO
+                    Descricao = dto.Descricao,
+                    // ...
+                    UsuarioId = userId,
+                };
+                _context.ContasBancarias.Add(contaBancaria);
+                await _context.SaveChangesAsync();
+                return CreatedAtAction(
+                    nameof(GetConta),
+                    new { id = contaBancaria.Id },
+                    contaBancaria
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao criar conta bancária.");
+                return StatusCode(
+                    500,
+                    new { success = false, message = "Erro ao cadastrar conta." }
+                );
+            }
+        }
+
+        // PUT: api/Contas/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditConta(int id, [FromBody] EditContaDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var userId = GetUserId();
-
             var contaExistente = await _context.ContasBancarias.FirstOrDefaultAsync(c =>
                 c.Id == id && c.UsuarioId == userId
             );
 
             if (contaExistente == null)
+                return NotFound(new { success = false, message = "Conta não encontrada." });
+
+            contaExistente.Descricao = dto.Descricao;
+            contaExistente.Banco = dto.Banco;
+            contaExistente.Tipo = dto.Tipo;
+            contaExistente.NumeroConta = dto.NumeroConta;
+            contaExistente.DigitoAgencia = dto.DigitoAgencia;
+            contaExistente.DigitoConta = dto.DigitoConta;
+
+            try
             {
-                return NotFound(
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao editar conta {ContaId}", id);
+                return StatusCode(500, new { success = false, message = "Erro ao editar conta." });
+            }
+        }
+
+        // DELETE: api/Contas/{id}
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteConta(int id)
+        {
+            var userId = GetUserId();
+            var conta = await _context.ContasBancarias.FirstOrDefaultAsync(c =>
+                c.Id == id && c.UsuarioId == userId
+            );
+
+            if (conta == null)
+            {
+                return NotFound(new { success = false, message = "Conta não encontrada." });
+            }
+
+            // Adicionar verificação de lançamentos vinculados se necessário
+            bool temLancamentos = await _context.Lancamentos.AnyAsync(l => l.ContaBancariaId == id);
+            if (temLancamentos)
+            {
+                return BadRequest(
                     new
                     {
                         success = false,
-                        message = "Conta não encontrada ou não pertence ao usuário.",
+                        message = "Não é possível excluir conta com lançamentos vinculados.",
                     }
                 );
             }
 
-            contaExistente.Descricao = conta.Descricao;
-            contaExistente.NumeroConta = conta.NumeroConta;
-            contaExistente.Agencia = conta.Agencia;
-            contaExistente.DigitoAgencia = conta.DigitoAgencia;
-            contaExistente.DigitoConta = conta.DigitoConta;
-            contaExistente.Tipo = conta.Tipo;
-            contaExistente.Banco = conta.Banco;
-            contaExistente.Ativa = conta.Ativa;
+            try
+            {
+                _context.ContasBancarias.Remove(conta);
+                await _context.SaveChangesAsync();
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao excluir conta {ContaId}", id);
+                return StatusCode(500, new { success = false, message = "Erro ao excluir conta." });
+            }
+        }
 
-            _context.ContasBancarias.Update(contaExistente);
-            await _context.SaveChangesAsync();
-            return Ok(new { success = true });
-        }
-        catch (Exception ex)
+        private int GetUserId()
         {
-            return StatusCode(
-                500,
-                new { success = false, message = $"Erro ao editar conta: {ex.Message}" }
-            );
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null)
+                throw new UnauthorizedAccessException("Usuário não autenticado.");
+            return int.Parse(claim.Value);
         }
-    }
-
-    [HttpDelete("/api/Contas/Delete/{id}")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        var userId = GetUserId();
-        var conta = await _context.ContasBancarias.FirstOrDefaultAsync(c =>
-            c.Id == id && c.UsuarioId == userId
-        );
-        if (conta == null)
-        {
-            return NotFound(new { success = false, message = "Conta não encontrada." });
-        }
-        try
-        {
-            _context.ContasBancarias.Remove(conta);
-            await _context.SaveChangesAsync();
-            return Ok(new { sucess = true });
-        }
-        catch (DbUpdateException ex)
-            when (ex.InnerException is PostgresException pgEx && pgEx.SqlState == "23503")
-        {
-            return BadRequest(
-                new
-                {
-                    success = false,
-                    message = "Não é possivel excluir essa conta bancária pois existem lançamentos vinculados a ela.",
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(
-                500,
-                new { success = false, message = $"Erro ao excluir conta. {ex.Message}" }
-            );
-        }
-    }
-
-    private int GetUserId()
-    {
-        var claim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (claim == null || string.IsNullOrEmpty(claim.Value))
-            throw new UnauthorizedAccessException("Unauthenticated user.");
-
-        return int.Parse(claim.Value);
     }
 }
