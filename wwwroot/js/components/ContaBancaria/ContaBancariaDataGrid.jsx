@@ -109,10 +109,10 @@ export default function ContaBancariaDataGrid() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/contasapi')
+        const response = await fetch('/api/contas')
         const data = await response.json()
 
-        const contas = data.map((item) => ({
+        const contas = data.data.map((item) => ({
           ...item,
           ativoTexto: item?.ativa ? 'Ativo' : 'Inativo',
           saldo:

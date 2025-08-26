@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
 
-const API_BASE_URL = '/api/Lancamentos'
 const API_PESSOAS = '/api/Pessoas/GetPessoas'
 const API_PLANOS_CONTAS = '/api/PlanoContas/GetPlanoContas'
 const API_CONTAS_BANCARIAS = '/api/Contas/GetContas'
 
-const LancamentoForm = ({ lancamentoId, onSave }) => {
+const LancamentoCreateForm = ({ lancamentoId, onSave }) => {
   const [formData, setFormData] = useState({
     id: lancamentoId || 0,
     descricao: '',
@@ -45,7 +44,7 @@ const LancamentoForm = ({ lancamentoId, onSave }) => {
     const fetchLancamento = async () => {
       if (lancamentoId) {
         try {
-          const response = await fetch(`${API_BASE_URL}/${lancamentoId}`)
+          const response = await fetch(`/api/Lancamentos/${lancamentoId}`)
           if (!response.ok) throw new Error('Lançamento não encontrado.')
           const data = await response.json()
 
@@ -287,4 +286,4 @@ const LancamentoForm = ({ lancamentoId, onSave }) => {
   )
 }
 
-export default LancamentoForm
+export default LancamentoCreateForm

@@ -17,7 +17,6 @@ import {
 import SaveIcon from '@mui/icons-material/Save'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import axios from 'axios'
-import { useSnackbar } from 'notistack'
 import {
   buscarDadosPorCnpj,
   buscarEnderecoPorCep,
@@ -156,7 +155,7 @@ const PessoaCreateForm = () => {
     setLoading(true)
 
     try {
-      await axios.post('/api/pessoasapi', dados)
+      await axios.post('/api/pessoas', dados)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'Pessoa cadastrada com sucesso.',

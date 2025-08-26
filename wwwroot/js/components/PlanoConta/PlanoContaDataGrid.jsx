@@ -1,5 +1,4 @@
-import React, { useState, useEffect, use } from 'react'
-import AppWrapper from '../Shared/AppWrapper'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   Box,
   Button,
@@ -18,87 +17,64 @@ import {
   ArrowRight,
   Edit,
   Delete,
+  FilterAlt,
 } from '@mui/icons-material'
-import { useSnackbar } from 'notistack'
 import axios from 'axios'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import ptBR from 'date-fns/locale/pt-BR'
-import { FilterAlt } from '@mui/icons-material'
 
 export default function PlanoContaDataGrid() {
   const [contas, setContas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const { enqueueSnackbar } = useSnackbar()
-  const [total, setTotal] = useState(0.0)
-  const [filtros, setFiltros] = useState({
-    tipoData: 'vencimento',
-    dataInicio: null,
-    dataFim: null,
+
+  const [filtrosAtivos, setFiltrosAtivos] = useState(() => {
+    const hoje = new Date()
+    return {
+      tipoData: 'vencimento',
+      dataInicio: new Date(hoje.getFullYear(), hoje.getMonth(), 1),
+      dataFim: new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0),
+    }
   })
 
-  const [filtrosEditando, setFiltrosEditando] = useState({
-    tipoData: 'vencimento',
-    dataInicio: null,
-    dataFim: null,
-  })
-  const [filtrosAtivos, setFiltrosAtivos] = useState({
-    tipoData: 'vencimento',
-    dataInicio: null,
-    dataFim: null,
-  })
-
+  const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
-  useEffect(() => {
-    const hoje = new Date()
-    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
-    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)
-
-    setFiltros((prev) => ({
-      ...prev,
-      dataInicio: primeiroDiaMes,
-      dataFim: ultimoDiaMes,
-    }))
-  }, [])
-
-  const buscarDados = async () => {
+  const buscarDados = useCallback(async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setLoading(true)
-
       const params = {
         tipoData: filtrosAtivos.tipoData,
-        dataInicio: filtrosAtivos.dataInicio?.toISOString(),
-        dataFim: filtrosAtivos.dataFim?.toISOString(),
+        dataInicio: filtrosAtivos.dataInicio?.toISOString().split('T')[0],
+        dataFim: filtrosAtivos.dataFim?.toISOString().split('T')[0],
       }
 
-      const [contasResponse, totalResponse] = await Promise.all([
-        axios.get('/PlanoContas/GetPlanoContas'),
-        axios.get('/PlanoContas/GetTotalPorPlano', { params }),
-      ])
-
-      setContas(contasResponse.data)
-
-      const totaisMap = totalResponse.data.reduce((acc, item) => {
-        acc[item.plano_conta_id] = item.total_valor
-        return acc
-      }, {})
-
-      setTotal(totaisMap)
-    } catch (error) {
-      console.error('Erro ao buscar dados:', error)
-      setError('Erro ao carregar os dados.')
-      enqueueSnackbar('Erro ao carregar os dados.', { variant: 'error' })
+      // APENAS UMA CHAMADA À API
+      const response = await axios.get('/api/planoContas/hierarquia', {
+        params,
+      })
+      setContas(response.data)
+    } catch (err) {
+      const errorMessage = 'Erro ao carregar os dados do plano de contas.'
+      setError(errorMessage)
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: err.response?.data?.message || errorMessage,
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
     } finally {
       setLoading(false)
     }
-  }
+  }, [filtrosAtivos])
 
   useEffect(() => {
     buscarDados()
-  }, [filtrosAtivos])
+  }, [buscarDados])
 
   const handleFiltroChange = (event) => {
     const { name, value } = event.target
@@ -111,49 +87,38 @@ export default function PlanoContaDataGrid() {
 
   const aplicarFiltro = () => {
     setFiltrosAtivos(filtrosEditando)
+    setMostrarFiltros(false)
   }
 
   const resetarFiltro = () => {
     const hoje = new Date()
-    const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
-    const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)
-
-    const novosFiltros = {
+    const filtrosPadrao = {
       tipoData: 'vencimento',
-      dataInicio: primeiroDiaMes,
-      dataFim: ultimoDiaMes,
+      dataInicio: new Date(hoje.getFullYear(), hoje.getMonth(), 1),
+      dataFim: new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0),
     }
-
-    setFiltrosEditando(novosFiltros)
-    setFiltrosAtivos(novosFiltros)
+    setFiltrosEditando(filtrosPadrao)
+    setFiltrosAtivos(filtrosPadrao)
   }
 
   const renderConta = (conta, nivel = 0) => {
     const isPai = conta.filhos && conta.filhos.length > 0
-    const isFilho = conta.planoContasPaiId !== null
 
-    let icon
-    let style = {}
+    let icon = isPai ? (
+      <FolderOpen color="primary" />
+    ) : (
+      <ArrowRight fontSize="small" />
+    )
+    let style = isPai
+      ? { fontWeight: 'bold' }
+      : { fontStyle: 'italic', color: '#555' }
 
-    if (isPai && isFilho) {
-      // Intermediário: Pai e Filho
-      icon = <FolderOpen color="info" />
-      style = { fontStyle: 'italic', fontWeight: 'bold' }
-    } else if (isPai || (!isPai && !isFilho)) {
-      // Pai raiz ou isolado
-      icon = <Folder color="primary" />
-      style = { fontWeight: 'bold' }
-    } else {
-      // Apenas filho final
-      icon = <ArrowRight />
-      style = { fontStyle: 'italic', color: '#555' }
-    }
-
-    const valorTotal = total[conta.id] || 0.0
+    const valorTotal = conta.total || 0.0
+    const corValor = conta.tipo === 'Despesa' ? 'red' : 'green'
 
     return (
       <React.Fragment key={conta.id}>
-        <tr style={{ color: '#000' }}>
+        <tr style={{ backgroundColor: nivel % 2 === 1 ? '#f9f9f9' : 'white' }}>
           <td style={{ paddingLeft: `${nivel * 25}px` }}>
             <Box display="flex" alignItems="center" style={style}>
               {icon}
@@ -161,16 +126,23 @@ export default function PlanoContaDataGrid() {
             </Box>
           </td>
           <td>{conta.tipo}</td>
-          <td>
+          <td
+            style={{
+              color: corValor,
+              fontWeight: 'bold',
+              textAlign: 'right',
+              paddingRight: '10px',
+            }}
+          >
             {valorTotal.toLocaleString('pt-BR', {
               style: 'currency',
               currency: 'BRL',
             })}
           </td>
-          <td>
+          <td style={{ textAlign: 'center' }}>
             <IconButton
               color="warning"
-              href={`/PlanoContas/EditPlanoConta/${conta.id}`}
+              href={`/PlanoContas/Edit/${conta.id}`}
               size="small"
             >
               <Edit />
@@ -184,7 +156,7 @@ export default function PlanoContaDataGrid() {
             </IconButton>
           </td>
         </tr>
-        {conta.filhos?.map((filho) => renderConta(filho, nivel + 1))}
+        {isPai && conta.filhos.map((filho) => renderConta(filho, nivel + 1))}
       </React.Fragment>
     )
   }
@@ -205,31 +177,17 @@ export default function PlanoContaDataGrid() {
         alignItems="center"
         mb={2}
       >
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            <AlertTitle>Erro</AlertTitle>
-            {error}
-          </Alert>
-        )}
-
         <Button
           variant="contained"
-          href="/PlanoContas/CreatePlanoConta"
+          href="/PlanoContas/Create"
           sx={{ marginBottom: 2 }}
         >
           Novo Plano de Contas
         </Button>
-
         <Button
           variant="outlined"
           startIcon={<FilterAlt />}
           onClick={() => setMostrarFiltros(!mostrarFiltros)}
-          sx={{
-            backgroundColor: mostrarFiltros ? 'action.selected' : 'inherit',
-            '&:hover': {
-              backgroundColor: mostrarFiltros ? 'action.hover' : 'inherit',
-            },
-          }}
         >
           Filtros {mostrarFiltros ? '▲' : '▼'}
         </Button>
@@ -245,8 +203,8 @@ export default function PlanoContaDataGrid() {
             backgroundColor: 'background.paper',
           }}
         >
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={3}>
               <TextField
                 select
                 fullWidth
@@ -261,8 +219,7 @@ export default function PlanoContaDataGrid() {
                 <MenuItem value="pagamento">Pagamento</MenuItem>
               </TextField>
             </Grid>
-
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={ptBR}
@@ -271,12 +228,10 @@ export default function PlanoContaDataGrid() {
                   label="Data Início"
                   value={filtrosEditando.dataInicio}
                   onChange={(date) => handleDataChange('dataInicio', date)}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
             </Grid>
-
-            <Grid item xs={12} sm={4}>
+            <Grid item xs={12} sm={3}>
               <LocalizationProvider
                 dateAdapter={AdapterDateFns}
                 adapterLocale={ptBR}
@@ -285,18 +240,16 @@ export default function PlanoContaDataGrid() {
                   label="Data Fim"
                   value={filtrosEditando.dataFim}
                   onChange={(date) => handleDataChange('dataFim', date)}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
                 />
               </LocalizationProvider>
             </Grid>
-
-            <Grid item xs={12}>
+            <Grid item xs={12} sm={3}>
               <Box display="flex" justifyContent="flex-end" gap={1}>
                 <Button variant="outlined" onClick={resetarFiltro}>
                   Redefinir
                 </Button>
                 <Button variant="contained" onClick={aplicarFiltro}>
-                  Aplicar Filtro
+                  Aplicar
                 </Button>
               </Box>
             </Grid>
@@ -311,20 +264,35 @@ export default function PlanoContaDataGrid() {
         </Alert>
       )}
 
-      <Box sx={{ overflowX: 'auto' }}>
+      <Box
+        sx={{
+          overflowX: 'auto',
+          border: '1px solid #ddd',
+          borderRadius: '4px',
+        }}
+      >
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
+          <thead style={{ backgroundColor: '#f0f0f0' }}>
             <tr style={{ color: '#000' }}>
-              <th>NOME</th>
-              <th>TIPO</th>
-              <th>TOTAL</th>
-              <th>AÇÕES</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>NOME</th>
+              <th style={{ padding: '10px', textAlign: 'left' }}>TIPO</th>
+              <th style={{ padding: '10px', textAlign: 'right' }}>TOTAL</th>
+              <th style={{ padding: '10px', textAlign: 'center' }}>AÇÕES</th>
             </tr>
           </thead>
           <tbody>
-            {contas
-              .filter((c) => c.planoContasPaiId === null)
-              .map((conta) => renderConta(conta))}
+            {contas.length > 0 ? (
+              contas.map((conta) => renderConta(conta))
+            ) : (
+              <tr>
+                <td
+                  colSpan="4"
+                  style={{ textAlign: 'center', padding: '20px' }}
+                >
+                  Nenhum plano de contas encontrado.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </Box>

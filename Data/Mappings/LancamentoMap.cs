@@ -16,9 +16,13 @@ namespace FinanceiroApp.Data.Mappings
 
             builder.Property(l => l.Valor).IsRequired().HasPrecision(18, 2);
 
-            builder.Property(l => l.Descricao).HasMaxLength(200);
+            builder.Property(l => l.Descricao).IsRequired().HasMaxLength(200);
 
-            builder.Property(l => l.DataLancamento).IsRequired().HasColumnType("TIMESTAMP");
+            builder
+                .Property(l => l.DataLancamento)
+                .IsRequired()
+                .HasColumnType("TIMESTAMP")
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
             builder.Property(l => l.DataVencimento).IsRequired().HasColumnType("TIMESTAMP");
 
@@ -26,31 +30,34 @@ namespace FinanceiroApp.Data.Mappings
 
             builder.Property(l => l.Pago).IsRequired();
 
-            builder.Property(l => l.DataPagamento).HasColumnType("TIMESTAMP");
+            builder.Property(l => l.DataPagamento).HasColumnType("TIMESTAMP").IsRequired(false);
 
             builder
                 .HasOne(l => l.ContaBancaria)
-                .WithMany()
+                .WithMany(c => c.Lancamentos)
                 .HasForeignKey(l => l.ContaBancariaId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder
                 .HasOne(l => l.PlanoContas)
-                .WithMany()
+                .WithMany(p => p.Lancamentos)
                 .HasForeignKey(l => l.PlanoContaId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
 
             builder
                 .HasOne(l => l.Pessoa)
-                .WithMany()
+                .WithMany(p => p.Lancamentos)
                 .HasForeignKey(l => l.PessoaId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
 
             builder
                 .HasOne(l => l.Usuario)
-                .WithMany()
+                .WithMany(u => u.Lancamentos)
                 .HasForeignKey(l => l.UsuarioId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
 
             builder
                 .HasOne(l => l.LancamentoPai)

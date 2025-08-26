@@ -9,7 +9,6 @@ import {
   Divider,
 } from '@mui/material'
 import axios from 'axios'
-import { useSnackbar } from 'notistack'
 
 function PessoaDeleteModal({ open, onClose, pessoaId }) {
   const [pessoa, setPessoa] = useState(null)
@@ -21,7 +20,7 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
       setLoading(true)
       setError(null)
       axios
-        .get(`/api/Pessoasapi/${pessoaId}`)
+        .get(`/api/Pessoas/${pessoaId}`)
         .then((response) => {
           setPessoa(response.data)
         })
@@ -43,7 +42,7 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/Pessoasapi/${pessoaId}`)
+      await axios.delete(`/api/Pessoas/${pessoaId}`)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'Pessoa excluída com sucesso.',

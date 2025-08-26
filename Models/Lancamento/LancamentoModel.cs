@@ -16,7 +16,7 @@ namespace FinanceiroApp.Models
         [Required(ErrorMessage = "Descrição é obrigatória.")]
         public string Descricao { get; set; } = string.Empty;
 
-        public DateTime DataLancamento { get; set; } = DateTime.Now;
+        public DateTime DataLancamento { get; set; }
 
         [Required(ErrorMessage = "Data de Vencimento é obrigatória.")]
         public DateTime DataVencimento { get; set; }

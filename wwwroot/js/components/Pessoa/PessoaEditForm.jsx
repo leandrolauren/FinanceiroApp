@@ -40,8 +40,9 @@ const PessoaEditForm = ({ pessoaId }) => {
   useEffect(() => {
     const fetchPessoa = async () => {
       try {
-        const response = await axios.get(`/api/pessoasapi/${pessoaId}`)
+        const response = await axios.get(`/api/pessoas/${pessoaId}`)
         const data = response.data
+        console.log('Dados da pessoa:', data)
         if (data.dataNascimento) {
           data.dataNascimento = data.dataNascimento.split('T')[0]
         }
@@ -164,7 +165,7 @@ const PessoaEditForm = ({ pessoaId }) => {
     }
 
     try {
-      await axios.put(`/api/pessoasapi/${pessoaId}`, dados)
+      await axios.put(`/api/pessoas/${pessoaId}`, dados)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'Pessoa alterada com sucesso!',

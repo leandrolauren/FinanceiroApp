@@ -55,4 +55,20 @@ namespace FinanceiroApp.Dtos
         public int PlanoContasId { get; set; }
         public int PessoaId { get; set; }
     }
+
+    public class ListaLancamentoDto
+    {
+        public int Id { get; set; }
+        public required string Descricao { get; set; }
+        public required string Tipo { get; set; }
+        public decimal Valor { get; set; }
+        public DateTime DataCompetencia { get; set; }
+        public DateTime? DataVencimento { get; set; }
+        public DateTime? DataPagamento { get; set; }
+        public DateTime DataLancamento { get; set; }
+        public bool Pago { get; set; }
+        public string? PessoaNome { get; set; }
+        public string? PlanoContasDescricao { get; set; }
+        public string? ContaBancariaDescricao { get; set; }
+    }
 }

@@ -41,7 +41,7 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   const handleDelete = async () => {
     try {
       setDeleteError(null)
-      await axios.delete(`/api/Contasapi/${contaId}`)
+      await axios.delete(`/api/Contas/${contaId}`)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'Conta excluída com sucesso.',

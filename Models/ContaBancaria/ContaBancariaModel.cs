@@ -21,6 +21,7 @@ namespace FinanceiroApp.Models
         public string? Banco { get; set; }
         public int UsuarioId { get; set; }
         public UsuarioModel? Usuario { get; set; }
+        public ICollection<LancamentoModel>? Lancamentos { get; set; }
     }
 
     public enum TipoConta

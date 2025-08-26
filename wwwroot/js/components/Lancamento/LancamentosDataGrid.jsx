@@ -99,7 +99,7 @@ const columns = [
           variant="outlined"
           color="warning"
           size="small"
-          href={`/Lancamentos/EditLancamento/${params.id}`}
+          href={`/Lancamentos/Edit/${params.id}`}
         >
           Editar
         </Button>
@@ -187,13 +187,13 @@ export default function LancamentoDataGrid() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/Lancamentosapi')
+        const response = await fetch('/api/Lancamentos')
         const data = await response.json()
 
-        const rowsAdaptadas = data.map((item) => ({
+        const rowsAdaptadas = data.data.map((item) => ({
           ...item,
-          pessoaNome: item?.pessoa?.nome ?? '--',
-          planoContasDescricao: item?.planoContas?.descricao ?? '--',
+          pessoaNome: item?.pessoaNome ?? '--',
+          planoContasDescricao: item?.planoContasDescricao ?? '--',
           pagoTexto: item?.pago ? 'Sim' : 'Não',
           valor:
             item.valor != null

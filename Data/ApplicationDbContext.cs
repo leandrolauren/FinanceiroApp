@@ -6,11 +6,9 @@ using TimeZoneConverter;
 
 namespace FinanceiroApp.Data;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+    : DbContext(options)
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options) { }
-
     public DbSet<PessoaModel> Pessoas { get; set; }
     public DbSet<PlanoContasModel> PlanosContas { get; set; }
     public DbSet<LancamentoModel> Lancamentos { get; set; }

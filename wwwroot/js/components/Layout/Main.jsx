@@ -8,22 +8,28 @@ import {
 } from 'react-router-dom'
 import { SnackbarProvider } from 'notistack'
 import Notifcacao from '../Shared/Notificacao'
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material'
 
 // Layout
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 
 // Pages e Componentes
-const HomePage = lazy(() => import('./HomePage'));
-const ContaBancariaDataGrid = lazy(() => import ('../ContaBancaria/ContaBancariaDataGrid')) 
-const CreateContaForm = lazy(() => import('../ContaBancaria/CreateContaForm')) 
-const EditContaForm = lazy(() => import ('../ContaBancaria/EditContaForm'))
-const Lancamentos = lazy(() => import('../Lancamento/Lancamentos'));
-const PessoasDataGrid = lazy(() => import('../Pessoa/PessoasDataGrid'));
-const PlanoContaDataGrid = lazy(() => import('../PlanoConta/PlanoContaDataGrid'))
-const PessoaCreateForm = lazy(() => import('../Pessoa/PessoaCreateForm'));
-const PessoaEditForm = lazy(()=> import('../Pessoa/PessoaEditForm'))
+const HomePage = lazy(() => import('./HomePage'))
+const ContaBancariaDataGrid = lazy(() =>
+  import('../ContaBancaria/ContaBancariaDataGrid'),
+)
+const CreateContaForm = lazy(() => import('../ContaBancaria/CreateContaForm'))
+const EditContaForm = lazy(() => import('../ContaBancaria/EditContaForm'))
+const LancamentoDataGrid = lazy(() =>
+  import('../Lancamento/LancamentosDataGrid'),
+)
+const PessoasDataGrid = lazy(() => import('../Pessoa/PessoasDataGrid'))
+const PlanoContaDataGrid = lazy(() =>
+  import('../PlanoConta/PlanoContaDataGrid'),
+)
+const PessoaCreateForm = lazy(() => import('../Pessoa/PessoaCreateForm'))
+const PessoaEditForm = lazy(() => import('../Pessoa/PessoaEditForm'))
 
 const EditContaPage = () => {
   const { id } = useParams()
@@ -50,7 +56,6 @@ const App = () => {
         },
       })
       if (response.ok) window.location.href = '/Login'
-      else console.error('Falha ao fazer logout no servidor.')
     } catch (error) {
       console.error('Erro ao fazer logout', error)
     }
@@ -64,22 +69,32 @@ const App = () => {
           <div id="content">
             <Topbar userName={userName} handleLogout={handleLogout} />
             <div className="container-fluid">
-              <Suspense fallback={
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                  <CircularProgress />
-                </Box>
-              }>
+              <Suspense
+                fallback={
+                  <Box
+                    sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}
+                  >
+                    <CircularProgress />
+                  </Box>
+                }
+              >
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/home" element={<HomePage />} />
                   <Route path="/pessoas" element={<PessoasDataGrid />} />
-                  <Route path="/pessoas/create" element={<PessoaCreateForm />} />
-                  <Route path="/pessoas/edit/:id" element={<EditPessoaPage />} />
+                  <Route
+                    path="/pessoas/create"
+                    element={<PessoaCreateForm />}
+                  />
+                  <Route
+                    path="/pessoas/edit/:id"
+                    element={<EditPessoaPage />}
+                  />
                   <Route path="/planocontas" element={<PlanoContaDataGrid />} />
                   <Route path="/contas" element={<ContaBancariaDataGrid />} />
                   <Route path="/contas/create" element={<CreateContaForm />} />
                   <Route path="/contas/edit/:id" element={<EditContaPage />} />
-                  <Route path="/lancamentos" element={<Lancamentos />} />
+                  <Route path="/lancamentos" element={<LancamentoDataGrid />} />
                   <Route path="*" element={<h1>Página Não Encontrada</h1>} />
                 </Routes>
               </Suspense>

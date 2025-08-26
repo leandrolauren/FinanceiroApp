@@ -58,7 +58,7 @@ export default function PessoasDataGrid() {
   const fetchData = async () => {
     try {
       if (!loading) setLoading(true)
-      const response = await fetch('/api/Pessoasapi')
+      const response = await fetch('/api/Pessoas')
       const data = await response.json()
 
       const formattedRows = data.map((item) => ({

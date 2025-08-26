@@ -16,9 +16,9 @@ public class PlanoContasModel
     public UsuarioModel? Usuario { get; set; }
     public int? PlanoContasPaiId { get; set; }
     public PlanoContasModel? PlanoContasPai { get; set; }
-    public ICollection<PlanoContasModel> Filhos { get; set; } = new List<PlanoContasModel>();
+    public ICollection<PlanoContasModel> Filhos { get; set; } = [];
 
-    public ICollection<LancamentoModel> Lancamentos { get; set; } = new List<LancamentoModel>();
+    public ICollection<LancamentoModel> Lancamentos { get; set; } = [];
 
     public bool PodeLancar => !Filhos.Any();
 }
@@ -35,5 +35,5 @@ public class PlanoContasEditViewModel
 
     public int? PlanoContasPaiId { get; set; }
 
-    public List<SelectListItem> PlanosContasPaisDisponiveis { get; set; } = new();
+    public List<SelectListItem> PlanosContasPaisDisponiveis { get; set; } = [];
 }

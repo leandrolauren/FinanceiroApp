@@ -11,15 +11,6 @@ namespace FinanceiroApp.Controllers
     [Authorize]
     public class PessoasController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<PessoasController> _logger;
-
-        public PessoasController(ApplicationDbContext context, ILogger<PessoasController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
-
         // GET: /Pessoas
         public IActionResult Index() => View();
 
@@ -37,24 +28,18 @@ namespace FinanceiroApp.Controllers
     // --- API ENDPOINTS ---
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
-    public class PessoasApiController : ControllerBase
+    [Route("api/")]
+    public class PessoasApiController(
+        ApplicationDbContext context,
+        ILogger<PessoasController> logger
+    ) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<PessoasController> _logger;
-
-        public PessoasApiController(ApplicationDbContext context, ILogger<PessoasController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
-
-        // GET: api/Pessoasapi
-        [HttpGet]
+        // GET: /api/Pessoas
+        [HttpGet("pessoas")]
         public async Task<IActionResult> GetPessoas()
         {
             var userId = GetUserId();
-            var pessoas = await _context
+            var pessoas = await context
                 .Pessoas.Where(p => p.UsuarioId == userId)
                 .AsNoTracking()
                 .ToListAsync();
@@ -62,11 +47,11 @@ namespace FinanceiroApp.Controllers
         }
 
         // GET: api/Pessoas/{id}
-        [HttpGet("{id}")]
+        [HttpGet("pessoas/{id}")]
         public async Task<IActionResult> GetPessoa(int id)
         {
             var userId = GetUserId();
-            var pessoa = await _context
+            var pessoa = await context
                 .Pessoas.AsNoTracking()
                 .FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == userId);
 
@@ -78,7 +63,7 @@ namespace FinanceiroApp.Controllers
         }
 
         // POST: api/Pessoas
-        [HttpPost]
+        [HttpPost("pessoas")]
         public async Task<object> CreatePessoa([FromBody] CriarPessoaDto dto)
         {
             if (!ModelState.IsValid)
@@ -108,14 +93,14 @@ namespace FinanceiroApp.Controllers
                     UsuarioId = userId,
                 };
 
-                _context.Pessoas.Add(pessoa);
-                await _context.SaveChangesAsync();
+                context.Pessoas.Add(pessoa);
+                await context.SaveChangesAsync();
 
                 return new { id = pessoa.Id };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao criar pessoa.");
+                logger.LogError(ex, "Erro ao criar pessoa.");
                 return StatusCode(
                     500,
                     new { success = false, message = "Ocorreu um erro interno ao criar a pessoa." }
@@ -124,14 +109,14 @@ namespace FinanceiroApp.Controllers
         }
 
         // PUT: api/Pessoas/{id}
-        [HttpPut("{id}")]
+        [HttpPut("pessooas/{id}")]
         public async Task<IActionResult> EditPessoa(int id, [FromBody] EditPessoaDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var userId = GetUserId();
-            var pessoaDb = await _context.Pessoas.FirstOrDefaultAsync(p =>
+            var pessoaDb = await context.Pessoas.FirstOrDefaultAsync(p =>
                 p.Id == id && p.UsuarioId == userId
             );
 
@@ -160,12 +145,12 @@ namespace FinanceiroApp.Controllers
 
             try
             {
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao editar pessoa {PessoaId}", id);
+                logger.LogError(ex, "Erro ao editar pessoa {PessoaId}", id);
                 return StatusCode(
                     500,
                     new { success = false, message = "Ocorreu um erro interno ao editar a pessoa." }
@@ -174,11 +159,11 @@ namespace FinanceiroApp.Controllers
         }
 
         // DELETE: api/Pessoas/{id}
-        [HttpDelete("{id}")]
+        [HttpDelete("pessoas/{id}")]
         public async Task<IActionResult> DeletePessoa(int id)
         {
             var userId = GetUserId();
-            var pessoa = await _context.Pessoas.FirstOrDefaultAsync(p =>
+            var pessoa = await context.Pessoas.FirstOrDefaultAsync(p =>
                 p.Id == id && p.UsuarioId == userId
             );
 
@@ -187,7 +172,7 @@ namespace FinanceiroApp.Controllers
                 return NotFound(new { success = false, message = "Pessoa não encontrada." });
             }
 
-            bool temLancamentos = await _context.Lancamentos.AnyAsync(l => l.PessoaId == id);
+            bool temLancamentos = await context.Lancamentos.AnyAsync(l => l.PessoaId == id);
             if (temLancamentos)
             {
                 return BadRequest(
@@ -201,13 +186,13 @@ namespace FinanceiroApp.Controllers
 
             try
             {
-                _context.Pessoas.Remove(pessoa);
-                await _context.SaveChangesAsync();
+                context.Pessoas.Remove(pessoa);
+                await context.SaveChangesAsync();
                 return NoContent(); // Sucesso
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao excluir pessoa {PessoaId}", id);
+                logger.LogError(ex, "Erro ao excluir pessoa {PessoaId}", id);
                 return StatusCode(
                     500,
                     new

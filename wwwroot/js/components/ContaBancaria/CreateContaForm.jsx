@@ -23,7 +23,7 @@ const CreateContaForm = () => {
     e.preventDefault()
 
     try {
-      const response = await fetch('/api/contasapi', {
+      const response = await fetch('/api/contas', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

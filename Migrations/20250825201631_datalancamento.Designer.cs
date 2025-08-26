@@ -3,6 +3,7 @@ using System;
 using FinanceiroApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FinanceiroApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250825201631_datalancamento")]
+    partial class datalancamento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -116,7 +119,13 @@ namespace FinanceiroApp.Migrations
                     b.Property<int>("PessoaId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("PessoaModelId")
+                        .HasColumnType("integer");
+
                     b.Property<int>("PlanoContaId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("PlanoContasModelId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Tipo")
@@ -139,7 +148,11 @@ namespace FinanceiroApp.Migrations
 
                     b.HasIndex("PessoaId");
 
+                    b.HasIndex("PessoaModelId");
+
                     b.HasIndex("PlanoContaId");
+
+                    b.HasIndex("PlanoContasModelId");
 
                     b.HasIndex("UsuarioId");
 
@@ -355,7 +368,7 @@ namespace FinanceiroApp.Migrations
             modelBuilder.Entity("FinanceiroApp.Models.LancamentoModel", b =>
                 {
                     b.HasOne("FinanceiroApp.Models.ContaBancaria", "ContaBancaria")
-                        .WithMany("Lancamentos")
+                        .WithMany()
                         .HasForeignKey("ContaBancariaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -366,16 +379,24 @@ namespace FinanceiroApp.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("FinanceiroApp.Models.PessoaModel", "Pessoa")
-                        .WithMany("Lancamentos")
+                        .WithMany()
                         .HasForeignKey("PessoaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("FinanceiroApp.Models.PlanoContasModel", "PlanoContas")
+                    b.HasOne("FinanceiroApp.Models.PessoaModel", null)
                         .WithMany("Lancamentos")
+                        .HasForeignKey("PessoaModelId");
+
+                    b.HasOne("FinanceiroApp.Models.PlanoContasModel", "PlanoContas")
+                        .WithMany()
                         .HasForeignKey("PlanoContaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("FinanceiroApp.Models.PlanoContasModel", null)
+                        .WithMany("Lancamentos")
+                        .HasForeignKey("PlanoContasModelId");
 
                     b.HasOne("FinanceiroApp.Models.UsuarioModel", "Usuario")
                         .WithMany("Lancamentos")
@@ -421,11 +442,6 @@ namespace FinanceiroApp.Migrations
                     b.Navigation("PlanoContasPai");
 
                     b.Navigation("Usuario");
-                });
-
-            modelBuilder.Entity("FinanceiroApp.Models.ContaBancaria", b =>
-                {
-                    b.Navigation("Lancamentos");
                 });
 
             modelBuilder.Entity("FinanceiroApp.Models.LancamentoModel", b =>

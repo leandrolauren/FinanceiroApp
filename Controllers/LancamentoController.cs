@@ -25,93 +25,115 @@ public class LancamentosController : Controller
 
 [Authorize]
 [ApiController]
-[Route("api/[controller]")]
-public class LancamentosApiController : ControllerBase
+[Route("api/")]
+public class LancamentosApiController(ApplicationDbContext context) : ControllerBase
 {
-    private readonly ApplicationDbContext _context;
-
-    public LancamentosApiController(ApplicationDbContext context)
+    [HttpGet("lancamentos")]
+    public async Task<ResponseModel<List<ListaLancamentoDto>>> GetLancamentos()
     {
-        _context = context;
+        ResponseModel<List<ListaLancamentoDto>> resposta = new();
+        try
+        {
+            var userId = ObterUsuarioId();
+            var lancamentos = await context
+                .Lancamentos.Include(l => l.ContaBancaria)
+                .Include(l => l.PlanoContas)
+                .Include(l => l.Pessoa)
+                .Where(l => l.UsuarioId == userId)
+                .OrderByDescending(l => l.DataLancamento)
+                .Select(l => new ListaLancamentoDto
+                {
+                    Id = l.Id,
+                    Descricao = l.Descricao,
+                    Tipo = l.Tipo.ToString(),
+                    Valor = l.Valor,
+                    DataCompetencia = l.DataCompetencia,
+                    DataVencimento = l.DataVencimento,
+                    DataPagamento = l.DataPagamento,
+                    DataLancamento = l.DataLancamento,
+                    Pago = l.Pago,
+                    PessoaNome = l.Pessoa == null ? "" : l.Pessoa.Nome,
+                    PlanoContasDescricao = l.PlanoContas == null ? "" : l.PlanoContas.Descricao,
+                    ContaBancariaDescricao =
+                        l.ContaBancaria == null ? "" : l.ContaBancaria.Descricao,
+                })
+                .ToListAsync();
+
+            resposta.Data = lancamentos;
+            resposta.Message = "Lançamentos listados com sucesso.";
+        }
+        catch (Exception ex)
+        {
+            resposta.Message = "Erro ao listar lançamentos.";
+            resposta.Success = false;
+            resposta.StatusCode = 500;
+            resposta.Errors.Add(ex.Message);
+        }
+
+        return resposta;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetLancamentos()
+    [HttpGet("lancamentos/{id}")]
+    public async Task<ResponseModel<ListaLancamentoDto>> GetLancamento(int id)
     {
-        var userId = ObterUsuarioId();
-        var lancamentos = await _context
-            .Lancamentos.Include(l => l.ContaBancaria)
-            .Include(l => l.PlanoContas)
-            .Include(l => l.Pessoa)
-            .Where(l => l.UsuarioId == userId)
-            .OrderByDescending(l => l.DataLancamento)
-            .Select(l => new LancamentoDto
+        ResponseModel<ListaLancamentoDto> resposta = new();
+        try
+        {
+            var userId = ObterUsuarioId();
+            var lancamento = await context
+                .Lancamentos.Include(l => l.ContaBancaria)
+                .Include(l => l.PlanoContas)
+                .Include(l => l.Pessoa)
+                .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
+
+            if (lancamento == null)
             {
-                Id = l.Id,
-                Descricao = l.Descricao,
-                Tipo = l.Tipo.ToString(),
-                Valor = l.Valor,
-                DataCompetencia = l.DataCompetencia,
-                DataVencimento = l.DataVencimento,
-                DataPagamento = l.DataPagamento,
-                DataLancamento = l.DataLancamento,
-                Pago = l.Pago,
-                Pessoa =
-                    l.Pessoa == null
-                        ? null
-                        : new PessoaLancamentoDto { Id = l.Pessoa.Id, Nome = l.Pessoa.Nome },
-                PlanoContas =
-                    l.PlanoContas == null
-                        ? null
-                        : new PlanoContasLancamentoDto
-                        {
-                            Id = l.PlanoContas.Id,
-                            Descricao = l.PlanoContas.Descricao,
-                        },
-                ContaBancaria =
-                    l.ContaBancaria == null
-                        ? null
-                        : new ContaDto
-                        {
-                            Id = l.ContaBancaria.Id,
-                            Descricao = l.ContaBancaria.Descricao,
-                            Agencia = l.ContaBancaria.Agencia,
-                            Banco = l.ContaBancaria.Banco,
-                            Ativa = l.ContaBancaria.Ativa,
-                            NumeroConta = l.ContaBancaria.NumeroConta,
-                            DigitoConta = l.ContaBancaria.DigitoConta,
-                            DigitoAgencia = l.ContaBancaria.DigitoAgencia,
-                            Saldo = l.ContaBancaria.Saldo,
-                            Tipo = l.ContaBancaria.Tipo.ToString(),
-                            UsuarioId = l.ContaBancaria.UsuarioId,
-                        },
-            })
-            .ToListAsync();
+                resposta.Message = "Lançamento não encontrado.";
+                resposta.Success = false;
+                resposta.StatusCode = 404;
+                return resposta;
+            }
 
-        return Ok(lancamentos);
+            resposta.Data = new ListaLancamentoDto
+            {
+                Id = lancamento.Id,
+                Descricao = lancamento.Descricao,
+                Tipo = lancamento.Tipo.ToString(),
+                Valor = lancamento.Valor,
+                DataCompetencia = lancamento.DataCompetencia,
+                DataVencimento = lancamento.DataVencimento,
+                DataPagamento = lancamento.DataPagamento,
+                DataLancamento = lancamento.DataLancamento,
+                Pago = lancamento.Pago,
+                PessoaNome = lancamento.Pessoa == null ? "" : lancamento.Pessoa.Nome,
+                PlanoContasDescricao =
+                    lancamento.PlanoContas == null ? "" : lancamento.PlanoContas.Descricao,
+                ContaBancariaDescricao =
+                    lancamento.ContaBancaria == null ? "" : lancamento.ContaBancaria.Descricao,
+            };
+        }
+        catch (Exception ex)
+        {
+            resposta.Message = "Erro ao obter lançamento.";
+            resposta.Success = false;
+            resposta.StatusCode = 500;
+            resposta.Errors.AddRange(ex.Message);
+        }
+        return resposta;
     }
 
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetLancamento(int id)
+    [HttpPost("lancamentos")]
+    public async Task<ResponseModel<string>> Create([FromBody] LancamentoCreateDto dto)
     {
-        var userId = ObterUsuarioId();
-        var lancamento = await _context
-            .Lancamentos.Include(l => l.ContaBancaria)
-            .Include(l => l.PlanoContas)
-            .Include(l => l.Pessoa)
-            .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
-
-        if (lancamento == null)
-            return NotFound(new { message = "Lançamento não encontrado." });
-
-        return Ok(lancamento);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> Create([FromBody] LancamentoCreateDto dto)
-    {
+        ResponseModel<string> resposta = new();
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            resposta.Success = false;
+            resposta.Message = "Dados inválidos.";
+            resposta.StatusCode = 400;
+            resposta.Errors.AddRange("Dados inválidos.");
+            return resposta;
+        }
 
         try
         {
@@ -131,25 +153,23 @@ public class LancamentosApiController : ControllerBase
                 UsuarioId = userId,
             };
 
-            _context.Lancamentos.Add(lancamento);
-            await _context.SaveChangesAsync();
-            return Ok(new { success = true, message = "Lançamento criado com sucesso!" });
+            context.Lancamentos.Add(lancamento);
+            await context.SaveChangesAsync();
+
+            resposta.Data = lancamento.Id.ToString();
+            resposta.Message = "Conta cadastrada com sucesso.";
         }
         catch (Exception ex)
         {
-            return StatusCode(
-                500,
-                new
-                {
-                    success = false,
-                    message = "Erro ao criar lançamento.",
-                    error = ex.Message,
-                }
-            );
+            resposta.Message = "Erro ao criar Lançamento";
+            resposta.Success = false;
+            resposta.StatusCode = 500;
+            resposta.Errors.Add(ex.Message);
         }
+        return resposta;
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("lancamentos/{id}")]
     public async Task<IActionResult> Edit(int id, [FromBody] LancamentoEditDto dto)
     {
         if (id != dto.Id)
@@ -161,7 +181,7 @@ public class LancamentosApiController : ControllerBase
         try
         {
             var userId = ObterUsuarioId();
-            var lancamento = await _context.Lancamentos.FirstOrDefaultAsync(l =>
+            var lancamento = await context.Lancamentos.FirstOrDefaultAsync(l =>
                 l.Id == id && l.UsuarioId == userId
             );
 
@@ -178,8 +198,8 @@ public class LancamentosApiController : ControllerBase
             lancamento.PlanoContaId = dto.PlanoContasId;
             lancamento.PessoaId = dto.PessoaId;
 
-            _context.Lancamentos.Update(lancamento);
-            await _context.SaveChangesAsync();
+            context.Lancamentos.Update(lancamento);
+            await context.SaveChangesAsync();
 
             return Ok(new { success = true, message = "Lançamento atualizado com sucesso!" });
         }
@@ -197,7 +217,7 @@ public class LancamentosApiController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("lancamentos/{id}")]
     public async Task<IActionResult> Delete(int id)
     {
         var lancamento = await ObterLancamento(id);
@@ -215,8 +235,8 @@ public class LancamentosApiController : ControllerBase
             );
         }
 
-        _context.Lancamentos.Remove(lancamento);
-        await _context.SaveChangesAsync();
+        context.Lancamentos.Remove(lancamento);
+        await context.SaveChangesAsync();
 
         return Ok(new { success = true, message = "Lançamento removido." });
     }
@@ -234,7 +254,7 @@ public class LancamentosApiController : ControllerBase
     private async Task<LancamentoModel?> ObterLancamento(int id)
     {
         var userId = ObterUsuarioId();
-        return await _context
+        return await context
             .Lancamentos.Include(l => l.Parcelas)
             .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
     }

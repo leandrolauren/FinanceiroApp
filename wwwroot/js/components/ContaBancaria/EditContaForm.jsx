@@ -7,10 +7,10 @@ const EditContaForm = ({ contaId }) => {
   useEffect(() => {
     const fetchConta = async () => {
       try {
-        const response = await fetch(`/api/Contasapi/${contaId}`)
+        const response = await fetch(`/api/Contas/${contaId}`)
         const data = await response.json()
         if (response.ok) {
-          setFormData(data)
+          setFormData(data.data)
         } else {
           const eventoErro = new CustomEvent('onNotificacao', {
             detail: {
@@ -58,7 +58,7 @@ const EditContaForm = ({ contaId }) => {
     e.preventDefault()
 
     try {
-      const response = await fetch(`/api/Contasapi/${formData.id}`, {
+      const response = await fetch(`/api/Contas/${formData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -278,4 +278,4 @@ const EditContaForm = ({ contaId }) => {
   )
 }
 
-export default EditContaForm;
+export default EditContaForm

@@ -6,17 +6,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+namespace FinanceiroApp.Controllers;
+
 [Route("[controller]")]
 [ApiController]
-public class LoginController : Controller
+public class LoginController(ApplicationDbContext context) : Controller
 {
-    private readonly ApplicationDbContext _context;
-
-    public LoginController(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Index()
@@ -28,7 +23,7 @@ public class LoginController : Controller
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginViewModel model)
     {
-        var user = await _context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
+        var user = await context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(model.Senha, user.SenhaHash))
         {
