@@ -51,15 +51,16 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
       })
       window.dispatchEvent(eventoSucesso)
       onClose(true)
-    } catch {
+    } catch (err) {
       const eventoErro = new CustomEvent('onNotificacao', {
         detail: {
-          mensagem: 'Erro ao excluir pessoa.',
+          mensagem: err.response.data.message || 'Erro ao excluir pessoa.',
           variant: 'error',
         },
       })
       window.dispatchEvent(eventoErro)
       onClose(false)
+      setError(err.response.data.message || 'Erro ao excluir pessoa.')
     }
   }
 

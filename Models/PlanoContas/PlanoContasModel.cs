@@ -11,7 +11,7 @@ public class PlanoContasModel
     public string Descricao { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Informe o tipo do Plano.")]
-    public string Tipo { get; set; } = string.Empty;
+    public MovimentoTipo Tipo { get; set; }
     public int UsuarioId { get; set; }
     public UsuarioModel? Usuario { get; set; }
     public int? PlanoContasPaiId { get; set; }
@@ -31,9 +31,15 @@ public class PlanoContasEditViewModel
     public string Descricao { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Informe o tipo do Plano.")]
-    public string Tipo { get; set; } = string.Empty;
+    public MovimentoTipo Tipo { get; set; }
 
     public int? PlanoContasPaiId { get; set; }
 
     public List<SelectListItem> PlanosContasPaisDisponiveis { get; set; } = [];
+}
+
+public enum MovimentoTipo
+{
+    Receita = 1,
+    Despesa = 2,
 }

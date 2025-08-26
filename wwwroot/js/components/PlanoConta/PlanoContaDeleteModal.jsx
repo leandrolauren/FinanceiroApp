@@ -1,61 +1,81 @@
-import React, { useState } from 'react'
-import { Box, Typography, Button, Alert, Modal, Divider } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import {
+  Box,
+  Typography,
+  Button,
+  CircularProgress,
+  Alert,
+  Modal,
+  Divider,
+} from '@mui/material'
 import axios from 'axios'
-import { useSnackbar } from 'notistack'
 
-function PlanoContaDeleteModal({ open, onClose, conta }) {
-  const [deleteError, setDeleteError] = useState(null)
-  const { enqueueSnackbar } = useSnackbar()
+function PlanoContaDeleteModal({ open, onClose, planoId }) {
+  const [plano, setPlano] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (open && planoId) {
+      setLoading(true)
+      setError(null)
+      axios
+        .get(`/api/PlanoContas/${planoId}`)
+        .then((response) => {
+          setPlano(response.data)
+        })
+        .catch(() => {
+          setError('Erro ao carregar os dados do Plano de Contas.')
+          const eventoErro = new CustomEvent('onNotificacao', {
+            detail: {
+              mensagem: 'Erro ao carregar os dados do Plano de Contas.',
+              variant: 'error',
+            },
+          })
+          window.dispatchEvent(eventoErro)
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    }
+  }, [planoId, open])
 
   const handleDelete = async () => {
     try {
-      setDeleteError(null)
-      await axios.delete(`/PlanoContas/DeleteConfirmed/${conta.id}`)
-      enqueueSnackbar('Plano de Contas excluído com sucesso!', {
-        variant: 'success',
-      })
-      onClose()
-      window.atualizarTabelaPlanoContas?.(conta.id)
-    } catch (err) {
-      let errorMessage = 'Erro ao excluir Plano de Contas'
-      let variant = 'error'
+      setError(null)
 
-      if (err.response) {
-        switch (err.response.status) {
-          case 400:
-            errorMessage =
-              err.response.data?.message ||
-              'Não é possível excluir este plano de contas'
-            break
-          case 404:
-            errorMessage = 'Plano de Contas não encontrado'
-            break
-          case 500:
-            errorMessage = 'Erro interno no servidor'
-            break
-          default:
-            errorMessage = 'Ocorreu um erro inesperado'
-        }
-      } else if (err.request) {
-        errorMessage = 'Sem resposta do servidor - verifique sua conexão'
-      } else {
-        errorMessage = err.message || 'Erro ao configurar a requisição'
-      }
-
-      setDeleteError(errorMessage)
-      enqueueSnackbar(errorMessage, {
-        variant,
-        autoHideDuration: 5000,
-        anchorOrigin: {
-          vertical: 'top',
-          horizontal: 'right',
+      await axios.delete(`/api/PlanoContas/${planoId}`)
+      const eventoSucesso = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Plano de Contas excluído com sucesso.',
+          variant: 'success',
         },
       })
+      window.dispatchEvent(eventoSucesso)
+
+      onClose(true)
+    } catch (err) {
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem:
+            err.response.data.message || 'Erro ao excluir Plano de Contas.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+      setError(
+        err.response?.data?.message || 'Erro ao excluir Plano de Contas.',
+      )
+      onClose(false)
     }
   }
 
+  const handleClose = () => {
+    onClose(false)
+  }
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: 'absolute',
@@ -66,33 +86,37 @@ function PlanoContaDeleteModal({ open, onClose, conta }) {
           borderRadius: 2,
           boxShadow: 24,
           p: 4,
-          width: 400,
+          width: { xs: '90%', sm: 450 },
         }}
       >
-        <Typography variant="h4" justifyContent="center" gutterBottom>
-          Confirma a exclusão?
+        <Typography variant="h5" component="h2" gutterBottom>
+          Confirmar Exclusão
         </Typography>
-        {deleteError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {deleteError}
-          </Alert>
+        <Divider sx={{ my: 2 }} />
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert severity="error">{error}</Alert>
+        ) : (
+          <Typography sx={{ my: 2 }}>
+            Tem certeza que deseja excluir o plano de contas:{' '}
+            <strong>{plano?.descricao || 'Carregando...'}</strong>?
+          </Typography>
         )}
-        <Divider
-          sx={{ borderBottomWidth: 2, borderColor: 'grey.400', my: 2 }}
-        />
-        <Typography fontSize={18} justifyContent="center">
-          <strong>Descrição:</strong> {conta.descricao} <br />
-          <strong>Tipo:</strong> {conta.tipo || '---'} <br />
-        </Typography>
-        <Box mt={3} display="flex" justifyContent="flex-end">
-          <Button onClick={onClose} variant="outlined" sx={{ mr: 1 }}>
+
+        <Box
+          sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}
+        >
+          <Button onClick={handleClose} variant="outlined">
             Cancelar
           </Button>
           <Button
             onClick={handleDelete}
             variant="contained"
             color="error"
-            disabled={!!deleteError}
+            disabled={loading || error}
           >
             Excluir
           </Button>
@@ -102,4 +126,4 @@ function PlanoContaDeleteModal({ open, onClose, conta }) {
   )
 }
 
-export default PlanoContaDeleteModal;
+export default PlanoContaDeleteModal

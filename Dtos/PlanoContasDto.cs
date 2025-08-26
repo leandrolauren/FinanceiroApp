@@ -1,10 +1,12 @@
+using FinanceiroApp.Models;
+
 namespace FinanceiroApp.Dtos
 {
     public class PlanoContasDto
     {
         public int Id { get; set; }
         public string? Descricao { get; set; }
-        public string? Tipo { get; set; }
+        public MovimentoTipo Tipo { get; set; }
         public int? PlanoContasPaiId { get; set; }
         public decimal Total { get; set; }
         public List<PlanoContasDto> Filhos { get; set; } = new();
@@ -14,7 +16,7 @@ namespace FinanceiroApp.Dtos
     {
         public int Id { get; set; }
         public string? Descricao { get; set; }
-        public string? Tipo { get; set; }
+        public MovimentoTipo Tipo { get; set; }
         public bool Padrao { get; set; }
         public decimal TotalReceitas { get; set; }
         public decimal TotalDespesas { get; set; }
@@ -30,14 +32,14 @@ namespace FinanceiroApp.Dtos
     {
         public int Id { get; set; }
         public string Descricao { get; set; }
-        public string Tipo { get; set; }
+        public MovimentoTipo Tipo { get; set; }
         public int? PlanoContasPaiId { get; set; }
     }
 
     public class CriarPlanoContaDto
     {
         public required string Descricao { get; set; }
-        public required string Tipo { get; set; }
+        public MovimentoTipo Tipo { get; set; }
         public int? PlanoContasPaiId { get; set; }
     }
 }

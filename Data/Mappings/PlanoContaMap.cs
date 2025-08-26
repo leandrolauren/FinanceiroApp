@@ -15,7 +15,7 @@ namespace FinanceiroApp.Data.Mappings
 
             builder.Property(p => p.Descricao).IsRequired().HasMaxLength(100);
 
-            builder.Property(p => p.Tipo).IsRequired().HasMaxLength(20);
+            builder.Property(p => p.Tipo).IsRequired().HasConversion<int>();
 
             // Indices
             builder.HasIndex(p => p.Descricao, "IX_PlanoConta_Descricao").IsUnique(false);

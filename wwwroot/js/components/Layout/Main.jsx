@@ -28,6 +28,13 @@ const PessoasDataGrid = lazy(() => import('../Pessoa/PessoasDataGrid'))
 const PlanoContaDataGrid = lazy(() =>
   import('../PlanoConta/PlanoContaDataGrid'),
 )
+const PlanoContaCreateForm = lazy(() =>
+  import('../PlanoConta/PlanoContaCreateForm'),
+)
+const PlanoContaEditForm = lazy(() =>
+  import('../PlanoConta/PlanoContaEditForm'),
+)
+
 const PessoaCreateForm = lazy(() => import('../Pessoa/PessoaCreateForm'))
 const PessoaEditForm = lazy(() => import('../Pessoa/PessoaEditForm'))
 
@@ -38,6 +45,11 @@ const EditContaPage = () => {
 const EditPessoaPage = () => {
   const { id } = useParams()
   return <PessoaEditForm pessoaId={id} />
+}
+
+const EditPlanoContaPage = () => {
+  const { id } = useParams()
+  return <PlanoContaEditForm planoContaId={id} />
 }
 
 const App = () => {
@@ -91,6 +103,14 @@ const App = () => {
                     element={<EditPessoaPage />}
                   />
                   <Route path="/planocontas" element={<PlanoContaDataGrid />} />
+                  <Route
+                    path="/planocontas/create"
+                    element={<PlanoContaCreateForm />}
+                  />
+                  <Route
+                    path="/planocontas/edit/:id"
+                    element={<EditPlanoContaPage />}
+                  />
                   <Route path="/contas" element={<ContaBancariaDataGrid />} />
                   <Route path="/contas/create" element={<CreateContaForm />} />
                   <Route path="/contas/edit/:id" element={<EditContaPage />} />

@@ -24,6 +24,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import ptBR from 'date-fns/locale/pt-BR'
+import PlanoContaDeleteModal from './PlanoContaDeleteModal'
 
 export default function PlanoContaDataGrid() {
   const [contas, setContas] = useState([])
@@ -42,7 +43,23 @@ export default function PlanoContaDataGrid() {
   const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
-  const buscarDados = useCallback(async () => {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedPlanoId, setSelectedPlanoId] = useState(null)
+
+  const handleOpenDeleteModal = (id) => {
+    setSelectedPlanoId(id)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseDeleteModal = (deleted) => {
+    setIsModalOpen(false)
+    setSelectedPlanoId(null)
+    if (deleted) {
+      fetchData()
+    }
+  }
+
+  const fetchData = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
@@ -52,7 +69,6 @@ export default function PlanoContaDataGrid() {
         dataFim: filtrosAtivos.dataFim?.toISOString().split('T')[0],
       }
 
-      // APENAS UMA CHAMADA À API
       const response = await axios.get('/api/planoContas/hierarquia', {
         params,
       })
@@ -73,8 +89,8 @@ export default function PlanoContaDataGrid() {
   }, [filtrosAtivos])
 
   useEffect(() => {
-    buscarDados()
-  }, [buscarDados])
+    fetchData()
+  }, [fetchData])
 
   const handleFiltroChange = (event) => {
     const { name, value } = event.target
@@ -114,7 +130,7 @@ export default function PlanoContaDataGrid() {
       : { fontStyle: 'italic', color: '#555' }
 
     const valorTotal = conta.total || 0.0
-    const corValor = conta.tipo === 'Despesa' ? 'red' : 'green'
+    const corValor = conta.tipo === 2 ? 'red' : 'green'
 
     return (
       <React.Fragment key={conta.id}>
@@ -125,7 +141,7 @@ export default function PlanoContaDataGrid() {
               <Box ml={1}>{conta.descricao}</Box>
             </Box>
           </td>
-          <td>{conta.tipo}</td>
+          <td>{conta.tipo === 1 ? 'Receita' : 'Despesa'}</td>
           <td
             style={{
               color: corValor,
@@ -149,7 +165,7 @@ export default function PlanoContaDataGrid() {
             </IconButton>
             <IconButton
               color="error"
-              onClick={() => window.abrirModalExclusaoPlanoConta(conta)}
+              onClick={() => handleOpenDeleteModal(conta.id)}
               size="small"
             >
               <Delete />
@@ -296,6 +312,13 @@ export default function PlanoContaDataGrid() {
           </tbody>
         </table>
       </Box>
+      {isModalOpen && (
+        <PlanoContaDeleteModal
+          open={isModalOpen}
+          planoId={selectedPlanoId}
+          onClose={handleCloseDeleteModal}
+        />
+      )}
     </Box>
   )
 }

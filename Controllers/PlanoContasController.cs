@@ -11,20 +11,6 @@ namespace FinanceiroApp.Controllers
     [Authorize]
     public class PlanoContasController : Controller
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<PlanoContasController> _logger;
-
-        public PlanoContasController(
-            ApplicationDbContext context,
-            ILogger<PlanoContasController> logger
-        )
-        {
-            _context = context;
-            _logger = logger;
-        }
-
-        // --- MÉTODOS PARA RAZOR VIEWS ---
-
         // GET: /PlanoContas
         public IActionResult Index() => View();
 
@@ -37,10 +23,19 @@ namespace FinanceiroApp.Controllers
             ViewBag.Id = id;
             return View();
         }
+    }
 
-        // --- API ENDPOINTS ---
-
-        [HttpGet("api/planoContas/hierarquia")]
+    // --- API ENDPOINTS ---
+    [Authorize]
+    [ApiController]
+    [Route("api/")]
+    public class PlanoContasApiController(
+        ApplicationDbContext context,
+        ILogger<PlanoContasController> logger
+    ) : ControllerBase
+    {
+        // GET: /api/planoContas/hierarquia
+        [HttpGet("planoContas/hierarquia")]
         public async Task<IActionResult> GetHierarquiaPlanoContas(
             [FromQuery] DateTime? dataInicio,
             [FromQuery] DateTime? dataFim,
@@ -51,8 +46,7 @@ namespace FinanceiroApp.Controllers
             {
                 var userId = GetUserId();
 
-                // PASSO 1: Buscar todas as contas do usuário de uma só vez.
-                var todasContas = await _context
+                var todasContas = await context
                     .PlanosContas.Where(p => p.UsuarioId == userId)
                     .AsNoTracking()
                     .ToListAsync();
@@ -62,13 +56,11 @@ namespace FinanceiroApp.Controllers
 
                 var idsDasContas = todasContas.Select(c => c.Id).ToList();
 
-                // Configuração das datas de filtro
                 var hoje = DateTime.Today;
                 var dtInicio = dataInicio ?? new DateTime(hoje.Year, hoje.Month, 1);
                 var dtFim = dataFim ?? dtInicio.AddMonths(1).AddDays(-1);
 
-                // PASSO 2: Buscar todos os lançamentos relevantes em uma única consulta ao banco.
-                var queryLancamentos = _context
+                var queryLancamentos = context
                     .Lancamentos.AsNoTracking()
                     .Where(l => idsDasContas.Contains(l.PlanoContaId));
 
@@ -90,12 +82,10 @@ namespace FinanceiroApp.Controllers
                     ),
                 };
 
-                // PASSO 3: Agrupar e somar os totais em memória (extremamente rápido).
                 var totaisPorConta = (await queryLancamentos.ToListAsync())
                     .GroupBy(l => l.PlanoContaId)
                     .ToDictionary(g => g.Key, g => g.Sum(l => l.Valor));
 
-                // PASSO 4: Mapear para DTOs e construir a árvore hierárquica.
                 var contasDtoPorId = todasContas.ToDictionary(
                     c => c.Id,
                     c => new PlanoContasDto
@@ -104,7 +94,6 @@ namespace FinanceiroApp.Controllers
                         Descricao = c.Descricao,
                         Tipo = c.Tipo,
                         PlanoContasPaiId = c.PlanoContasPaiId,
-                        // Atribui o total direto da conta (se houver)
                         Total = totaisPorConta.GetValueOrDefault(c.Id, 0),
                     }
                 );
@@ -133,7 +122,7 @@ namespace FinanceiroApp.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(
+                logger.LogError(
                     ex,
                     "Erro ao buscar a hierarquia do plano de contas para o usuário {UserId}",
                     GetUserId()
@@ -163,11 +152,11 @@ namespace FinanceiroApp.Controllers
             return contaDto.Total;
         }
 
-        [HttpGet("api/planoContas/{id}")]
+        [HttpGet("planoContas/{id}")]
         public async Task<IActionResult> GetPlanoConta(int id)
         {
             var userId = GetUserId();
-            var plano = await _context
+            var plano = await context
                 .PlanosContas.AsNoTracking()
                 .Select(p => new PlanoContaCriadoDto
                 {
@@ -184,7 +173,7 @@ namespace FinanceiroApp.Controllers
             return Ok(plano);
         }
 
-        [HttpPost("api/planoContas")]
+        [HttpPost("planoContas")]
         public async Task<Object> CreatePlanoConta([FromBody] CriarPlanoContaDto dto)
         {
             if (!ModelState.IsValid)
@@ -201,14 +190,14 @@ namespace FinanceiroApp.Controllers
                     UsuarioId = userId,
                 };
 
-                _context.Add(plano);
-                await _context.SaveChangesAsync();
+                context.Add(plano);
+                await context.SaveChangesAsync();
 
                 return new { id = plano.Id };
             }
             catch (Exception ex)
             {
-                _logger.LogError(
+                logger.LogError(
                     ex,
                     "Erro ao criar plano de contas para o usuário {UserId}",
                     GetUserId()
@@ -220,7 +209,27 @@ namespace FinanceiroApp.Controllers
             }
         }
 
-        [HttpPut("api/planoContas/{id}")]
+        [HttpGet("planoContas/pais")]
+        public async Task<IActionResult> GetPlanosContasPai()
+        {
+            var userId = GetUserId();
+
+            var planos = await context
+                .PlanosContas.AsNoTracking()
+                .Where(p => p.UsuarioId == userId)
+                .OrderBy(p => p.Descricao)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.Descricao,
+                    p.Tipo,
+                })
+                .ToListAsync();
+
+            return Ok(planos);
+        }
+
+        [HttpPut("planoContas/{id}")]
         public async Task<IActionResult> EditPlanoConta(
             int id,
             [FromBody] EditPlanoContaDto dto,
@@ -233,13 +242,13 @@ namespace FinanceiroApp.Controllers
                 return BadRequest(new { message = "ID do plano de contas inválido." });
 
             var userId = GetUserId();
-            var planoDb = await _context.PlanosContas.FirstOrDefaultAsync(p =>
+            var planoDb = await context.PlanosContas.FirstOrDefaultAsync(p =>
                 p.Id == id && p.UsuarioId == userId
             );
             if (planoDb == null)
                 return NotFound(new { message = "Plano de contas não encontrado." });
 
-            var lancamentosExistentes = await _context
+            var lancamentosExistentes = await context
                 .Lancamentos.Where(l => l.PlanoContaId == id)
                 .ToListAsync();
             bool precisaMigrar =
@@ -253,13 +262,13 @@ namespace FinanceiroApp.Controllers
                     new
                     {
                         success = false,
-                        message = "Esta conta possui lançamentos. Para movê-la, os lançamentos serão migrados para uma nova sub-conta. Confirma a operação?",
+                        message = "Este plano de contas possui lançamentos. Para movê-la, os lançamentos serão migrados para um novo plano. Confirma a operação?",
                         requerConfirmacao = true,
                     }
                 );
             }
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
                 if (precisaMigrar && confirmarMigracao)
@@ -271,19 +280,19 @@ namespace FinanceiroApp.Controllers
                         PlanoContasPaiId = planoDb.Id,
                         UsuarioId = userId,
                     };
-                    _context.PlanosContas.Add(novoPlanoFilho);
-                    await _context.SaveChangesAsync();
+                    context.PlanosContas.Add(novoPlanoFilho);
+                    await context.SaveChangesAsync();
 
                     foreach (var lancamento in lancamentosExistentes)
                     {
                         lancamento.PlanoContaId = novoPlanoFilho.Id;
                     }
-                    _context.Lancamentos.UpdateRange(lancamentosExistentes);
+                    context.Lancamentos.UpdateRange(lancamentosExistentes);
                 }
 
                 planoDb.Descricao = dto.Descricao;
                 planoDb.PlanoContasPaiId = dto.PlanoContasPaiId;
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
 
                 await transaction.CommitAsync();
                 return NoContent();
@@ -291,16 +300,16 @@ namespace FinanceiroApp.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                _logger.LogError(ex, "Erro ao editar plano de contas {PlanoId}", id);
+                logger.LogError(ex, "Erro ao editar plano de contas {PlanoId}", id);
                 return StatusCode(500, new { message = "Erro ao salvar as alterações." });
             }
         }
 
-        [HttpDelete("api/planoContas/{id}")]
+        [HttpDelete("planoContas/{id}")]
         public async Task<IActionResult> DeletePlanoConta(int id)
         {
             var userId = GetUserId();
-            var conta = await _context.PlanosContas.FirstOrDefaultAsync(p =>
+            var conta = await context.PlanosContas.FirstOrDefaultAsync(p =>
                 p.Id == id && p.UsuarioId == userId
             );
 
@@ -309,37 +318,37 @@ namespace FinanceiroApp.Controllers
                     new { success = false, message = "Plano de contas não encontrado." }
                 );
 
-            if (await _context.PlanosContas.AnyAsync(f => f.PlanoContasPaiId == id))
+            if (await context.PlanosContas.AnyAsync(f => f.PlanoContasPaiId == id))
             {
                 return BadRequest(
                     new
                     {
                         success = false,
-                        message = "Não é possível excluir uma conta que possui filhos.",
+                        message = "Não é possível excluir um plano que possui filhos.",
                     }
                 );
             }
 
-            if (await _context.Lancamentos.AnyAsync(l => l.PlanoContaId == id))
+            if (await context.Lancamentos.AnyAsync(l => l.PlanoContaId == id))
             {
                 return BadRequest(
                     new
                     {
                         success = false,
-                        message = "Não é possível excluir uma conta com lançamentos vinculados.",
+                        message = "Não é possível excluir um Plano de Contas que possui lançamentos.",
                     }
                 );
             }
 
             try
             {
-                _context.PlanosContas.Remove(conta);
-                await _context.SaveChangesAsync();
+                context.PlanosContas.Remove(conta);
+                await context.SaveChangesAsync();
                 return NoContent();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro ao excluir plano de contas {PlanoId}", id);
+                logger.LogError(ex, "Erro ao excluir plano de contas {PlanoId}", id);
                 return StatusCode(
                     500,
                     new
@@ -351,11 +360,11 @@ namespace FinanceiroApp.Controllers
             }
         }
 
-        [HttpGet("api/planoContas/{id}/ehpai")]
+        [HttpGet("planoContas/{id}/ehpai")]
         public async Task<IActionResult> IsPai(int id)
         {
             var userId = GetUserId();
-            var temFilhos = await _context.PlanosContas.AnyAsync(p =>
+            var temFilhos = await context.PlanosContas.AnyAsync(p =>
                 p.PlanoContasPaiId == id && p.UsuarioId == userId
             );
             return Ok(new { isPai = temFilhos });
