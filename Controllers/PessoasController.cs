@@ -98,6 +98,22 @@ namespace FinanceiroApp.Controllers
 
                 return new { id = pessoa.Id };
             }
+            catch (DbUpdateException ex)
+            {
+                if (ex.InnerException is Npgsql.PostgresException pgEx && pgEx.SqlState == "23505")
+                    return BadRequest(
+                        new { success = false, message = "Este CPF ou CNPJ já está cadastrado" }
+                    );
+                logger.LogError(ex, "Erro de banco de dados ao criar pessoa.");
+                return StatusCode(
+                    500,
+                    new
+                    {
+                        success = false,
+                        message = "Ocorreu um erro de banco de dados ao criar a pessoa.",
+                    }
+                );
+            }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Erro ao criar pessoa.");
@@ -109,7 +125,7 @@ namespace FinanceiroApp.Controllers
         }
 
         // PUT: api/Pessoas/{id}
-        [HttpPut("pessooas/{id}")]
+        [HttpPut("pessoas/{id}")]
         public async Task<IActionResult> EditPessoa(int id, [FromBody] EditPessoaDto dto)
         {
             if (!ModelState.IsValid)
@@ -121,13 +137,10 @@ namespace FinanceiroApp.Controllers
             );
 
             if (pessoaDb == null)
-            {
                 return NotFound(new { success = false, message = "Pessoa não encontrada." });
-            }
 
             pessoaDb.Nome = dto.Nome;
             pessoaDb.RazaoSocial = dto.RazaoSocial;
-            pessoaDb.Tipo = dto.Tipo;
             pessoaDb.Email = dto.Email;
             pessoaDb.Telefone = dto.Telefone;
             pessoaDb.Endereco = dto.Endereco;
@@ -139,14 +152,36 @@ namespace FinanceiroApp.Controllers
             pessoaDb.NomeFantasia = dto.NomeFantasia;
             pessoaDb.InscricaoEstadual = dto.InscricaoEstadual;
             pessoaDb.Cpf = dto.Cpf;
+            pessoaDb.Cnpj = dto.Cnpj;
             pessoaDb.Rg = dto.Rg;
             pessoaDb.DataNascimento = dto.DataNascimento;
-            pessoaDb.UsuarioId = userId;
 
             try
             {
                 await context.SaveChangesAsync();
                 return NoContent();
+            }
+            catch (DbUpdateException ex)
+            {
+                if (
+                    ex.InnerException is Npgsql.PostgresException postgresEx
+                    && postgresEx.SqlState == "23505"
+                )
+                {
+                    return BadRequest(
+                        new { success = false, message = "Este CPF ou CNPJ já está cadastrado." }
+                    );
+                }
+
+                logger.LogError(ex, "Erro de banco de dados ao editar pessoa {PessoaId}", id);
+                return StatusCode(
+                    500,
+                    new
+                    {
+                        success = false,
+                        message = "Ocorreu um erro de banco de dados ao editar a pessoa.",
+                    }
+                );
             }
             catch (Exception ex)
             {

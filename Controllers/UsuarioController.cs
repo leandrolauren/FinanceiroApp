@@ -86,7 +86,7 @@ public class UsuarioController(ApplicationDbContext context, IRabbitMqService ra
         if (pendente == null)
             return NotFound(new { success = false, message = "Usuário pendente não encontrado." });
 
-        if (DateTime.Now > pendente.DataCriacao.AddMinutes(20))
+        if (DateTime.Now > pendente.DataCriacao.AddMinutes(1440))
         {
             context.UsuariosPendentes.Remove(pendente);
             await context.SaveChangesAsync();

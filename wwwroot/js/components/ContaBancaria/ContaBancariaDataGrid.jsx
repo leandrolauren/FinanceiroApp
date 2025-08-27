@@ -1,85 +1,54 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
 import { ptBR } from '@mui/x-data-grid/locales'
+import ContaDeleteModal from './ContaDeleteModal'
 
-const columns = [
-  { field: 'descricao', headerName: 'Descrição', flex: 1 },
-  {
-    field: 'tipo',
-    headerName: 'Tipo',
-    flex: 1,
-  },
-  { field: 'numeroConta', headerName: 'Número', flex: 1 },
-  { field: 'digitoConta', headerName: 'Dg. Conta', flex: 1 },
-  { field: 'agencia', headerName: 'Agência', flex: 1 },
-  { field: 'digitoAgencia', headerName: 'Dg. Agencia', flex: 1 },
-  {
-    field: 'ativoTexto',
-    headerName: 'Ativo',
-    flex: 1,
-  },
-  { field: 'banco', headerName: 'Banco', flex: 1 },
-  { field: 'saldo', headerName: 'Saldo', flex: 1, type: Number },
-  {
-    field: 'acoes',
-    headerName: 'Ações',
-    width: 180,
-    sortable: false,
-    disableColumnMenu: true,
-    hideable: false,
-    pinned: false,
-    resizable: false,
-    renderCell: (params) => (
-      <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
-        <Button
-          variant="outlined"
-          color="warning"
-          size="small"
-          href={`/Contas/Edit/${params.id}`}
-        >
-          Editar
-        </Button>
-        <Button
-          variant="outlined"
-          color="error"
-          size="small"
-          onClick={() => window.abrirModalExclusaoConta(params.id)}
-        >
-          Excluir
-        </Button>
-      </Box>
-    ),
-  },
-]
+const defaultGridState = {
+  columns: { columnVisibilityModel: {}, columnWidths: {} },
+  sorting: { sortModel: [] },
+  pagination: { pageSize: 25 },
+  layout: { height: 500 },
+}
 
 export default function ContaBancariaDataGrid() {
   const [loading, setLoading] = useState(true)
   const [contas, setContas] = useState([])
   const [gridState, setGridState] = useState(() => {
     const savedState = localStorage.getItem('contasGridState')
-    return savedState
-      ? JSON.parse(savedState)
-      : {
-          columns: {
-            columnVisibilityModel: {
-              acoes: true,
-            },
-          },
-          sorting: {
-            sortModel: [],
-          },
-          pagination: {
-            pageSize: 25,
-          },
-          dimensions: {},
-          layout: {
-            height: 500,
-          },
-        }
+    if (savedState) {
+      const parsedState = JSON.parse(savedState)
+      return {
+        ...defaultGridState,
+        ...parsedState,
+        columns: { ...defaultGridState.columns, ...parsedState.columns },
+        sorting: { ...defaultGridState.sorting, ...parsedState.sorting },
+        pagination: {
+          ...defaultGridState.pagination,
+          ...parsedState.pagination,
+        },
+        layout: { ...defaultGridState.layout, ...parsedState.layout },
+      }
+    }
+    return defaultGridState
   })
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedContaId, setSelectedContaId] = useState(null)
+
+  const handleOpenDeleteModal = useCallback((id) => {
+    setSelectedContaId(id)
+    setIsModalOpen(true)
+  }, [])
+
+  const handleCloseDeleteModal = (deleted) => {
+    setIsModalOpen(false)
+    setSelectedContaId(null)
+    if (deleted) {
+      fetchData()
+    }
+  }
   const handleResize = () => {
     const container = document.querySelector('.datagrid-container')
     if (container) {
@@ -101,6 +70,75 @@ export default function ContaBancariaDataGrid() {
       ...newState,
     }))
   }
+
+  const handleColumnResize = (params) => {
+    handleStateChange({
+      columns: {
+        ...gridState.columns,
+        columnWidths: {
+          ...gridState.columns.columnWidths,
+          [params.colDef.field]: params.width,
+        },
+      },
+    })
+  }
+
+  const columns = useMemo(() => {
+    const baseColumns = [
+      { field: 'descricao', headerName: 'Descrição', flex: 1 },
+      {
+        field: 'tipo',
+        headerName: 'Tipo',
+        flex: 1,
+      },
+      { field: 'numeroConta', headerName: 'Número', flex: 1 },
+      { field: 'digitoConta', headerName: 'Dg. Conta', flex: 1 },
+      { field: 'agencia', headerName: 'Agência', flex: 1 },
+      { field: 'digitoAgencia', headerName: 'Dg. Agencia', flex: 1 },
+      {
+        field: 'ativoTexto',
+        headerName: 'Ativo',
+        flex: 1,
+      },
+      { field: 'banco', headerName: 'Banco', flex: 1 },
+      { field: 'saldo', headerName: 'Saldo', flex: 1, type: Number },
+      {
+        field: 'acoes',
+        headerName: 'Ações',
+        width: 180,
+        sortable: false,
+        disableColumnMenu: true,
+        hideable: false,
+        pinned: false,
+        resizable: false,
+        renderCell: (params) => (
+          <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
+            <Button
+              variant="outlined"
+              color="warning"
+              size="small"
+              href={`/Contas/Edit/${params.id}`}
+            >
+              Editar
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={() => handleOpenDeleteModal(params.id)}
+            >
+              Excluir
+            </Button>
+          </Box>
+        ),
+      },
+    ]
+
+    return baseColumns.map((col) => ({
+      ...col,
+      width: gridState.columns?.columnWidths?.[col.field] || col.width,
+    }))
+  }, [gridState.columns?.columnWidths])
 
   useEffect(() => {
     localStorage.setItem('contasGridState', JSON.stringify(gridState))
@@ -179,6 +217,7 @@ export default function ContaBancariaDataGrid() {
             rowsPerPageOptions={[5, 10, 20]}
             localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
             disableRowSelectionOnClick
+            onColumnResize={handleColumnResize}
             sx={{
               '& .MuiDataGrid-cell': {
                 padding: '8px 16px',
@@ -221,6 +260,13 @@ export default function ContaBancariaDataGrid() {
             }}
           />
         </div>
+      )}
+      {isModalOpen && (
+        <ContaDeleteModal
+          open={isModalOpen}
+          contaId={selectedContaId}
+          onClose={handleCloseDeleteModal}
+        />
       )}
     </Box>
   )

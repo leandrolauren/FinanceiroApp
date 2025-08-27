@@ -14,16 +14,14 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   const [conta, setConta] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [deleteError, setDeleteError] = useState(null)
 
   useEffect(() => {
     if (open && contaId) {
       setLoading(true)
       setError(null)
-      setDeleteError(null)
       axios
-        .get(`/api/Contasapi/${contaId}`)
-        .then((res) => setConta(res.data))
+        .get(`/api/Contas/${contaId}`)
+        .then((response) => setConta(response.data.data))
         .catch(() => {
           setError('Erro ao carregar os dados da conta.')
           const eventoErro = new CustomEvent('onNotificacao', {
@@ -40,7 +38,6 @@ function ContaDeleteModal({ open, onClose, contaId }) {
 
   const handleDelete = async () => {
     try {
-      setDeleteError(null)
       await axios.delete(`/api/Contas/${contaId}`)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
@@ -49,39 +46,26 @@ function ContaDeleteModal({ open, onClose, contaId }) {
         },
       })
       window.dispatchEvent(eventoSucesso)
-      onClose()
-      window.atualizarTabelaContas?.(contaId)
+      onClose(true)
     } catch (error) {
-      let errorMessage = 'Erro ao excluir Conta.'
-
-      if (error.response) {
-        switch (error.response.status) {
-          case 400:
-            errorMessage =
-              error.response.data?.message ||
-              'Não é possível excluir esta Conta'
-            break
-          case 404:
-            errorMessage = 'Conta não encontrada'
-            break
-          case 500:
-            errorMessage = 'Erro interno'
-            break
-          default:
-            errorMessage = 'Erro inesperado'
-        }
-      } else if (error.request) {
-        errorMessage = 'Sem responsta do servidor - verifique a conexão'
-      } else {
-        errorMessage = error.message || 'Erro ao enviar requisição'
-      }
-
-      setDeleteError(errorMessage)
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: err.response.data.message || 'Erro ao excluir conta.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+      onclose(false)
+      setError(err.response.data.message || 'Erro ao excluir pessoa.')
     }
   }
 
+  const handleClose = () => {
+    onClose(false)
+  }
+
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: 'absolute',
@@ -92,49 +76,41 @@ function ContaDeleteModal({ open, onClose, contaId }) {
           borderRadius: 2,
           boxShadow: 24,
           p: 4,
-          width: 400,
+          width: { xs: '90%', sm: 450 },
         }}
       >
+        <Typography variant="h5" component="h2" gutterBottom>
+          Confirmar Exclusão
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+
         {loading ? (
-          <Box display="flex" justifyContent="center">
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
             <CircularProgress />
           </Box>
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : (
-          <>
-            <Typography variant="h4" justifyContent="center" gutterBottom>
-              Confirma a exclusão?
-            </Typography>
-            <Divider
-              sx={{ borderBottomWidth: 2, borderColor: 'grey.400', my: 2 }}
-            />
-
-            {deleteError && (
-              <Alert severity="error" sx={{ mb: 2 }}>
-                {deleteError}
-              </Alert>
-            )}
-            <Typography fontSize={15} justifyContent="center">
-              <strong>Descrição:</strong> {conta.descricao} <br />
-              <strong>Número:</strong> {conta.numeroConta || '---'} <br />
-              <strong>Banco:</strong> {conta.banco || '---'}
-            </Typography>
-            <Box mt={3} display="flex" justifyContent="flex-end">
-              <Button onClick={onClose} variant="outlined" sx={{ mr: 1 }}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleDelete}
-                variant="contained"
-                color="error"
-                disabled={!!deleteError}
-              >
-                Excluir
-              </Button>
-            </Box>
-          </>
+          <Typography sx={{ my: 2 }}>
+            Tem certeza que deseja excluir a conta:{' '}
+            <strong>{conta?.descricao || 'Carregando...'}</strong>?
+          </Typography>
         )}
+        <Box
+          sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}
+        >
+          <Button onClick={handleClose} variant="outlined">
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="contained"
+            color="error"
+            disabled={loading || error}
+          >
+            Excluir
+          </Button>
+        </Box>
       </Box>
     </Modal>
   )

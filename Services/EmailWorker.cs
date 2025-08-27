@@ -28,21 +28,6 @@ namespace FinanceiroApp.Services
                 Uri = new Uri(rabbitMqUrl),
                 DispatchConsumersAsync = true,
             };
-
-            // _factory = new ConnectionFactory
-            // {
-            //     HostName = Environment.GetEnvironmentVariable("RABBITMQ_HOST"),
-            //     Port = int.Parse(Environment.GetEnvironmentVariable("RABBITMQ_PORT")),
-            //     UserName = Environment.GetEnvironmentVariable("RABBITMQ_USER"),
-            //     Password = Environment.GetEnvironmentVariable("RABBITMQ_PASS"),
-            //     VirtualHost = Environment.GetEnvironmentVariable("RABBITMQ_USER"),
-            //     Ssl = new SslOption
-            //     {
-            //         Enabled = true,
-            //         ServerName = Environment.GetEnvironmentVariable("RABBITMQ_HOST"),
-            //     },
-            //     DispatchConsumersAsync = true,
-            // };
         }
 
         public void Start()
@@ -109,7 +94,7 @@ namespace FinanceiroApp.Services
 
         private async Task EnviarEmailConfirmacaoAsync(string to, string token)
         {
-            var SERVER_HOST = Environment.GetEnvironmentVariable("SERVER_HOST") ?? "localhost";
+            var SERVER_HOST = Environment.GetEnvironmentVariable("SERVER_HOST") ?? "localhost:5084";
             var link = $"{SERVER_HOST}/usuario/confirmar?token={token}";
             var subject = "Confirme seu cadastro - Financeiro App";
             var body =
@@ -138,9 +123,12 @@ namespace FinanceiroApp.Services
 
         private async Task EnviarEmailSucessoAsync(string to)
         {
-            var subject = "Cadastro confirmado com sucesso";
+            var subject = "Cadastro confirmado - Financeiro App";
             var body =
-                "Obrigado por se cadastrar no FinanceiroApp. Seu e-mail foi confirmado com sucesso!";
+                @"<h2>Obrigado por se cadastrar no FinanceiroApp!</h2>.
+                 Seu e-mail foi confirmado com sucesso!
+                 <p><img src='https://i.imgur.com/42QmCee.png' alt='Logo' width = '30' /></p>
+                 <p>Agora você pode acessar sua conta e começar a gerenciar suas finanças.</p>";
 
             await EnviarEmailAsync(to, subject, body);
         }

@@ -14,7 +14,6 @@ import MuiCard from '@mui/material/Card'
 import { styled } from '@mui/material/styles'
 import { GoogleIcon } from '../Shared/CustomIcons'
 import axios from 'axios'
-import AppWrapper from '../Shared/AppWrapper'
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -58,7 +57,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   },
 }))
 
-export default function FormRegister(props) {
+const FormRegister = () => {
   const [emailError, setEmailError] = React.useState(false)
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('')
   const [passwordError, setPasswordError] = React.useState(false)
@@ -130,8 +129,7 @@ export default function FormRegister(props) {
 
       if (response.status === 200) {
         setGeneralError('')
-        console.log('Cadastro bem-sucedido, redirecionando para /Home/Index')
-        window.location.href = '/Home/Index'
+        window.location.href = '/Home'
       } else {
         console.log('Resposta inesperada:', response.status)
         setGeneralError('Resposta inesperada do servidor.')
@@ -260,3 +258,5 @@ export default function FormRegister(props) {
     </>
   )
 }
+
+export default FormRegister

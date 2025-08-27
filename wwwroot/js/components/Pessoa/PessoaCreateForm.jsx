@@ -170,7 +170,9 @@ const PessoaCreateForm = () => {
         setErrors(error.response.data.errors || {})
         const eventoAlerta = new CustomEvent('onNotificacao', {
           detail: {
-            mensagem: 'Por favor, corrija os erros no formulário.',
+            mensagem:
+              error.response.data.message ||
+              'Por favor, corrija os erros no formulário.',
             variant: 'warning',
           },
         })
@@ -178,7 +180,7 @@ const PessoaCreateForm = () => {
       } else {
         const eventoErro = new CustomEvent('onNotificacao', {
           detail: {
-            mensagem: 'Erro ao salvar pessoa.',
+            mensagem: error.response.data.message || 'Erro ao salvar pessoa.',
             variant: 'error',
           },
         })

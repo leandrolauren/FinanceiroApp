@@ -63,6 +63,16 @@ namespace FinanceiroApp.Data.Mappings
             builder.HasIndex(p => p.Nome, "IX_Pessoa_Nome").IsUnique(false);
 
             builder.HasIndex(p => p.Email, "IX_Pessoa_Email").IsUnique(true);
+
+            builder
+                .HasIndex(p => new { p.UsuarioId, p.Cnpj }, "IX_Pessoa_Usuario_Cnpj")
+                .IsUnique()
+                .HasFilter("\"Cnpj\" IS NOT NULL");
+
+            builder
+                .HasIndex(p => new { p.UsuarioId, p.Cpf }, "IX_Pessoa_Usuario_Cpf")
+                .IsUnique()
+                .HasFilter("\"Cpf\" IS NOT NULL");
         }
     }
 }

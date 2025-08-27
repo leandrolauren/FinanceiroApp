@@ -1,7 +1,6 @@
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     ViewData["Title"] = "Cadastro de Usuário";
-    Layout = "~/Views/Shared/_LayoutSimples.cshtml";
 }
 
 <!DOCTYPE html>
@@ -17,11 +16,10 @@
 <body>
     <div id="formRegister-root"></div>
 
-    @section Scripts {
-        <script src="~/js/dist/vendors.bundle.js"></script>
-        <script src="~/js/dist/FormRegister.bundle.js"></script>
-        <script src="~/js/dist/Notificacao.bundle.js"></script>
-    }
 </body>
 
 </html>
+@section Scripts {
+    <script src="~/js/dist/vendors.bundle.js"></script>
+    <script src="~/js/dist/FormRegister.bundle.js"></script>
+}

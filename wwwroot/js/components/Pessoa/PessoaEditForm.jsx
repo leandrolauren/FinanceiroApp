@@ -51,7 +51,9 @@ const PessoaEditForm = ({ pessoaId }) => {
       } catch (error) {
         const eventoErro = new CustomEvent('onNotificacao', {
           detail: {
-            mensagem: 'Erro de rede ao carregar a pessoa.',
+            mensagem:
+              error.response.data.message ||
+              'Erro de rede ao carregar a pessoa.',
             variant: 'error',
           },
         })
@@ -92,7 +94,7 @@ const PessoaEditForm = ({ pessoaId }) => {
     } catch (error) {
       const eventoErro = new CustomEvent('onNotificacao', {
         detail: {
-          mensagem: error.message || 'Erro ao buscar CEP.',
+          mensagem: error.response.data.message || 'Erro ao buscar CEP.',
           variant: 'error',
         },
       })
@@ -127,7 +129,7 @@ const PessoaEditForm = ({ pessoaId }) => {
     } catch (error) {
       const eventoErro = new CustomEvent('onNotificacao', {
         detail: {
-          mensagem: error.message || 'Erro ao buscar CNPJ.',
+          mensagem: error.response.data.message || 'Erro ao buscar CNPJ.',
           variant: 'error',
         },
       })
@@ -142,13 +144,13 @@ const PessoaEditForm = ({ pessoaId }) => {
 
     const { email } = formData
     if (email && !/\S+@\S+\.\S+/.test(email)) {
-      const eventoErro = new CustomEvent('onNotificacao', {
+      const eventoAlerta = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'O formato do e-mail é inválido.',
-          variant: 'error',
+          variant: 'alert',
         },
       })
-      window.dispatchEvent(eventoErro)
+      window.dispatchEvent(eventoAlerta)
       setErrors((prev) => ({
         ...prev,
         Email: ['O formato do e-mail é inválido.'],
@@ -178,17 +180,21 @@ const PessoaEditForm = ({ pessoaId }) => {
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setErrors(error.response.data.errors || {})
-        const eventoErroForm = new CustomEvent('onNotificacao', {
+        const eventoAlert = new CustomEvent('onNotificacao', {
           detail: {
-            mensagem: 'Por favor, corrija os erros no formulário.',
-            variant: 'error',
+            mensagem:
+              error.response.data.message ||
+              'Por favor, corrija os erros no formulário.',
+            variant: 'alert',
           },
         })
-        window.dispatchEvent(eventoErroForm)
+        window.dispatchEvent(eventoAlert)
       } else {
         const eventoErroGeral = new CustomEvent('onNotificacao', {
           detail: {
-            mensagem: 'Ocorreu um erro ao salvar a pessoa.',
+            mensagem:
+              error.response.data.message ||
+              'Ocorreu um erro ao salvar a pessoa.',
             variant: 'error',
           },
         })
@@ -226,13 +232,19 @@ const PessoaEditForm = ({ pessoaId }) => {
 
       <FormControl component="fieldset" sx={{ mb: 3 }}>
         <FormLabel component="legend">Tipo de Pessoa</FormLabel>
-        <RadioGroup
-          row
-          value={tipoPessoa}
-          onChange={(e) => setTipoPessoa(e.target.value)}
-        >
-          <FormControlLabel value="1" control={<Radio />} label="Física" />
-          <FormControlLabel value="2" control={<Radio />} label="Jurídica" />
+        <RadioGroup row value={tipoPessoa}>
+          <FormControlLabel
+            value="1"
+            control={<Radio />}
+            label="Física"
+            disabled
+          />
+          <FormControlLabel
+            value="2"
+            control={<Radio />}
+            label="Jurídica"
+            disabled
+          />
         </RadioGroup>
       </FormControl>
 

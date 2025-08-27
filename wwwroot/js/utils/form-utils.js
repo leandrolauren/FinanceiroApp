@@ -1,11 +1,9 @@
-import React from 'react';
-import { IMaskInput } from 'react-imask';
-import axios from 'axios';
-
-// --- Componentes de Máscara Reutilizáveis ---
+import React from 'react'
+import { IMaskInput } from 'react-imask'
+import axios from 'axios'
 
 export const CpfMask = React.forwardRef(function CpfMask(props, ref) {
-  const { onChange, ...other } = props;
+  const { onChange, ...other } = props
   return (
     <IMaskInput
       {...other}
@@ -14,11 +12,11 @@ export const CpfMask = React.forwardRef(function CpfMask(props, ref) {
       onAccept={(value) => onChange({ target: { name: props.name, value } })}
       overwrite
     />
-  );
-});
+  )
+})
 
 export const CnpjMask = React.forwardRef(function CnpjMask(props, ref) {
-  const { onChange, ...other } = props;
+  const { onChange, ...other } = props
   return (
     <IMaskInput
       {...other}
@@ -27,11 +25,11 @@ export const CnpjMask = React.forwardRef(function CnpjMask(props, ref) {
       onAccept={(value) => onChange({ target: { name: props.name, value } })}
       overwrite
     />
-  );
-});
+  )
+})
 
 export const TelefoneMask = React.forwardRef(function TelefoneMask(props, ref) {
-  const { onChange, ...other } = props;
+  const { onChange, ...other } = props
   return (
     <IMaskInput
       {...other}
@@ -40,11 +38,11 @@ export const TelefoneMask = React.forwardRef(function TelefoneMask(props, ref) {
       onAccept={(value) => onChange({ target: { name: props.name, value } })}
       overwrite
     />
-  );
-});
+  )
+})
 
 export const CepMask = React.forwardRef(function CepMask(props, ref) {
-  const { onChange, ...other } = props;
+  const { onChange, ...other } = props
   return (
     <IMaskInput
       {...other}
@@ -53,42 +51,87 @@ export const CepMask = React.forwardRef(function CepMask(props, ref) {
       onAccept={(value) => onChange({ target: { name: props.name, value } })}
       overwrite
     />
-  );
-});
-
-
-// --- Funções de API (Lógica de busca de dados) ---
+  )
+})
 
 export const buscarEnderecoPorCep = async (cep) => {
-  const cepLimpo = cep.replace(/\D/g, '');
+  const cepLimpo = cep.replace(/\D/g, '')
   if (cepLimpo.length !== 8) {
-    throw new Error('CEP inválido.');
+    throw new Error('CEP inválido.')
   }
-  const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+  const response = await axios.get(`https://viacep.com.br/ws/${cepLimpo}/json/`)
   if (response.data.erro) {
-    throw new Error('CEP não encontrado.');
+    throw new Error('CEP não encontrado.')
   }
-  return response.data;
-};
+  return response.data
+}
 
 export const buscarDadosPorCnpj = async (cnpj) => {
-  const cnpjLimpo = cnpj.replace(/\D/g, '');
+  const cnpjLimpo = cnpj.replace(/\D/g, '')
   if (cnpjLimpo.length !== 14) {
-    throw new Error('CNPJ inválido.');
+    throw new Error('CNPJ inválido.')
   }
-  const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`);
-  return response.data;
-};
+  const response = await axios.get(
+    `https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`,
+  )
+  return response.data
+}
 
-// --- Funções de Manipulação de Dados ---
+export function formatarCpf(cpf) {
+  if (!cpf) return ''
+  const cleaned = String(cpf).replace(/\D/g, '')
+  if (cleaned.length !== 11) return cpf
+  return cleaned.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+}
+
+export function formatarCnpj(cnpj) {
+  if (!cnpj) return ''
+  const cleaned = String(cnpj).replace(/\D/g, '')
+  if (cleaned.length !== 14) return cnpj
+  return cleaned.replace(
+    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+    '$1.$2.$3/$4-$5',
+  )
+}
+
+export function formatarTelefone(tel) {
+  if (!tel) return ''
+  const cleaned = String(tel).replace(/\D/g, '')
+  if (cleaned.length === 11) {
+    return cleaned.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3')
+  }
+  if (cleaned.length === 10) {
+    return cleaned.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3')
+  }
+  return tel
+}
+
+export function formatarCep(cep) {
+  if (!cep) return ''
+  const cleaned = String(cep).replace(/\D/g, '')
+  if (cleaned.length !== 8) return cep
+  return cleaned.replace(/^(\d{5})(\d{3})$/, '$1-$2')
+}
+
+export const formatarData = (data) => {
+  if (!data) return '---'
+  const date = new Date(data)
+  if (isNaN(date.getTime())) {
+    return '---'
+  }
+  return new Date(
+    date.valueOf() + date.getTimezoneOffset() * 60000,
+  ).toLocaleDateString('pt-BR')
+}
 
 export const limparMascaras = (formData) => {
-  const dadosLimpos = { ...formData };
-  
-  if (dadosLimpos.cpf) dadosLimpos.cpf = dadosLimpos.cpf.replace(/\D/g, '');
-  if (dadosLimpos.cnpj) dadosLimpos.cnpj = dadosLimpos.cnpj.replace(/\D/g, '');
-  if (dadosLimpos.cep) dadosLimpos.cep = dadosLimpos.cep.replace(/\D/g, '');
-  if (dadosLimpos.telefone) dadosLimpos.telefone = dadosLimpos.telefone.replace(/\D/g, '');
+  const dadosLimpos = { ...formData }
 
-  return dadosLimpos;
-};
+  if (dadosLimpos.cpf) dadosLimpos.cpf = dadosLimpos.cpf.replace(/\D/g, '')
+  if (dadosLimpos.cnpj) dadosLimpos.cnpj = dadosLimpos.cnpj.replace(/\D/g, '')
+  if (dadosLimpos.cep) dadosLimpos.cep = dadosLimpos.cep.replace(/\D/g, '')
+  if (dadosLimpos.telefone)
+    dadosLimpos.telefone = dadosLimpos.telefone.replace(/\D/g, '')
+
+  return dadosLimpos
+}

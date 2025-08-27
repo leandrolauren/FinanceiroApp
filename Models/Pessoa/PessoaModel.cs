@@ -5,7 +5,7 @@ namespace FinanceiroApp.Models;
 public class PessoaModel : IValidatableObject
 {
     public int Id { get; set; }
-    public string? Nome { get; set; }
+    public required string Nome { get; set; }
 
     [Required(ErrorMessage = "Informe o tipo da pessoa.")]
     public TipoPessoa? Tipo { get; set; }
@@ -30,7 +30,7 @@ public class PessoaModel : IValidatableObject
     public int UsuarioId { get; set; }
     public UsuarioModel? Usuario { get; set; }
 
-    public ICollection<LancamentoModel> Lancamentos { get; set; } = new List<LancamentoModel>();
+    public ICollection<LancamentoModel> Lancamentos { get; set; } = [];
 
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -38,26 +38,26 @@ public class PessoaModel : IValidatableObject
         {
             yield return new ValidationResult(
                 "CPF é obrigatório para pessoas físicas.",
-                new[] { nameof(Cpf) }
+                [nameof(Cpf)]
             );
         }
         if (Tipo == TipoPessoa.Fisica && string.IsNullOrWhiteSpace(Nome))
         {
-            yield return new ValidationResult("Nome é obrigatório.", new[] { nameof(Nome) });
+            yield return new ValidationResult("Nome é obrigatório.", [nameof(Nome)]);
         }
 
         if (Tipo == TipoPessoa.Juridica && string.IsNullOrWhiteSpace(Cnpj))
         {
             yield return new ValidationResult(
                 "CNPJ é obrigatório para pessoas jurídicas.",
-                new[] { nameof(Cnpj) }
+                [nameof(Cnpj)]
             );
         }
         if (Tipo == TipoPessoa.Juridica && string.IsNullOrWhiteSpace(RazaoSocial))
         {
             yield return new ValidationResult(
                 "Razão Social é obrigatório para pessoas Jurídicas.",
-                new[] { nameof(RazaoSocial) }
+                [nameof(RazaoSocial)]
             );
         }
     }

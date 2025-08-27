@@ -1,5 +1,6 @@
 ﻿@{
     var isLoginPage = Context.Request.Path.StartsWithSegments("/Login", StringComparison.OrdinalIgnoreCase);
+    var isUserCreate = Context.Request.Path.StartsWithSegments("/Usuario/create", StringComparison.OrdinalIgnoreCase);
     var csrfToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
 }
 <!DOCTYPE html>
@@ -20,7 +21,7 @@
 </head>
 
 <body id="page-top">
-    @if (isLoginPage)
+    @if (isLoginPage || isUserCreate)
     {
         @RenderBody()
     }
