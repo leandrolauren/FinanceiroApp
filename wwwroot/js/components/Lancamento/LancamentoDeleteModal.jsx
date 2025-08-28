@@ -9,7 +9,6 @@ import {
   Divider,
 } from '@mui/material';
 import axios from 'axios';
-import { useSnackbar } from 'notistack';
 
 function formatarDataBR(data) {
   if (!data) return '---';
@@ -22,19 +21,22 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
   const [lancamento, setLancamento] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
     if (open && lancamentoId) {
       setLoading(true);
       axios
-        .get(`/Lancamentos/Delete/${lancamentoId}`)
-        .then((res) => setLancamento(res.data))
+        .get(`/api/Lancamentos/${lancamentoId}`)
+        .then((res) => setLancamento(res.data.data))
         .catch(() => {
           setError('Erro ao carregar os dados do lançamento.');
-          enqueueSnackbar('Erro ao carregar os dados do lançamento!', {
-            variant: 'error',
-          });
+          const eventoErro = new CustomEvent('onNotificacao', {
+            detail: {
+              mensagem: 'Erro ao carregar os dados do lançamento.',
+              variant: 'error',
+            },
+          })
+          window.dispatchEvent(eventoErro)
         })
         .finally(() => setLoading(false));
     }
@@ -42,18 +44,34 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/Lancamentos/DeleteConfirmed/${lancamentoId}`);
-      enqueueSnackbar('Lançamento excluído com sucesso.', {
-        variant: 'success',
-      });
+      await axios.delete(`/api/lancamentos/${lancamentoId}`);
+      const eventoSucesso = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: 'Lançamento excluído com sucesso.',
+          variant: 'success',
+        },
+      })
+      window.dispatchEvent(eventoSucesso)
       onClose(true);
-    } catch {
-      enqueueSnackbar('Erro ao excluir lançamento.', { variant: 'error' });
+    } catch (error){
+      const eventoErro = new CustomEvent('onNotificacao', {
+        detail: {
+          mensagem: err.response.data.message || 'Erro ao excluir lançamento.',
+          variant: 'error',
+        },
+      })
+      window.dispatchEvent(eventoErro)
+      onClose(false);
+      setError(err.response.data.message || 'Erro ao excluir lançamento.');
     }
   };
 
+    const handleClose = () => {
+    onClose(false)
+  }
+
   return (
-    <Modal open={open} onClose={() => onClose(false)}>
+    <Modal open={open} onClose={handleClose}>
       <Box
         sx={{
           position: 'absolute',
@@ -64,42 +82,52 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
           borderRadius: 2,
           boxShadow: 24,
           p: 4,
-          width: 400,
+          width: { xs: '90%', sm: 450 },
         }}
       >
-        {loading ? (
-          <Box display="flex" justifyContent="center">
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <>
-            <Typography variant="h4" justifyContent="center" gutterBottom>
-              Confirma a exclusão?
-            </Typography>
-            <Divider sx={{ borderBottomWidth: 2, borderColor: 'grey.400', my: 2 }} />
-            <Typography fontSize={15} justifyContent="center">
-              <strong>Descrição:</strong> {lancamento?.descricao} <br />
-              <strong>Dt. Venc.:</strong>{' '}
-              {formatarDataBR(lancamento?.dataVencimento)}
-              <br />
-              <strong>Dt. Pagamento:</strong>{' '}
-              {formatarDataBR(lancamento?.dataPagamento)}
-            </Typography>
-            <Box mt={3} display="flex" justifyContent="flex-end">
-              <Button onClick={() => onClose(false)} variant="outlined" sx={{ mr: 1 }}>
-                Cancelar
-              </Button>
-              <Button onClick={handleDelete} variant="contained" color="error">
-                Excluir
-              </Button>
-            </Box>
-          </>
-        )}
-      </Box>
-    </Modal>
-  );
-}
+        <Typography variant="h5" component="h2" gutterBottom>
+          Confirmar Exclusão
+        </Typography>
+        <Divider sx={{ my: 2 }} />
+                {loading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
+                    <CircularProgress />
+                  </Box>
+                ) : error ? (
+                  <Alert severity="error">{error}</Alert>
+                ) : (
+                  <><Typography sx={{ my: 2 }}>
+                Tem certeza que deseja excluir o lançamento?
+              </Typography><Box sx={{ my: 2 }}>
+                  <Typography>
+                    <strong>Descrição:</strong> {lancamento?.descricao || 'Carregando...'}
+                  </Typography>
+                  <Typography>
+                    <strong>Pessoa:</strong> {lancamento?.pessoa.nome || 'Carregando...'}
+                  </Typography>
+                  <Typography>
+                    <strong>Valor:</strong> {lancamento?.valor || 'Carregando...'}
+                  </Typography>
+                </Box></>
+                )}
+        <Box
+                  sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}
+                >
+                  <Button onClick={handleClose} variant="outlined">
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleDelete}
+                    variant="contained"
+                    color="error"
+                    disabled={loading || error}
+                  >
+                    Excluir
+                  </Button>
+                </Box>
+              </Box>
+            </Modal>
+          )
+        }
 
 export default LancamentoDeleteModal;

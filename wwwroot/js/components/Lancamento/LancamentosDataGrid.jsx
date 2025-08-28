@@ -1,120 +1,17 @@
 import * as React from 'react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
 import { ptBR } from '@mui/x-data-grid/locales'
+import LancamentoDeleteModal from './LancamentoDeleteModal'
 
-const columns = [
-  {
-    field: 'descricao',
-    headerName: 'Descrição',
-    flex: 1.55,
-    renderCell: (params) => (
-      <Box
-        sx={{
-          whiteSpace: 'normal',
-          wordBreak: 'break-word',
-          lineHeight: '1.2',
-        }}
-      >
-        {params.value}
-      </Box>
-    ),
-  },
-  { field: 'tipo', headerName: 'Tipo', flex: 1 },
-  { field: 'valor', headerName: 'Valor R$', flex: 1, type: Number },
-  {
-    field: 'pessoaNome',
-    headerName: 'Pessoa',
-    flex: 1.5,
-    renderCell: (params) => (
-      <Box
-        sx={{
-          whiteSpace: 'normal',
-          wordBreak: 'break-word',
-          lineHeight: '1.2',
-        }}
-      >
-        {params.value}
-      </Box>
-    ),
-  },
-  {
-    field: 'dataCompetencia',
-    headerName: 'Data Competência',
-    flex: 1,
-    type: 'Date',
-    renderCell: (params) => formatarParaExibicao(params.value),
-  },
-  {
-    field: 'dataVencimento',
-    headerName: 'Data Vencimento',
-    flex: 1,
-    type: 'Date',
-    renderCell: (params) => formatarParaExibicao(params.value),
-  },
-  {
-    field: 'dataLancamento',
-    headerName: 'Data Lançamento',
-    flex: 1,
-    type: 'Date',
-    renderCell: (params) => formatarParaExibicao(params.value),
-  },
-  { field: 'pagoTexto', headerName: 'Pago', flex: 0.5 },
-  {
-    field: 'planoContasDescricao',
-    headerName: 'Plano de Contas',
-    flex: 1,
-    renderCell: (params) => (
-      <Box
-        sx={{
-          whiteSpace: 'normal',
-          wordBreak: 'break-word',
-          lineHeight: '1.2',
-        }}
-      >
-        {params.value}
-      </Box>
-    ),
-  },
-  {
-    field: 'dataPagamento',
-    headerName: 'Data do Pagamento',
-    flex: 1,
-    type: 'Date',
-    renderCell: (params) => formatarParaExibicao(params.value),
-  },
-  {
-    field: 'acoes',
-    headerName: 'Ações',
-    width: 180,
-    sortable: false,
-    disableColumnMenu: true,
-    hideable: false,
-    pinned: false,
-    resizable: false,
-    renderCell: (params) => (
-      <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
-        <Button
-          variant="outlined"
-          color="warning"
-          size="small"
-          href={`/Lancamentos/Edit/${params.id}`}
-        >
-          Editar
-        </Button>
-        <Button
-          variant="outlined"
-          color="error"
-          size="small"
-          onClick={() => window.abrirModalExclusaoLancamento(params.id)}
-        >
-          Excluir
-        </Button>
-      </Box>
-    ),
-  },
-]
+const defaultGridState = {
+  columns: { columnVisibilityModel: {}, columnWidths: {} },
+  sorting: { sortModel: [] },
+  pagination: { pageSize: 25 },
+  layout: { height: 500 },
+}
+
 
 const formatarParaExibicao = (value) => {
   if (!value) return '---'
@@ -136,28 +33,39 @@ export default function LancamentoDataGrid() {
   const [loading, setLoading] = useState(true)
 
   const [gridState, setGridState] = useState(() => {
-    const savedState = localStorage.getItem('lancamentosGridState')
-    return savedState
-      ? JSON.parse(savedState)
-      : {
-          columns: {
-            columnVisibilityModel: {
-              acoes: true,
-            },
-          },
-          sorting: {
-            sortModel: [{ field: 'dataVencimento', sort: 'asc' }],
-          },
-          pagination: {
-            pageSize: 25,
-          },
-          dimensions: {},
-          layout: {
-            height: 500,
-          },
-        }
+    const savedState = localStorage.getItem('contasGridState')
+    if (savedState) {
+      const parsedState = JSON.parse(savedState)
+      return {
+        ...defaultGridState,
+        ...parsedState,
+        columns: { ...defaultGridState.columns, ...parsedState.columns },
+        sorting: { ...defaultGridState.sorting, ...parsedState.sorting },
+        pagination: {
+          ...defaultGridState.pagination,
+          ...parsedState.pagination,
+        },
+        layout: { ...defaultGridState.layout, ...parsedState.layout },
+      }
+    }
+    return defaultGridState
   })
 
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedLancamentoId, setSelectedLancamentoId] = useState(null)
+
+  const handleOpenDeleteModal = useCallback((id) => {
+    setSelectedLancamentoId(id)
+    setIsModalOpen(true)
+  }, [])
+
+  const handleCloseDeleteModal = (deleted) => {
+    setIsModalOpen(false)
+    setSelectedLancamentoId(null)
+    if (deleted) {
+      fetchData()
+    }
+  }
   const handleResize = () => {
     const container = document.querySelector('.datagrid-container')
     if (container) {
@@ -173,16 +81,146 @@ export default function LancamentoDataGrid() {
     }
   }
 
-  useEffect(() => {
-    localStorage.setItem('lancamentosGridState', JSON.stringify(gridState))
-  }, [gridState])
-
   const handleStateChange = (newState) => {
     setGridState((prev) => ({
       ...prev,
       ...newState,
     }))
   }
+
+  const handleColumnResize = (params) => {
+    handleStateChange({
+      columns: {
+        ...gridState.columns,
+        columnWidths: {
+          ...gridState.columns.columnWidths,
+          [params.colDef.field]: params.width,
+        },
+      },
+    })
+  }
+
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        field: 'descricao',
+        headerName: 'Descrição',
+        flex: 1.55,
+        renderCell: (params) => (
+          <Box
+            sx={{
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              lineHeight: '1.2',
+            }}
+          >
+            {params.value}
+          </Box>
+        ),
+      },
+      { field: 'tipo', headerName: 'Tipo', flex: 1 },
+      { field: 'valor', headerName: 'Valor R$', flex: 1, type: Number },
+      {
+        field: 'pessoaNome',
+        headerName: 'Pessoa',
+        flex: 1.5,
+        renderCell: (params) => (
+          <Box
+            sx={{
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              lineHeight: '1.2',
+            }}
+          >
+            {params.value}
+          </Box>
+        ),
+      },
+      {
+        field: 'dataCompetencia',
+        headerName: 'Data Competência',
+        flex: 1,
+        type: 'Date',
+        renderCell: (params) => formatarParaExibicao(params.value),
+      },
+      {
+        field: 'dataVencimento',
+        headerName: 'Data Vencimento',
+        flex: 1,
+        type: 'Date',
+        renderCell: (params) => formatarParaExibicao(params.value),
+      },
+      {
+        field: 'dataLancamento',
+        headerName: 'Data Lançamento',
+        flex: 1,
+        type: 'Date',
+        renderCell: (params) => formatarParaExibicao(params.value),
+      },
+      { field: 'pagoTexto', headerName: 'Pago', flex: 0.5 },
+      {
+        field: 'planoContasDescricao',
+        headerName: 'Plano de Contas',
+        flex: 1,
+        renderCell: (params) => (
+          <Box
+            sx={{
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              lineHeight: '1.2',
+            }}
+          >
+            {params.value}
+          </Box>
+        ),
+      },
+      {
+        field: 'dataPagamento',
+        headerName: 'Data do Pagamento',
+        flex: 1,
+        type: 'Date',
+        renderCell: (params) => formatarParaExibicao(params.value),
+      },
+      {
+        field: 'acoes',
+        headerName: 'Ações',
+        width: 180,
+        sortable: false,
+        disableColumnMenu: true,
+        hideable: false,
+        pinned: false,
+        resizable: false,
+        renderCell: (params) => (
+          <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
+            <Button
+              variant="outlined"
+              color="warning"
+              size="small"
+              href={`/Lancamentos/Edit/${params.id}`}
+            >
+              Editar
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              size="small"
+              onClick={() => handleOpenDeleteModal(params.id)}
+            >
+              Excluir
+            </Button>
+          </Box>
+        ),
+      },
+    ]
+    return baseColumns.map((col) => ({
+      ...col,
+      width: gridState.columns?.columnWidths?.[col.field] || col.width,
+    }))
+  }, [gridState.columns?.columnWidths])
+
+  useEffect(() => {
+    localStorage.setItem('contasGridState', JSON.stringify(gridState))
+  }, [gridState])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -198,19 +236,24 @@ export default function LancamentoDataGrid() {
           valor:
             item.valor != null
               ? new Intl.NumberFormat('pt-BR', {
-                  minimumFractionDigits: 2,
-                }).format(Number(item.valor))
+                minimumFractionDigits: 2,
+              }).format(Number(item.valor))
               : '--',
         }))
 
         setRows(rowsAdaptadas)
       } catch (error) {
-        console.error('Erro ao carregar lançamentos:', error)
+        const eventoErro = new CustomEvent('onNotificacao', {
+          detail: {
+            mensagem: 'Erro ao carregar os lançamentos.',
+            variant: 'error',
+          },
+        })
+        window.dispatchEvent(eventoErro)
       } finally {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
@@ -254,6 +297,7 @@ export default function LancamentoDataGrid() {
             rowsPerPageOptions={[5, 10, 20]}
             localeText={ptBR.components.MuiDataGrid.defaultProps.localeText}
             disableRowSelectionOnClick
+            onColumnResize={handleColumnResize}
             sx={{
               '& .MuiDataGrid-cell': {
                 padding: '8px 16px',
@@ -296,6 +340,13 @@ export default function LancamentoDataGrid() {
             }}
           />
         </div>
+      )}
+            {isModalOpen && (
+        <LancamentoDeleteModal
+          open={isModalOpen}
+          lancamentoId={selectedLancamentoId}
+          onClose={handleCloseDeleteModal}
+        />
       )}
     </Box>
   )
