@@ -58,6 +58,9 @@ namespace FinanceiroApp.Dtos
         public DateTime? DataPagamento { get; set; }
         public bool Pago { get; set; }
         public string? PessoaNome { get; set; }
+        public PessoaSimplificadaDto? Pessoa { get; set; }
+        public PlanoContasSimplificadoDto? PlanoContas { get; set; }
+        public ContaBancariaSimplificadaDto? ContaBancaria { get; set; }
     }
 
     public class DetalhesLancamentoDto

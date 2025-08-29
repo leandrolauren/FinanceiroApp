@@ -106,7 +106,7 @@ const PessoaCreateForm = () => {
       const data = await buscarDadosPorCnpj(formData.cnpj)
       setFormData((prev) => ({
         ...prev,
-        nome: data.nome_fantasia || '',
+        nome: data.nome_fantasia || data.razao_social || '',
         razaoSocial: data.razao_social || '',
         nomeFantasia: data.nome_fantasia || '',
         email: data.email || prev.email,
@@ -146,6 +146,8 @@ const PessoaCreateForm = () => {
     }
 
     const dados = { ...limparMascaras(formData), tipo: tipoPessoa }
+    if (!dados.nome && dados.razaoSocial) dados.nome = dados.razaoSocial
+
     for (const key in dados) {
       if (dados[key] === '') {
         dados[key] = null

@@ -1,15 +1,16 @@
-import EntradaeSaida from '../Graficos/EntradaeSaida'
+import React from 'react'
+import { Box, Typography } from '@mui/material'
+import Dashboard from '../Graficos/Dashboard'
 
 const HomePage = () => {
   return (
-    <div class="text-center">
-      <p>Sistema Financeiro projetado por Leandro 😎</p>
-
-      <p>Apenas um Exemplo gráfico para implementar!</p>
-      <EntradaeSaida />
-    </div>
+    <Box sx={{ textAlign: 'center' }}>
+      <Typography variant="body1">
+        Sistema Financeiro projetado por Leandro 😎
+      </Typography>
+      <Dashboard />
+    </Box>
   )
 }
 
-
-export default HomePage;
+export default HomePage

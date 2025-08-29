@@ -77,7 +77,6 @@ const PlanoContaCreateForm = () => {
   const [error, setError] = useState(null)
 
   const fetchPlanosPai = useCallback(() => {
-    setPageLoading(true)
     axios
       .get('/api/planoContas/pais')
       .then((response) => {
@@ -96,6 +95,7 @@ const PlanoContaCreateForm = () => {
   }, [formData.tipo])
 
   useEffect(() => {
+    setPageLoading(true)
     fetchPlanosPai()
   }, [fetchPlanosPai])
 
@@ -114,18 +114,27 @@ const PlanoContaCreateForm = () => {
     setPlanosPaiFiltrados(todosPlanosPai.filter((p) => p.tipo === novoTipo))
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setLoading(true)
-    setError(null)
-
+  const sendCreateRequest = async (confirmarMigracao = false) => {
     const dadosParaEnviar = {
       ...formData,
       planoContasPaiId: formData.planoContasPaiId || null,
     }
 
+    let url = '/api/planoContas'
+    if (confirmarMigracao) {
+      url += '?confirmarMigracao=true'
+    }
+
+    return axios.post(url, dadosParaEnviar)
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setError(null)
+
     try {
-      await axios.post('/api/planoContas', dadosParaEnviar)
+      await sendCreateRequest(false)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'Plano de Contas criado com sucesso.',
@@ -135,11 +144,40 @@ const PlanoContaCreateForm = () => {
       window.dispatchEvent(eventoSucesso)
 
       setFormData(initialState)
-      fetchPlanosPai()
+      fetchPlanosPai() // Recarrega a lista de pais
     } catch (err) {
-      const apiErrorMessage =
-        err.response?.data?.message || 'Erro ao salvar. Verifique os dados.'
-      setError(apiErrorMessage)
+      const { response } = err
+      if (
+        response &&
+        response.status === 409 &&
+        response.data.requerConfirmacao
+      ) {
+        if (window.confirm(response.data.message)) {
+          try {
+            await sendCreateRequest(true)
+            const eventoSucesso = new CustomEvent('onNotificacao', {
+              detail: {
+                mensagem:
+                  'Plano de Contas criado e lançamentos migrados com sucesso.',
+                variant: 'success',
+              },
+            })
+            window.dispatchEvent(eventoSucesso)
+
+            setFormData(initialState)
+            fetchPlanosPai() // Recarrega a lista de pais
+          } catch (finalErr) {
+            setError(
+              finalErr.response?.data?.message ||
+                'Erro ao confirmar a criação com migração.',
+            )
+          }
+        }
+      } else {
+        setError(
+          response?.data?.message || 'Erro ao salvar. Verifique os dados.',
+        )
+      }
     } finally {
       setLoading(false)
     }
@@ -147,7 +185,7 @@ const PlanoContaCreateForm = () => {
 
   const arvoreFiltrada = sortTree(buildTree(planosPaiFiltrados))
 
-  if (pageLoading && todosPlanosPai.length === 0) {
+  if (pageLoading) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
         <CircularProgress />

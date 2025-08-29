@@ -29,30 +29,56 @@ public class LancamentosController : Controller
 public class LancamentosApiController(ApplicationDbContext context) : ControllerBase
 {
     [HttpGet("lancamentos")]
-    public async Task<ResponseModel<List<ListaLancamentoDto>>> GetLancamentos()
+    public async Task<ResponseModel<List<DetalhesLancamentoDto>>> GetLancamentos()
     {
-        ResponseModel<List<ListaLancamentoDto>> resposta = new();
+        ResponseModel<List<DetalhesLancamentoDto>> resposta = new();
         try
         {
             var userId = ObterUsuarioId();
             var lancamentos = await context
-                .Lancamentos.Include(l => l.Pessoa)
+                .Lancamentos.Include(l => l.ContaBancaria)
+                .Include(l => l.PlanoContas)
+                .Include(l => l.Pessoa)
                 .Where(l => l.UsuarioId == userId)
                 .OrderByDescending(l => l.DataVencimento)
-                .Select(l => new ListaLancamentoDto
+                .AsNoTracking()
+                .ToListAsync();
+
+            resposta.Data = lancamentos
+                .Select(l => new DetalhesLancamentoDto
                 {
                     Id = l.Id,
                     Descricao = l.Descricao,
                     Tipo = l.Tipo.ToString(),
                     Valor = l.Valor,
+                    DataCompetencia = l.DataCompetencia,
                     DataVencimento = l.DataVencimento,
                     DataPagamento = l.DataPagamento,
+                    DataLancamento = l.DataLancamento,
                     Pago = l.Pago,
-                    PessoaNome = l.Pessoa != null ? l.Pessoa.Nome : "",
+                    Pessoa =
+                        l.Pessoa != null
+                            ? new PessoaSimplificadaDto { Id = l.Pessoa.Id, Nome = l.Pessoa.Nome }
+                            : null,
+                    PlanoContas =
+                        l.PlanoContas != null
+                            ? new PlanoContasSimplificadoDto
+                            {
+                                Id = l.PlanoContas.Id,
+                                Descricao = l.PlanoContas.Descricao,
+                            }
+                            : null,
+                    ContaBancaria =
+                        l.ContaBancaria != null
+                            ? new ContaBancariaSimplificadaDto
+                            {
+                                Id = l.ContaBancaria.Id,
+                                Nome = l.ContaBancaria.Descricao,
+                            }
+                            : null,
                 })
-                .ToListAsync();
+                .ToList();
 
-            resposta.Data = lancamentos;
             resposta.Message = "Lançamentos listados com sucesso.";
         }
         catch (Exception ex)
@@ -150,9 +176,21 @@ public class LancamentosApiController(ApplicationDbContext context) : Controller
             return resposta;
         }
 
+        var userId = ObterUsuarioId();
+        var planoContaEhPai = await context.PlanosContas.AnyAsync(p =>
+            p.PlanoContasPaiId == dto.PlanoContasId && p.UsuarioId == userId
+        );
+
+        if (planoContaEhPai)
+        {
+            resposta.Success = false;
+            resposta.Message = "Não é possível lançar em um Plano de Contas que possui filhos.";
+            resposta.StatusCode = 400;
+            return resposta;
+        }
+
         try
         {
-            var userId = ObterUsuarioId();
             var lancamento = new LancamentoModel
             {
                 Descricao = dto.Descricao,

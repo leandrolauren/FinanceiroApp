@@ -71,11 +71,15 @@ const PlanoContaEditForm = ({ planoContaId }) => {
 
     const fetchPlanoAtual = axios.get(`/api/planoContas/${planoContaId}`)
     const fetchPlanosPai = axios.get('/api/planoContas/pais')
+    const fetchDescendentes = axios.get(
+      `/api/planoContas/${planoContaId}/descendentes`,
+    )
 
-    Promise.all([fetchPlanoAtual, fetchPlanosPai])
-      .then(([planoAtualResponse, planosPaiResponse]) => {
+    Promise.all([fetchPlanoAtual, fetchPlanosPai, fetchDescendentes])
+      .then(([planoAtualResponse, planosPaiResponse, descendentesResponse]) => {
         const plano = planoAtualResponse.data
         const todosPlanosPai = planosPaiResponse.data
+        const idsDescendentes = descendentesResponse.data
 
         setFormData({
           descricao: plano.descricao,
@@ -83,9 +87,14 @@ const PlanoContaEditForm = ({ planoContaId }) => {
           planoContasPaiId: plano.planoContasPaiId || '',
         })
 
+        const idsInvalidos = new Set([
+          ...idsDescendentes,
+          parseInt(planoContaId, 10),
+        ])
+
         setPlanosPaiFiltrados(
           todosPlanosPai.filter(
-            (p) => p.tipo === plano.tipo && p.id !== planoContaId,
+            (p) => p.tipo === plano.tipo && !idsInvalidos.has(p.id),
           ),
         )
       })
@@ -103,18 +112,27 @@ const PlanoContaEditForm = ({ planoContaId }) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
-    setLoading(true)
-    setError(null)
-
+  const sendUpdateRequest = async (confirmarMigracao = false) => {
     const dadosParaEnviar = {
       descricao: formData.descricao,
       planoContasPaiId: formData.planoContasPaiId || null,
     }
 
+    let url = `/api/planoContas/${planoContaId}`
+    if (confirmarMigracao) {
+      url += '?confirmarMigracao=true'
+    }
+
+    return axios.put(url, dadosParaEnviar)
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    setError(null)
+
     try {
-      await axios.put(`/api/planoContas/${planoContaId}`, dadosParaEnviar)
+      await sendUpdateRequest(false)
       const eventoSucesso = new CustomEvent('onNotificacao', {
         detail: {
           mensagem: 'Plano de Contas atualizado com sucesso.',
@@ -124,9 +142,36 @@ const PlanoContaEditForm = ({ planoContaId }) => {
       window.dispatchEvent(eventoSucesso)
       navigate('/PlanoContas')
     } catch (err) {
-      const apiErrorMessage =
-        err.response?.data?.message || 'Erro ao salvar. Verifique os dados.'
-      setError(apiErrorMessage)
+      const { response } = err
+      if (
+        response &&
+        response.status === 409 &&
+        response.data.requerConfirmacao
+      ) {
+        if (window.confirm(response.data.message)) {
+          try {
+            await sendUpdateRequest(true)
+            const eventoSucesso = new CustomEvent('onNotificacao', {
+              detail: {
+                mensagem:
+                  'Plano de Contas atualizado e lançamentos migrados com sucesso.',
+                variant: 'success',
+              },
+            })
+            window.dispatchEvent(eventoSucesso)
+            navigate('/PlanoContas')
+          } catch (finalErr) {
+            setError(
+              finalErr.response?.data?.message ||
+                'Erro ao confirmar a migração.',
+            )
+          }
+        }
+      } else {
+        setError(
+          response?.data?.message || 'Erro ao salvar. Verifique os dados.',
+        )
+      }
     } finally {
       setLoading(false)
     }

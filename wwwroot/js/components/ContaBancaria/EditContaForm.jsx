@@ -23,7 +23,7 @@ const EditContaForm = ({ contaId }) => {
       } catch (error) {
         const eventoErro = new CustomEvent('onNotificacao', {
           detail: {
-            mensagem: 'Erro de rede ao carregar a conta.',
+            mensagem: error.data.message || 'Erro de rede ao carregar a conta.',
             variant: 'error',
           },
         })

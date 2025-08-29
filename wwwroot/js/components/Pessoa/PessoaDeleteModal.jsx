@@ -95,10 +95,20 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
         ) : error ? (
           <Alert severity="error">{error}</Alert>
         ) : (
-          <Typography sx={{ my: 2 }}>
-            Tem certeza que deseja excluir permanentemente a pessoa:{' '}
-            <strong>{pessoa?.nome || 'Carregando...'}</strong>?
-          </Typography>
+          <>
+            <Typography sx={{ my: 2 }}>
+              Tem certeza que deseja excluir a pessoa?
+            </Typography>
+            <Box sx={{ my: 2 }}>
+              <Typography>
+                <strong>Nome:</strong> {pessoa?.nome || 'Carregando...'}
+              </Typography>
+              <Typography>
+                <strong>Documento:</strong>{' '}
+                {pessoa?.cpf || pessoa?.cnpj || 'Carregando...'}
+              </Typography>
+            </Box>
+          </>
         )}
 
         <Box

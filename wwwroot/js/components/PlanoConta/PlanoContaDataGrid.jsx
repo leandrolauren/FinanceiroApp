@@ -10,23 +10,25 @@ import {
   Grid,
   TextField,
   MenuItem,
+  Menu,
 } from '@mui/material'
 import {
-  Folder,
   FolderOpen,
   ArrowRight,
-  Edit,
-  Delete,
   FilterAlt,
+  MoreVert,
 } from '@mui/icons-material'
 import axios from 'axios'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import ptBR from 'date-fns/locale/pt-BR'
+import { useNavigate } from 'react-router-dom'
 import PlanoContaDeleteModal from './PlanoContaDeleteModal'
+import PlanoContaMigrateModal from './PlanoContaMigrateModal'
 
 export default function PlanoContaDataGrid() {
+  const navigate = useNavigate()
   const [contas, setContas] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -43,18 +45,46 @@ export default function PlanoContaDataGrid() {
   const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedPlanoId, setSelectedPlanoId] = useState(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isMigrateModalOpen, setIsMigrateModalOpen] = useState(false)
+  const [selectedPlano, setSelectedPlano] = useState(null)
+  const [migrationSource, setMigrationSource] = useState(null)
 
-  const handleOpenDeleteModal = (id) => {
-    setSelectedPlanoId(id)
-    setIsModalOpen(true)
+  const [anchorEl, setAnchorEl] = useState(null)
+  const openMenu = Boolean(anchorEl)
+
+  const handleMenuClick = (event, conta) => {
+    setAnchorEl(event.currentTarget)
+    setSelectedPlano(conta)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
+
+  const handleOpenDeleteModal = () => {
+    setAnchorEl(null)
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleOpenMigrateModal = () => {
+    setMigrationSource(selectedPlano)
+    setIsMigrateModalOpen(true)
+    setAnchorEl(null)
   }
 
   const handleCloseDeleteModal = (deleted) => {
-    setIsModalOpen(false)
-    setSelectedPlanoId(null)
+    setIsDeleteModalOpen(false)
+    setSelectedPlano(null)
     if (deleted) {
+      fetchData()
+    }
+  }
+  const handleCloseMigrateModal = (migrated) => {
+    setIsMigrateModalOpen(false)
+    setMigrationSource(null)
+    setSelectedPlano(null)
+    if (migrated) {
       fetchData()
     }
   }
@@ -76,13 +106,6 @@ export default function PlanoContaDataGrid() {
     } catch (err) {
       const errorMessage = 'Erro ao carregar os dados do plano de contas.'
       setError(errorMessage)
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: err.response?.data?.message || errorMessage,
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
     } finally {
       setLoading(false)
     }
@@ -119,16 +142,14 @@ export default function PlanoContaDataGrid() {
 
   const renderConta = (conta, nivel = 0) => {
     const isPai = conta.filhos && conta.filhos.length > 0
-
-    let icon = isPai ? (
+    const icon = isPai ? (
       <FolderOpen color="primary" />
     ) : (
       <ArrowRight fontSize="small" />
     )
-    let style = isPai
+    const style = isPai
       ? { fontWeight: 'bold' }
       : { fontStyle: 'italic', color: '#555' }
-
     const valorTotal = conta.total || 0.0
     const corValor = conta.tipo === 2 ? 'red' : 'green'
 
@@ -157,18 +178,13 @@ export default function PlanoContaDataGrid() {
           </td>
           <td style={{ textAlign: 'center' }}>
             <IconButton
-              color="warning"
-              href={`/PlanoContas/Edit/${conta.id}`}
+              aria-label="Opções"
+              aria-controls={`menu-${conta.id}`}
+              aria-haspopup="true"
+              onClick={(e) => handleMenuClick(e, conta)}
               size="small"
             >
-              <Edit />
-            </IconButton>
-            <IconButton
-              color="error"
-              onClick={() => handleOpenDeleteModal(conta.id)}
-              size="small"
-            >
-              <Delete />
+              <MoreVert />
             </IconButton>
           </td>
         </tr>
@@ -193,11 +209,7 @@ export default function PlanoContaDataGrid() {
         alignItems="center"
         mb={2}
       >
-        <Button
-          variant="contained"
-          href="/PlanoContas/Create"
-          sx={{ marginBottom: 2 }}
-        >
+        <Button variant="contained" href="/PlanoContas/Create">
           Novo Plano de Contas
         </Button>
         <Button
@@ -208,7 +220,6 @@ export default function PlanoContaDataGrid() {
           Filtros {mostrarFiltros ? '▲' : '▼'}
         </Button>
       </Box>
-
       <Collapse in={mostrarFiltros}>
         <Box
           sx={{
@@ -312,11 +323,40 @@ export default function PlanoContaDataGrid() {
           </tbody>
         </table>
       </Box>
-      {isModalOpen && (
+
+      <Menu
+        id="actions-menu"
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleMenuClose}
+      >
+        <MenuItem
+          onClick={() => {
+            handleMenuClose()
+            navigate(`/PlanoContas/Edit/${selectedPlano.id}`)
+          }}
+        >
+          Editar
+        </MenuItem>
+        <MenuItem onClick={handleOpenMigrateModal}>Migrar Lançamentos</MenuItem>
+        <MenuItem onClick={handleOpenDeleteModal} sx={{ color: 'error.main' }}>
+          Excluir
+        </MenuItem>
+      </Menu>
+
+      {isDeleteModalOpen && (
         <PlanoContaDeleteModal
-          open={isModalOpen}
-          planoId={selectedPlanoId}
+          open={isDeleteModalOpen}
+          planoId={selectedPlano?.id}
           onClose={handleCloseDeleteModal}
+        />
+      )}
+
+      {isMigrateModalOpen && (
+        <PlanoContaMigrateModal
+          open={isMigrateModalOpen}
+          planoOrigem={migrationSource}
+          onClose={handleCloseMigrateModal}
         />
       )}
     </Box>

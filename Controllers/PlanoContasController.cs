@@ -11,13 +11,10 @@ namespace FinanceiroApp.Controllers
     [Authorize]
     public class PlanoContasController : Controller
     {
-        // GET: /PlanoContas
         public IActionResult Index() => View();
 
-        // GET: /PlanoContas/Create
         public IActionResult Create() => View();
 
-        // GET: /PlanoContas/Edit/{id}
         public IActionResult Edit(int id)
         {
             ViewBag.Id = id;
@@ -25,7 +22,6 @@ namespace FinanceiroApp.Controllers
         }
     }
 
-    // --- API ENDPOINTS ---
     [Authorize]
     [ApiController]
     [Route("api/")]
@@ -34,7 +30,6 @@ namespace FinanceiroApp.Controllers
         ILogger<PlanoContasController> logger
     ) : ControllerBase
     {
-        // GET: /api/planoContas/hierarquia
         [HttpGet("planoContas/hierarquia")]
         public async Task<IActionResult> GetHierarquiaPlanoContas(
             [FromQuery] DateTime? dataInicio,
@@ -45,7 +40,6 @@ namespace FinanceiroApp.Controllers
             try
             {
                 var userId = GetUserId();
-
                 var todasContas = await context
                     .PlanosContas.Where(p => p.UsuarioId == userId)
                     .AsNoTracking()
@@ -55,7 +49,6 @@ namespace FinanceiroApp.Controllers
                     return Ok(new List<PlanoContasDto>());
 
                 var idsDasContas = todasContas.Select(c => c.Id).ToList();
-
                 var hoje = DateTime.Today;
                 var dtInicio = dataInicio ?? new DateTime(hoje.Year, hoje.Month, 1);
                 var dtFim = dataFim ?? dtInicio.AddMonths(1).AddDays(-1);
@@ -114,7 +107,6 @@ namespace FinanceiroApp.Controllers
                     }
                 }
 
-                // PASSO 5: Calcular os totais hierárquicos (somar filhos nos pais).
                 foreach (var contaRaiz in contasRaiz)
                     CalcularTotalHierarquico(contaRaiz);
 
@@ -144,7 +136,6 @@ namespace FinanceiroApp.Controllers
                 return contaDto.Total;
 
             decimal totalFilhos = 0;
-
             foreach (var filho in contaDto.Filhos)
                 totalFilhos += CalcularTotalHierarquico(filho);
 
@@ -158,6 +149,7 @@ namespace FinanceiroApp.Controllers
             var userId = GetUserId();
             var plano = await context
                 .PlanosContas.AsNoTracking()
+                .Where(p => p.UsuarioId == userId)
                 .Select(p => new PlanoContaCriadoDto
                 {
                     Id = p.Id,
@@ -174,14 +166,37 @@ namespace FinanceiroApp.Controllers
         }
 
         [HttpPost("planoContas")]
-        public async Task<Object> CreatePlanoConta([FromBody] CriarPlanoContaDto dto)
+        public async Task<IActionResult> CreatePlanoConta(
+            [FromBody] CriarPlanoContaDto dto,
+            [FromQuery] bool confirmarMigracao = false
+        )
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            var userId = GetUserId();
+
+            if (dto.PlanoContasPaiId.HasValue)
+            {
+                var paiTemLancamentos = await context.Lancamentos.AnyAsync(l =>
+                    l.PlanoContaId == dto.PlanoContasPaiId.Value && l.UsuarioId == userId
+                );
+                if (paiTemLancamentos && !confirmarMigracao)
+                {
+                    return Conflict(
+                        new
+                        {
+                            success = false,
+                            message = "O plano de contas pai selecionado possui lançamentos. Confirma a migração destes lançamentos para o novo plano que está sendo criado?",
+                            requerConfirmacao = true,
+                        }
+                    );
+                }
+            }
+
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                var userId = GetUserId();
                 var plano = new PlanoContasModel
                 {
                     Descricao = dto.Descricao,
@@ -189,14 +204,20 @@ namespace FinanceiroApp.Controllers
                     PlanoContasPaiId = dto.PlanoContasPaiId,
                     UsuarioId = userId,
                 };
-
                 context.Add(plano);
                 await context.SaveChangesAsync();
 
-                return new { id = plano.Id };
+                if (dto.PlanoContasPaiId.HasValue && confirmarMigracao)
+                {
+                    await MigrarLancamentosDoPaiAsync(dto.PlanoContasPaiId.Value, plano.Id, userId);
+                }
+
+                await transaction.CommitAsync();
+                return Ok(new { id = plano.Id });
             }
             catch (Exception ex)
             {
+                await transaction.RollbackAsync();
                 logger.LogError(
                     ex,
                     "Erro ao criar plano de contas para o usuário {UserId}",
@@ -209,11 +230,91 @@ namespace FinanceiroApp.Controllers
             }
         }
 
+        [HttpPost("planoContas/{idOrigem}/migrar")]
+        public async Task<IActionResult> MigrarLancamentos(
+            int idOrigem,
+            [FromBody] MigracaoPlanoContaDto dto
+        )
+        {
+            if (idOrigem <= 0 || dto.PlanoContaDestinoId <= 0)
+                return BadRequest(new { message = "IDs de origem e destino são obrigatórios." });
+
+            if (idOrigem == dto.PlanoContaDestinoId)
+                return BadRequest(
+                    new { message = "A conta de origem e destino não podem ser a mesma." }
+                );
+
+            var userId = GetUserId();
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var contaOrigem = await context.PlanosContas.FirstOrDefaultAsync(p =>
+                    p.Id == idOrigem && p.UsuarioId == userId
+                );
+                var contaDestino = await context.PlanosContas.FirstOrDefaultAsync(p =>
+                    p.Id == dto.PlanoContaDestinoId && p.UsuarioId == userId
+                );
+
+                if (contaOrigem == null || contaDestino == null)
+                    return NotFound(
+                        new { message = "Plano de contas de origem ou destino não encontrado." }
+                    );
+
+                if (contaOrigem.Tipo != contaDestino.Tipo)
+                    return BadRequest(
+                        new
+                        {
+                            message = "A migração só pode ser feita entre planos de contas do mesmo tipo (Receita/Despesa).",
+                        }
+                    );
+
+                var destinoEhPai = await context.PlanosContas.AnyAsync(p =>
+                    p.PlanoContasPaiId == dto.PlanoContaDestinoId
+                );
+                if (destinoEhPai)
+                    return BadRequest(
+                        new
+                        {
+                            message = "Não é permitido migrar lançamentos para um plano de contas que é pai.",
+                        }
+                    );
+
+                var lancamentosParaMigrar = await context
+                    .Lancamentos.Where(l => l.PlanoContaId == idOrigem && l.UsuarioId == userId)
+                    .ToListAsync();
+
+                if (lancamentosParaMigrar.Count == 0)
+                    return Ok(new { message = "Nenhum lançamento encontrado para migrar." });
+
+                foreach (var lancamento in lancamentosParaMigrar)
+                    lancamento.PlanoContaId = dto.PlanoContaDestinoId;
+
+                context.Lancamentos.UpdateRange(lancamentosParaMigrar);
+                await context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return Ok(new { message = "Lançamentos migrados com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                logger.LogError(
+                    ex,
+                    "Erro ao migrar lançamentos do plano de contas {PlanoIdOrigem}",
+                    idOrigem
+                );
+                return StatusCode(
+                    500,
+                    new { message = "Ocorreu um erro interno durante a migração." }
+                );
+            }
+        }
+
         [HttpGet("planoContas/pais")]
         public async Task<IActionResult> GetPlanosContasPai()
         {
             var userId = GetUserId();
-
             var planos = await context
                 .PlanosContas.AsNoTracking()
                 .Where(p => p.UsuarioId == userId)
@@ -223,9 +324,9 @@ namespace FinanceiroApp.Controllers
                     p.Id,
                     p.Descricao,
                     p.Tipo,
+                    p.PlanoContasPaiId,
                 })
                 .ToListAsync();
-
             return Ok(planos);
         }
 
@@ -242,52 +343,61 @@ namespace FinanceiroApp.Controllers
                 return BadRequest(new { message = "ID do plano de contas inválido." });
 
             var userId = GetUserId();
+
+            if (dto.PlanoContasPaiId.HasValue)
+            {
+                if (dto.PlanoContasPaiId.Value == id)
+                    return BadRequest(
+                        new { message = "Um plano de contas não pode ser pai de si mesmo." }
+                    );
+
+                var descendentes = await GetAllDescendantIdsAsync(id, userId);
+                if (descendentes.Contains(dto.PlanoContasPaiId.Value))
+                    return BadRequest(
+                        new
+                        {
+                            message = "Não é possível definir um descendente como pai do plano de contas.",
+                        }
+                    );
+            }
+
             var planoDb = await context.PlanosContas.FirstOrDefaultAsync(p =>
                 p.Id == id && p.UsuarioId == userId
             );
             if (planoDb == null)
                 return NotFound(new { message = "Plano de contas não encontrado." });
 
-            var lancamentosExistentes = await context
-                .Lancamentos.Where(l => l.PlanoContaId == id)
-                .ToListAsync();
-            bool precisaMigrar =
-                lancamentosExistentes.Any()
-                && planoDb.PlanoContasPaiId != dto.PlanoContasPaiId
-                && dto.PlanoContasPaiId.HasValue;
-
-            if (precisaMigrar && !confirmarMigracao)
+            if (dto.PlanoContasPaiId.HasValue && dto.PlanoContasPaiId != planoDb.PlanoContasPaiId)
             {
-                return Conflict(
-                    new
-                    {
-                        success = false,
-                        message = "Este plano de contas possui lançamentos. Para movê-la, os lançamentos serão migrados para um novo plano. Confirma a operação?",
-                        requerConfirmacao = true,
-                    }
+                var paiTemLancamentos = await context.Lancamentos.AnyAsync(l =>
+                    l.PlanoContaId == dto.PlanoContasPaiId.Value
                 );
+                if (paiTemLancamentos)
+                {
+                    if (!confirmarMigracao)
+                    {
+                        return Conflict(
+                            new
+                            {
+                                success = false,
+                                message = "O novo plano de contas pai possui lançamentos. Confirma a migração destes lançamentos para o plano que você está editando?",
+                                requerConfirmacao = true,
+                            }
+                        );
+                    }
+                }
             }
 
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                if (precisaMigrar && confirmarMigracao)
+                if (
+                    dto.PlanoContasPaiId.HasValue
+                    && dto.PlanoContasPaiId != planoDb.PlanoContasPaiId
+                    && confirmarMigracao
+                )
                 {
-                    var novoPlanoFilho = new PlanoContasModel
-                    {
-                        Descricao = "Lançamentos Migrados de " + planoDb.Descricao,
-                        Tipo = planoDb.Tipo,
-                        PlanoContasPaiId = planoDb.Id,
-                        UsuarioId = userId,
-                    };
-                    context.PlanosContas.Add(novoPlanoFilho);
-                    await context.SaveChangesAsync();
-
-                    foreach (var lancamento in lancamentosExistentes)
-                    {
-                        lancamento.PlanoContaId = novoPlanoFilho.Id;
-                    }
-                    context.Lancamentos.UpdateRange(lancamentosExistentes);
+                    await MigrarLancamentosDoPaiAsync(dto.PlanoContasPaiId.Value, id, userId);
                 }
 
                 planoDb.Descricao = dto.Descricao;
@@ -312,14 +422,12 @@ namespace FinanceiroApp.Controllers
             var conta = await context.PlanosContas.FirstOrDefaultAsync(p =>
                 p.Id == id && p.UsuarioId == userId
             );
-
             if (conta == null)
                 return NotFound(
                     new { success = false, message = "Plano de contas não encontrado." }
                 );
 
             if (await context.PlanosContas.AnyAsync(f => f.PlanoContasPaiId == id))
-            {
                 return BadRequest(
                     new
                     {
@@ -327,10 +435,8 @@ namespace FinanceiroApp.Controllers
                         message = "Não é possível excluir um plano que possui filhos.",
                     }
                 );
-            }
 
             if (await context.Lancamentos.AnyAsync(l => l.PlanoContaId == id))
-            {
                 return BadRequest(
                     new
                     {
@@ -338,36 +444,53 @@ namespace FinanceiroApp.Controllers
                         message = "Não é possível excluir um Plano de Contas que possui lançamentos.",
                     }
                 );
-            }
 
-            try
-            {
-                context.PlanosContas.Remove(conta);
-                await context.SaveChangesAsync();
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Erro ao excluir plano de contas {PlanoId}", id);
-                return StatusCode(
-                    500,
-                    new
-                    {
-                        success = false,
-                        message = "Ocorreu um erro interno ao excluir o plano de contas.",
-                    }
-                );
-            }
+            context.PlanosContas.Remove(conta);
+            await context.SaveChangesAsync();
+            return NoContent();
         }
 
-        [HttpGet("planoContas/{id}/ehpai")]
-        public async Task<IActionResult> IsPai(int id)
+        [HttpGet("planoContas/{id}/descendentes")]
+        public async Task<IActionResult> GetDescendentes(int id)
         {
             var userId = GetUserId();
-            var temFilhos = await context.PlanosContas.AnyAsync(p =>
-                p.PlanoContasPaiId == id && p.UsuarioId == userId
-            );
-            return Ok(new { isPai = temFilhos });
+            var descendentes = await GetAllDescendantIdsAsync(id, userId);
+            return Ok(descendentes);
+        }
+
+        private async Task<List<int>> GetAllDescendantIdsAsync(int parentId, int userId)
+        {
+            var descendentes = new List<int>();
+            var filhos = await context
+                .PlanosContas.Where(p => p.PlanoContasPaiId == parentId && p.UsuarioId == userId)
+                .Select(p => p.Id)
+                .ToListAsync();
+
+            if (filhos.Count == 0)
+                return descendentes;
+            descendentes.AddRange(filhos);
+
+            foreach (var filhoId in filhos)
+                descendentes.AddRange(await GetAllDescendantIdsAsync(filhoId, userId));
+
+            return descendentes;
+        }
+
+        private async Task MigrarLancamentosDoPaiAsync(int paiId, int idPlanoDestino, int userId)
+        {
+            var lancamentosDoPai = await context
+                .Lancamentos.Where(l => l.PlanoContaId == paiId && l.UsuarioId == userId)
+                .ToListAsync();
+
+            if (lancamentosDoPai.Any())
+            {
+                foreach (var lancamento in lancamentosDoPai)
+                {
+                    lancamento.PlanoContaId = idPlanoDestino;
+                }
+                context.Lancamentos.UpdateRange(lancamentosDoPai);
+                await context.SaveChangesAsync();
+            }
         }
 
         private int GetUserId()

@@ -1,51 +1,227 @@
-import * as React from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { BarChart } from '@mui/x-charts/BarChart'
-
-const despesas = [
-  -4000, -3500, -5800, -4920, -1890, -12090, -3490, -14000, -3500, -12000,
-  -2780, -1890,
-]
-const receitas = [
-  24002, 13982, 9800, 3908, 4800, 3100, 4300, 6900, 13398, 9800, 3908, 3400,
-]
-
-const meses = [
-  'Janeiro',
-  'Fevereiro',
-  'Março',
-  'Abril',
-  'Maio',
-  'Junho',
-  'Julho',
-  'Agosto',
-  'Setembro',
-  'Outubro',
-  'Novembro',
-  'Dezembro',
-]
+import {
+  Box,
+  CircularProgress,
+  Alert,
+  AlertTitle,
+  Button,
+  Collapse,
+  Grid,
+  TextField,
+  MenuItem,
+  Typography,
+} from '@mui/material'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import ptBR from 'date-fns/locale/pt-BR'
+import { FilterAlt } from '@mui/icons-material'
+import axios from 'axios'
+import { startOfYear, endOfYear } from 'date-fns'
 
 export default function EntradaeSaida() {
+  const [chartData, setChartData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
+
+  const [filtrosAtivos, setFiltrosAtivos] = useState(() => ({
+    dataInicio: startOfYear(new Date()),
+    dataFim: endOfYear(new Date()),
+    status: 'Todos',
+  }))
+
+  const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const params = {
+        dataInicio: filtrosAtivos.dataInicio.toISOString().slice(0, 10),
+        dataFim: filtrosAtivos.dataFim.toISOString().slice(0, 10),
+        status: filtrosAtivos.status,
+      }
+
+      const response = await axios.get('/api/dashboard/entradas-e-saidas', {
+        params,
+      })
+      setChartData(response.data)
+    } catch (err) {
+      setError('Não foi possível carregar os dados do gráfico.')
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }, [filtrosAtivos])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const handleFiltroChange = (name, value) => {
+    setFiltrosEditando((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const aplicarFiltro = () => {
+    setFiltrosAtivos(filtrosEditando)
+    setMostrarFiltros(false)
+  }
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height={500}
+      >
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  if (error) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height={500}
+      >
+        <Alert severity="error">
+          <AlertTitle>Erro</AlertTitle>
+          {error}
+        </Alert>
+      </Box>
+    )
+  }
+
+  const receitasPositivas = chartData?.receitas.filter((v) => v > 0) || []
+  const yAxisMax =
+    receitasPositivas.length > 0 ? Math.max(...receitasPositivas) * 1.1 : 1000
+
   return (
-    <BarChart
-      height={500}
-      series={[
-        { data: receitas, label: 'Receitas', color: '#4CAF50' },
-        { data: despesas, label: 'Despesas', color: '#F44336' },
-      ]}
-      xAxis={[{ data: meses, scaleType: 'band', label: 'Mês' }]}
-      yAxis={[
-        {
-          label: 'Valor (R$)',
-          max: Math.max(...receitas, ...despesas) * 1.1,
-        },
-      ]}
-      slotProps={{
-        bar: { rx: 4 },
-        legend: {
-          direction: 'row',
-          position: { vertical: 'top', horizontal: 'right' },
-        },
+    <Box
+      sx={{
+        width: '100%',
+        p: 2,
+        bgcolor: 'background.paper',
+        borderRadius: 2,
+        boxShadow: 1,
       }}
-    />
+    >
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
+        <Typography variant="h6">
+          Fluxo de Caixa (Receitas vs. Despesas)
+        </Typography>
+        <Button
+          variant="outlined"
+          startIcon={<FilterAlt />}
+          onClick={() => setMostrarFiltros(!mostrarFiltros)}
+        >
+          Filtros
+        </Button>
+      </Box>
+
+      <Collapse in={mostrarFiltros}>
+        <Box sx={{ p: 2, mb: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={3}>
+              <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={ptBR}
+              >
+                <DatePicker
+                  label="Data Início"
+                  value={filtrosEditando.dataInicio}
+                  onChange={(date) => handleFiltroChange('dataInicio', date)}
+                  views={['month', 'year']}
+                />
+              </LocalizationProvider>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={ptBR}
+              >
+                <DatePicker
+                  label="Data Fim"
+                  value={filtrosEditando.dataFim}
+                  onChange={(date) => handleFiltroChange('dataFim', date)}
+                  views={['month', 'year']}
+                />
+              </LocalizationProvider>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <TextField
+                select
+                fullWidth
+                label="Situação"
+                value={filtrosEditando.status}
+                onChange={(e) => handleFiltroChange('status', e.target.value)}
+              >
+                <MenuItem value="Todos">Todos</MenuItem>
+                <MenuItem value="Pago">Pagos</MenuItem>
+                <MenuItem value="Aberto">Em Aberto</MenuItem>
+              </TextField>
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <Box display="flex" justifyContent="flex-end">
+                <Button variant="contained" onClick={aplicarFiltro}>
+                  Aplicar
+                </Button>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Collapse>
+
+      {chartData && chartData.meses.length > 0 ? (
+        <BarChart
+          height={500}
+          series={[
+            {
+              data: chartData.receitas,
+              label: 'Receitas',
+              color: '#4CAF50',
+              id: 'receitasId',
+            },
+            {
+              data: chartData.despesas,
+              label: 'Despesas',
+              color: '#F44336',
+              id: 'despesasId',
+            },
+          ]}
+          xAxis={[{ data: chartData.meses, scaleType: 'band', label: 'Mês' }]}
+          yAxis={[{ label: 'Valor (R$)', max: yAxisMax }]}
+          slotProps={{
+            bar: { rx: 4 },
+            legend: {
+              direction: 'row',
+              position: { vertical: 'top', horizontal: 'right' },
+            },
+          }}
+        />
+      ) : (
+        <Box
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          height={400}
+        >
+          <Typography>
+            Nenhum dado encontrado para o período selecionado.
+          </Typography>
+        </Box>
+      )}
+    </Box>
   )
 }

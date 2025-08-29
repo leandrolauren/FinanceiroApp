@@ -12,7 +12,6 @@ const defaultGridState = {
   layout: { height: 500 },
 }
 
-
 const formatarParaExibicao = (value) => {
   if (!value) return '---'
 
@@ -230,14 +229,14 @@ export default function LancamentoDataGrid() {
 
         const rowsAdaptadas = data.data.map((item) => ({
           ...item,
-          pessoaNome: item?.pessoaNome ?? '--',
-          planoContasDescricao: item?.planoContasDescricao ?? '--',
+          pessoaNome: item?.pessoa.nome ?? '--',
+          planoContasDescricao: item?.planoContas.descricao ?? '--',
           pagoTexto: item?.pago ? 'Sim' : 'Não',
           valor:
             item.valor != null
               ? new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: 2,
-              }).format(Number(item.valor))
+                  minimumFractionDigits: 2,
+                }).format(Number(item.valor))
               : '--',
         }))
 
@@ -341,7 +340,7 @@ export default function LancamentoDataGrid() {
           />
         </div>
       )}
-            {isModalOpen && (
+      {isModalOpen && (
         <LancamentoDeleteModal
           open={isModalOpen}
           lancamentoId={selectedLancamentoId}
