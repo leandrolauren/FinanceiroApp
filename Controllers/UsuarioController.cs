@@ -3,8 +3,11 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-public class UsuarioController(ApplicationDbContext context, IRabbitMqService rabbitMqService)
-    : Controller
+public class UsuarioController(
+    ApplicationDbContext context,
+    IRabbitMqService rabbitMqService,
+    ILogger<UsuarioController> logger
+) : Controller
 {
     // GET: Usuario/Create
     public IActionResult Create() => View();
@@ -30,6 +33,7 @@ public class UsuarioController(ApplicationDbContext context, IRabbitMqService ra
                 }
             );
         }
+
         var usuarioExistente = await context
             .Usuarios.AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email == model.Email);
@@ -55,13 +59,14 @@ public class UsuarioController(ApplicationDbContext context, IRabbitMqService ra
         await context.SaveChangesAsync();
 
         // Publica no RabbitMQ
-        var mensagem = new EmailConfirmacaoMessage
-        {
-            Email = usuarioPendente.Email,
-            Token = usuarioPendente.Token,
-        };
-
-        rabbitMqService.PublicarMensagem("email_confirmacao_queue", mensagem);
+        rabbitMqService.PublicarMensagem(
+            "email_confirmacao_queue",
+            new EmailConfirmacaoMessage
+            {
+                Email = usuarioPendente.Email,
+                Token = usuarioPendente.Token,
+            }
+        );
 
         return Ok(
             new
@@ -77,16 +82,14 @@ public class UsuarioController(ApplicationDbContext context, IRabbitMqService ra
     public async Task<IActionResult> Confirmar(string token)
     {
         if (string.IsNullOrEmpty(token))
-            return BadRequest(
-                new { success = false, message = "Token ou parâmetro de confirmação ausente." }
-            );
+            return BadRequest(new { success = false, message = "Token de confirmação ausente." });
 
         var pendente = await context.UsuariosPendentes.FirstOrDefaultAsync(u => u.Token == token);
 
         if (pendente == null)
             return NotFound(new { success = false, message = "Usuário pendente não encontrado." });
 
-        if (DateTime.Now > pendente.DataCriacao.AddMinutes(1440))
+        if (DateTime.Now > pendente.DataCriacao.AddMinutes(1440)) // 24h
         {
             context.UsuariosPendentes.Remove(pendente);
             await context.SaveChangesAsync();
@@ -106,15 +109,17 @@ public class UsuarioController(ApplicationDbContext context, IRabbitMqService ra
             context.UsuariosPendentes.Remove(pendente);
             await context.SaveChangesAsync();
 
-            var mensagem = new EmailConfirmacaoMessage { Email = usuario.Email };
-
-            rabbitMqService.PublicarMensagem("email_confirmacao_queue", mensagem);
+            rabbitMqService.PublicarMensagem(
+                "email_confirmacao_queue",
+                new EmailConfirmacaoMessage { Email = usuario.Email }
+            );
 
             ViewBag.NotificacaoSucesso = "Usuário cadastrado!";
             return RedirectToAction("Index", "Home");
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "Erro ao confirmar cadastro de usuário.");
             ModelState.AddModelError("", $"Erro ao cadastrar usuário: {ex.Message}");
         }
 

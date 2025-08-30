@@ -41,7 +41,7 @@ namespace FinanceiroApp
                 .AddCookie(options =>
                 {
                     options.LoginPath = "/Login";
-                    options.ExpireTimeSpan = TimeSpan.FromHours(2);
+                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
                     options.AccessDeniedPath = "/Login";
                 });
             builder
