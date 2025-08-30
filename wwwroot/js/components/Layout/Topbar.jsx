@@ -1,72 +1,116 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+// Topbar.jsx
 
-const Topbar = ({ pageTitle, userName, handleLogout }) => {
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Box,
+  Menu,
+  MenuItem,
+  Avatar,
+  ListItemIcon,
+  useTheme,
+} from '@mui/material';
+
+import MenuIcon from '@mui/icons-material/Menu';
+import PersonIcon from '@mui/icons-material/Person';
+import SettingsIcon from '@mui/icons-material/Settings';
+import LogoutIcon from '@mui/icons-material/Logout';
+
+const Topbar = ({ handleSidebarToggle, userName, handleLogout }) => {
+  const theme = useTheme();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const isMenuOpen = Boolean(anchorEl);
+
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const transition = theme.transitions.create(['width', 'margin'], {
+    easing: theme.transitions.easing.sharp,
+    duration: theme.transitions.duration.leavingScreen,
+  });
+
   return (
-    <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
-      {/* Sidebar Toggle (apenas mobile) */}
-      <button
-        id="sidebarToggleTop"
-        className="btn btn-link d-md-none rounded-circle mr-3"
-        onClick={handleLogout}
-      >
-        <i className="fa fa-bars"></i>
-      </button>
+    <AppBar
+      position="static"
+      elevation={1}
+      sx={{
+        backgroundColor: 'white',
+        color: 'text.primary',
+        width: '100%',
+      }}
+    >
+      <Toolbar>
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="start"
+          onClick={handleSidebarToggle}
+          sx={{ mr: 2, display: { sm: 'none' } }}
+        >
+          <MenuIcon />
+        </IconButton>
+        
+        <Box sx={{ flexGrow: 1 }} />
 
-      {/* Título da Página */}
-      <div className="page-title">{pageTitle}</div>
-
-      {/* Topbar Navbar */}
-      <ul className="navbar-nav ml-auto">
-        {/* Nav Item - User Info */}
-        <li className="nav-item dropdown text-end">
-          <a
-            className="nav-link dropdown-toggle d-flex align-items-center"
-            href="#"
-            id="userDropdown"
-            role="button"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <Typography sx={{ display: { xs: 'none', sm: 'block' } }}>
+            {userName}
+          </Typography>
+          <IconButton
+            size="large"
+            edge="end"
+            aria-label="account of current user"
+            aria-controls="primary-search-account-menu"
+            aria-haspopup="true"
+            onClick={handleProfileMenuOpen}
+            color="inherit"
+            sx={{ ml: 1 }}
           >
-            <span className="me-2 d-none d-lg-inline text-gray-600 small">
-              {userName}
-            </span>
-            <img
-              className="img-profile rounded-circle"
-              src="/img/undraw_profile.svg"
-              style={{ width: '32px', height: '32px' }}
-            />
-          </a>
-          <ul
-            className="dropdown-menu dropdown-menu-end shadow animated--grow-in"
-            aria-labelledby="userDropdown"
-          >
-            <li>
-              <Link className="dropdown-item" to="/Usuario/Perfil">
-                <i className="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>
-                Perfil
-              </Link>
-            </li>
-            <li>
-              <Link className="dropdown-item" to="/Configuracao">
-                <i className="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>
-                Configurações
-              </Link>
-            </li>
-            <li>
-              <hr className="dropdown-divider" />
-            </li>
-            <li>
-              <button className="dropdown-item" onClick={handleLogout}>
-                <i className="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>
-                Sair
-              </button>
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </nav>
-  )
-}
+            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', color: 'white', fontSize: '1rem' }}>
+              {userName ? userName.charAt(0).toUpperCase() : ''}
+            </Avatar>
+          </IconButton>
+        </Box>
+        <Menu
+          anchorEl={anchorEl}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          id="primary-search-account-menu"
+          keepMounted
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          open={isMenuOpen}
+          onClose={handleMenuClose}
+        >
+          <MenuItem component={Link} to="/Usuario/Perfil" onClick={handleMenuClose}>
+            <ListItemIcon>
+              <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            Perfil
+          </MenuItem>
+          <MenuItem component={Link} to="/Configuracao" onClick={handleMenuClose}>
+            <ListItemIcon>
+              <SettingsIcon fontSize="small" />
+            </ListItemIcon>
+            Configurações
+          </MenuItem>
+          <MenuItem onClick={() => { handleMenuClose(); handleLogout(); }}>
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Sair
+          </MenuItem>
+        </Menu>
+      </Toolbar>
+    </AppBar>
+  );
+};
 
-export default Topbar
+export default Topbar;
