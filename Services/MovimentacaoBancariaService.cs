@@ -3,10 +3,8 @@ using FinanceiroApp.Models;
 
 namespace FinanceiroApp.Services;
 
-public class MovimentacaoBancariaService(
-    ApplicationDbContext context,
-    ILogger<MovimentacaoBancariaService> logger
-) : IMovimentacaoBancariaService
+public class MovimentacaoBancariaService(ApplicationDbContext context)
+    : IMovimentacaoBancariaService
 {
     public async Task RegistrarMovimentacaoDePagamento(LancamentoModel lancamento)
     {

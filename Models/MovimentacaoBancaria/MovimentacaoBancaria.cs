@@ -18,12 +18,10 @@ public class MovimentacaoBancaria
     [Required]
     public string Historico { get; set; }
 
-    // Chaves estrangeiras
     [Required]
     public int ContaBancariaId { get; set; }
     public ContaBancaria ContaBancaria { get; set; }
 
-    // O lançamento que originou a movimentação
     public int? LancamentoId { get; set; }
     public LancamentoModel? Lancamento { get; set; }
 

@@ -1,5 +1,3 @@
-// FinanceiroApp/Controllers/LancamentosController.cs
-
 using System.Data;
 using System.Security.Claims;
 using FinanceiroApp.Data;
