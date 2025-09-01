@@ -14,6 +14,7 @@ import {
   FormControlLabel,
   Radio,
   Autocomplete,
+  Alert,
 } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { NumericFormat } from 'react-number-format'
@@ -48,6 +49,16 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`
 }
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 const LancamentoEditForm = ({ lancamentoId }) => {
   const navigate = useNavigate()
 
@@ -58,6 +69,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
   const [loading, setLoading] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
+  const [isPago, setIsPago] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,6 +87,8 @@ const LancamentoEditForm = ({ lancamentoId }) => {
         setContasBancarias(contasRes.data.data || [])
 
         const lancamento = lancamentoRes.data.data
+        setIsPago(lancamento.pago)
+
         setFormData({
           descricao: lancamento.descricao,
           tipo: lancamento.tipo === 'Receita' ? '1' : '2',
@@ -89,12 +103,12 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             ? new Date(lancamento.dataPagamento)
             : null,
           pago: lancamento.pago,
-          contaBancariaId: lancamento.contaBancaria?.id || '',
-          planoContasId: lancamento.planoContas?.id || '',
-          pessoaId: lancamento.pessoa?.id || '',
+          contaBancariaId: lancamento.contaBancaria?.id || 0,
+          planoContasId: lancamento.planoContas?.id || 0,
+          pessoaId: lancamento.pessoa?.id || 0,
         })
       } catch (error) {
-        console.error('Erro ao carregar dados para edição:', error)
+        showNotification('Erro ao carregar dados para edição.', 'error')
         navigate('/lancamentos')
       } finally {
         setLoading(false)
@@ -121,6 +135,8 @@ const LancamentoEditForm = ({ lancamentoId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (isPago) return
+
     setFormSubmitting(true)
     setErrors({})
 
@@ -130,18 +146,32 @@ const LancamentoEditForm = ({ lancamentoId }) => {
       planoContasId: formData.planoContasId || null,
       contaBancariaId: formData.contaBancariaId || null,
       pessoaId: formData.pessoaId || null,
-      dataPagamento: formatDate(formData.dataPagamento),
+      dataPagamento: formData.pago ? formatDate(formData.dataPagamento) : null,
       dataCompetencia: formatDate(formData.dataCompetencia),
       dataVencimento: formatDate(formData.dataVencimento),
     }
 
     try {
       await axios.put(`/api/lancamentos/${lancamentoId}`, dados)
+      showNotification('Lançamento atualizado com sucesso!', 'success')
+      if (dados.pago) {
+        window.dispatchEvent(new CustomEvent('lancamentoAtualizado'))
+      }
       navigate('/lancamentos')
     } catch (error) {
-      console.error('Erro ao atualizar lançamento:', error)
-      if (error.response && error.response.status === 400) {
-        setErrors(error.response.data.errors || {})
+      if (error.response && error.response.data) {
+        showNotification(
+          error.response.data.message || 'Ocorreu um erro.',
+          'error',
+        )
+        if (error.response.status === 400) {
+          setErrors(error.response.data.errors || {})
+        }
+      } else {
+        showNotification(
+          'Erro de comunicação ao atualizar o lançamento.',
+          'error',
+        )
       }
     } finally {
       setFormSubmitting(false)
@@ -170,6 +200,14 @@ const LancamentoEditForm = ({ lancamentoId }) => {
         Editar Lançamento
       </Typography>
 
+      {isPago && (
+        <Alert severity="warning" sx={{ mt: 2 }}>
+          Este lançamento está pago e não pode ser editado. Para fazer
+          alterações, você deve primeiro estornar o pagamento na tela de
+          listagem.
+        </Alert>
+      )}
+
       <FormControl component="fieldset" sx={{ mt: 2 }}>
         <FormLabel component="legend">Tipo de Lançamento</FormLabel>
         <RadioGroup
@@ -178,8 +216,16 @@ const LancamentoEditForm = ({ lancamentoId }) => {
           value={formData.tipo}
           onChange={handleChange}
         >
-          <FormControlLabel value="1" control={<Radio />} label="Receita" />
-          <FormControlLabel value="2" control={<Radio />} label="Despesa" />
+          <FormControlLabel
+            value="1"
+            control={<Radio disabled={isPago} />}
+            label="Receita"
+          />
+          <FormControlLabel
+            value="2"
+            control={<Radio disabled={isPago} />}
+            label="Despesa"
+          />
         </RadioGroup>
       </FormControl>
 
@@ -194,6 +240,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             required
             error={!!errors.Descricao}
             helperText={errors.Descricao?.[0]}
+            disabled={isPago}
           />
         </Grid>
 
@@ -221,6 +268,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             required
             error={!!errors.Valor}
             helperText={errors.Valor?.[0]}
+            disabled={isPago}
           />
         </Grid>
 
@@ -232,7 +280,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             onChange={(event, newValue) => {
               setFormData((prev) => ({
                 ...prev,
-                pessoaId: newValue ? newValue.id : '',
+                pessoaId: newValue ? newValue.id : 0,
               }))
             }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -245,6 +293,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
               />
             )}
             sx={{ minWidth: 300 }}
+            disabled={isPago}
           />
         </Grid>
         <Grid item xs={12} sm={4} md={4}>
@@ -259,7 +308,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             onChange={(event, newValue) => {
               setFormData((prev) => ({
                 ...prev,
-                planoContasId: newValue ? newValue.id : '',
+                planoContasId: newValue ? newValue.id : 0,
               }))
             }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -273,6 +322,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
               />
             )}
             sx={{ minWidth: 300 }}
+            disabled={isPago}
           />
         </Grid>
         <Grid item xs={12} sm={4} md={4}>
@@ -286,7 +336,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             onChange={(event, newValue) => {
               setFormData((prev) => ({
                 ...prev,
-                contaBancariaId: newValue ? newValue.id : '',
+                contaBancariaId: newValue ? newValue.id : 0,
               }))
             }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -299,6 +349,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
               />
             )}
             sx={{ minWidth: 300 }}
+            disabled={isPago}
           />
         </Grid>
 
@@ -316,6 +367,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
                 helperText={errors.DataCompetencia?.[0] || ''}
               />
             )}
+            disabled={isPago}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -332,6 +384,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
                 helperText={errors.DataVencimento?.[0] || ''}
               />
             )}
+            disabled={isPago}
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
@@ -342,6 +395,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             value={formData.pago}
             onChange={handleChange}
             fullWidth
+            disabled={isPago}
           >
             <MenuItem value={false}>Em Aberto</MenuItem>
             <MenuItem value={true}>Pago</MenuItem>
@@ -352,7 +406,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             label="Data de Pagamento"
             value={formData.dataPagamento}
             onChange={(date) => handleDateChange('dataPagamento', date)}
-            disabled={!formData.pago}
+            disabled={!formData.pago || isPago}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -370,7 +424,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
           type="submit"
           variant="contained"
           color="primary"
-          disabled={formSubmitting}
+          disabled={formSubmitting || isPago}
           startIcon={
             formSubmitting ? (
               <CircularProgress size={20} color="inherit" />

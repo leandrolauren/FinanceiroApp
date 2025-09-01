@@ -76,6 +76,8 @@ namespace FinanceiroApp.Controllers
                 {
                     Nome = dto.Nome,
                     RazaoSocial = dto.RazaoSocial,
+                    NomeFantasia = dto.NomeFantasia,
+                    Cnpj = dto.Cnpj,
                     Tipo = dto.Tipo,
                     Email = dto.Email,
                     Telefone = dto.Telefone,
@@ -85,7 +87,6 @@ namespace FinanceiroApp.Controllers
                     Complemento = dto.Complemento,
                     Cidade = dto.Cidade,
                     Estado = dto.Estado,
-                    NomeFantasia = dto.NomeFantasia,
                     InscricaoEstadual = dto.InscricaoEstadual,
                     Cpf = dto.Cpf,
                     Rg = dto.Rg,

@@ -1,8 +1,11 @@
+// FinanceiroApp/Controllers/LancamentosController.cs
+
 using System.Data;
 using System.Security.Claims;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
 using FinanceiroApp.Models;
+using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,7 +29,10 @@ public class LancamentosController : Controller
 [Authorize]
 [ApiController]
 [Route("api/")]
-public class LancamentosApiController(ApplicationDbContext context) : ControllerBase
+public class LancamentosApiController(
+    ApplicationDbContext context,
+    IMovimentacaoBancariaService movimentacaoService
+) : ControllerBase
 {
     [HttpGet("lancamentos")]
     public async Task<ResponseModel<List<DetalhesLancamentoDto>>> GetLancamentos()
@@ -189,6 +195,18 @@ public class LancamentosApiController(ApplicationDbContext context) : Controller
             return resposta;
         }
 
+        if (dto.Pago && (dto.ContaBancariaId <= 0))
+        {
+            return new ResponseModel<string>
+            {
+                Success = false,
+                Message =
+                    "Para um lançamento ser salvo como 'Pago', é obrigatório selecionar uma Conta Bancária.",
+                StatusCode = 400,
+            };
+        }
+
+        using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
             var lancamento = new LancamentoModel
@@ -204,16 +222,22 @@ public class LancamentosApiController(ApplicationDbContext context) : Controller
                 PlanoContaId = dto.PlanoContasId,
                 PessoaId = dto.PessoaId,
                 UsuarioId = userId,
+                DataLancamento = DateTime.Now,
             };
-
             context.Lancamentos.Add(lancamento);
+
+            if (lancamento.Pago && lancamento.ContaBancariaId > 0)
+                await movimentacaoService.RegistrarMovimentacaoDePagamento(lancamento);
+
             await context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             resposta.Data = lancamento.Id.ToString();
             resposta.Message = "Lançamento cadastrado com sucesso.";
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
             resposta.Message = "Erro ao criar Lançamento";
             resposta.Success = false;
             resposta.StatusCode = 500;
@@ -228,33 +252,68 @@ public class LancamentosApiController(ApplicationDbContext context) : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        if (dto.Pago && (dto.ContaBancariaId <= 0))
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Para marcar um lançamento como 'Pago', é obrigatório selecionar uma Conta Bancária.",
+                }
+            );
+        }
+
+        var userId = ObterUsuarioId();
+        var lancamentoOriginal = await context
+            .Lancamentos.AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
+
+        if (lancamentoOriginal == null)
+            return NotFound(new { success = false, message = "Lançamento não encontrado." });
+
+        if (lancamentoOriginal.Pago)
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Lançamentos pagos não podem ser editados. Para alterar, primeiro realize o estorno.",
+                }
+            );
+        }
+
+        using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            var userId = ObterUsuarioId();
-            var lancamento = await context.Lancamentos.FirstOrDefaultAsync(l =>
-                l.Id == id && l.UsuarioId == userId
+            var lancamentoParaAtualizar = await context.Lancamentos.FirstOrDefaultAsync(l =>
+                l.Id == id
             );
 
-            if (lancamento == null)
-                return NotFound(new { success = false, message = "Lançamento não encontrado." });
+            lancamentoParaAtualizar.Descricao = dto.Descricao;
+            lancamentoParaAtualizar.Valor = dto.Valor;
+            lancamentoParaAtualizar.DataCompetencia = dto.DataCompetencia;
+            lancamentoParaAtualizar.DataVencimento = dto.DataVencimento;
+            lancamentoParaAtualizar.DataPagamento = dto.DataPagamento;
+            lancamentoParaAtualizar.Pago = dto.Pago;
+            lancamentoParaAtualizar.ContaBancariaId = dto.ContaBancariaId;
+            lancamentoParaAtualizar.PlanoContaId = dto.PlanoContasId;
+            lancamentoParaAtualizar.PessoaId = dto.PessoaId;
 
-            lancamento.Descricao = dto.Descricao;
-            lancamento.Valor = dto.Valor;
-            lancamento.DataCompetencia = dto.DataCompetencia;
-            lancamento.DataVencimento = dto.DataVencimento;
-            lancamento.DataPagamento = dto.DataPagamento;
-            lancamento.Pago = dto.Pago;
-            lancamento.ContaBancariaId = dto.ContaBancariaId;
-            lancamento.PlanoContaId = dto.PlanoContasId;
-            lancamento.PessoaId = dto.PessoaId;
+            if (
+                !lancamentoOriginal.Pago
+                && lancamentoParaAtualizar.Pago
+                && lancamentoParaAtualizar.ContaBancariaId > 0
+            )
+                await movimentacaoService.RegistrarMovimentacaoDePagamento(lancamentoParaAtualizar);
 
-            context.Lancamentos.Update(lancamento);
             await context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             return Ok(new { success = true, message = "Lançamento atualizado com sucesso!" });
         }
         catch (Exception ex)
         {
+            await transaction.RollbackAsync();
             return StatusCode(
                 500,
                 new
@@ -267,12 +326,76 @@ public class LancamentosApiController(ApplicationDbContext context) : Controller
         }
     }
 
+    [HttpPost("lancamentos/{id}/estornar")]
+    public async Task<IActionResult> EstornarPagamento(int id)
+    {
+        using var transaction = await context.Database.BeginTransactionAsync();
+        try
+        {
+            var userId = ObterUsuarioId();
+            var lancamento = await context.Lancamentos.FirstOrDefaultAsync(l =>
+                l.Id == id && l.UsuarioId == userId
+            );
+
+            if (lancamento == null)
+                return NotFound(new { success = false, message = "Lançamento não encontrado." });
+
+            if (!lancamento.Pago)
+                return BadRequest(
+                    new
+                    {
+                        success = false,
+                        message = "Este lançamento não está pago para ser estornado.",
+                    }
+                );
+
+            await movimentacaoService.RegistrarMovimentacaoDeEstorno(lancamento);
+
+            lancamento.Pago = false;
+            lancamento.DataPagamento = null;
+            context.Lancamentos.Update(lancamento);
+
+            await context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new { success = true, message = "Pagamento estornado com sucesso." });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return StatusCode(
+                500,
+                new
+                {
+                    success = false,
+                    message = "Erro ao estornar pagamento.",
+                    error = ex.Message,
+                }
+            );
+        }
+    }
+
     [HttpDelete("lancamentos/{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        var lancamento = await ObterLancamento(id);
+        var userId = ObterUsuarioId();
+        var lancamento = await context
+            .Lancamentos.Include(l => l.Parcelas)
+            .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
+
         if (lancamento == null)
             return NotFound(new { success = false, message = "Lançamento não encontrado." });
+
+        if (lancamento.Pago)
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Lançamentos pagos não podem ser excluídos. Para remover, primeiro realize o estorno.",
+                }
+            );
+        }
 
         if (lancamento.Parcelas?.Any() == true)
         {
@@ -298,13 +421,5 @@ public class LancamentosApiController(ApplicationDbContext context) : Controller
             throw new UnauthorizedAccessException("Usuário não autenticado.");
 
         return int.Parse(claim.Value);
-    }
-
-    private async Task<LancamentoModel?> ObterLancamento(int id)
-    {
-        var userId = ObterUsuarioId();
-        return await context
-            .Lancamentos.Include(l => l.Parcelas)
-            .FirstOrDefaultAsync(l => l.Id == id && l.UsuarioId == userId);
     }
 }

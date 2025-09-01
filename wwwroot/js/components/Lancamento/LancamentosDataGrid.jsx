@@ -1,15 +1,28 @@
+// LancamentosDataGrid.jsx
+
 import * as React from 'react'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
 import { ptBR } from '@mui/x-data-grid/locales'
 import LancamentoDeleteModal from './LancamentoDeleteModal'
+import axios from 'axios'
 
 const defaultGridState = {
   columns: { columnVisibilityModel: {}, columnWidths: {} },
   sorting: { sortModel: [] },
   pagination: { pageSize: 25 },
   layout: { height: 500 },
+}
+
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
 }
 
 const formatarParaExibicao = (value) => {
@@ -52,6 +65,53 @@ export default function LancamentoDataGrid() {
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedLancamentoId, setSelectedLancamentoId] = useState(null)
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/Lancamentos')
+      const data = await response.json()
+
+      const rowsAdaptadas = data.data.map((item) => ({
+        ...item,
+        pessoaNome: item?.pessoa?.nome ?? '--',
+        planoContasDescricao: item?.planoContas?.descricao ?? '--',
+        pagoTexto: item?.pago ? 'Sim' : 'Não',
+        valor:
+          item.valor != null
+            ? new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(Number(item.valor))
+            : '--',
+      }))
+
+      setRows(rowsAdaptadas)
+    } catch (error) {
+      showNotification('Erro ao carregar os lançamentos.', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const handleEstornar = async (id) => {
+    if (
+      window.confirm(
+        'Tem certeza que deseja estornar este pagamento? O saldo da conta será revertido.',
+      )
+    ) {
+      try {
+        const response = await axios.post(`/api/lancamentos/${id}/estornar`)
+        showNotification(response.data.message, 'success')
+        fetchData() // Atualiza a tabela de lançamentos
+        window.dispatchEvent(new CustomEvent('lancamentoAtualizado'))
+      } catch (error) {
+        showNotification(
+          error.response?.data?.message || 'Erro ao estornar o lançamento.',
+          'error',
+        )
+      }
+    }
+  }
 
   const handleOpenDeleteModal = useCallback((id) => {
     setSelectedLancamentoId(id)
@@ -63,6 +123,7 @@ export default function LancamentoDataGrid() {
     setSelectedLancamentoId(null)
     if (deleted) {
       fetchData()
+      window.dispatchEvent(new CustomEvent('lancamentoAtualizado'))
     }
   }
   const handleResize = () => {
@@ -118,7 +179,7 @@ export default function LancamentoDataGrid() {
         ),
       },
       { field: 'tipo', headerName: 'Tipo', flex: 1 },
-      { field: 'valor', headerName: 'Valor R$', flex: 1, type: Number },
+      { field: 'valor', headerName: 'Valor R$', flex: 1, type: 'string' },
       {
         field: 'pessoaNome',
         headerName: 'Pessoa',
@@ -189,72 +250,54 @@ export default function LancamentoDataGrid() {
         hideable: false,
         pinned: false,
         resizable: false,
-        renderCell: (params) => (
-          <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
+        renderCell: (params) => {
+          const isPago = params.row.pago
+
+          return isPago ? (
             <Button
-              variant="outlined"
-              color="warning"
+              variant="contained"
+              color="secondary"
               size="small"
-              href={`/Lancamentos/Edit/${params.id}`}
+              onClick={() => handleEstornar(params.id)}
             >
-              Editar
+              Estornar
             </Button>
-            <Button
-              variant="outlined"
-              color="error"
-              size="small"
-              onClick={() => handleOpenDeleteModal(params.id)}
-            >
-              Excluir
-            </Button>
-          </Box>
-        ),
+          ) : (
+            <Box sx={{ display: 'flex', gap: 1, minWidth: 240 }}>
+              <Button
+                variant="outlined"
+                color="warning"
+                size="small"
+                href={`/Lancamentos/Edit/${params.id}`}
+              >
+                Editar
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                onClick={() => handleOpenDeleteModal(params.id)}
+              >
+                Excluir
+              </Button>
+            </Box>
+          )
+        },
       },
     ]
     return baseColumns.map((col) => ({
       ...col,
       width: gridState.columns?.columnWidths?.[col.field] || col.width,
     }))
-  }, [gridState.columns?.columnWidths])
+  }, [gridState.columns?.columnWidths, handleOpenDeleteModal])
 
   useEffect(() => {
     localStorage.setItem('contasGridState', JSON.stringify(gridState))
   }, [gridState])
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/Lancamentos')
-        const data = await response.json()
-
-        const rowsAdaptadas = data.data.map((item) => ({
-          ...item,
-          pessoaNome: item?.pessoa.nome ?? '--',
-          planoContasDescricao: item?.planoContas.descricao ?? '--',
-          pagoTexto: item?.pago ? 'Sim' : 'Não',
-          valor:
-            item.valor != null
-              ? new Intl.NumberFormat('pt-BR', {
-                  minimumFractionDigits: 2,
-                }).format(Number(item.valor))
-              : '--',
-        }))
-
-        setRows(rowsAdaptadas)
-      } catch (error) {
-        const eventoErro = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: 'Erro ao carregar os lançamentos.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErro)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchData()
-  }, [])
+  }, [fetchData])
 
   useEffect(() => {
     window.atualizarTabelaLancamentos = (idRemovido) => {

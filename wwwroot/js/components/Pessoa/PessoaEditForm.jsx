@@ -147,6 +147,8 @@ const PessoaEditForm = ({ pessoaId }) => {
     setFormSubmitting(true)
 
     const dados = { ...limparMascaras(formData), tipo: tipoPessoa }
+    if (!dados.nome && dados.razaoSocial) dados.nome = dados.razaoSocial
+
     for (const key in dados) {
       if (dados[key] === '') {
         dados[key] = null

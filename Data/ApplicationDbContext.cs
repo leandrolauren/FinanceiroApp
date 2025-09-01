@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<UsuarioModel> Usuarios { get; set; }
     public DbSet<ContaBancaria> ContasBancarias { get; set; }
     public DbSet<UsuarioPendenteModel> UsuariosPendentes { get; set; }
+    public DbSet<MovimentacaoBancaria> MovimentacoesBancarias { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,6 +25,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         modelBuilder.ApplyConfiguration(new UsuarioMap());
         modelBuilder.ApplyConfiguration(new ContaBancariaMap());
         modelBuilder.ApplyConfiguration(new UsuarioPendenteMap());
+        modelBuilder.ApplyConfiguration(new MovimentacaoBancariaMap());
 
         base.OnModelCreating(modelBuilder);
     }

@@ -31,6 +31,8 @@ namespace FinanceiroApp
             builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
             builder.Services.AddSingleton<IEmailWorker, EmailWorker>();
 
+            builder.Services.AddScoped<IMovimentacaoBancariaService, MovimentacaoBancariaService>();
+
             builder.Services.Configure<SmtpSettings>(
                 builder.Configuration.GetSection("SmtpSettings")
             );
