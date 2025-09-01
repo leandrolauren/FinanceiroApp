@@ -10,6 +10,16 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 function PlanoContaDeleteModal({ open, onClose, planoId }) {
   const [plano, setPlano] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -26,13 +36,10 @@ function PlanoContaDeleteModal({ open, onClose, planoId }) {
         })
         .catch(() => {
           setError('Erro ao carregar os dados do Plano de Contas.')
-          const eventoErro = new CustomEvent('onNotificacao', {
-            detail: {
-              mensagem: 'Erro ao carregar os dados do Plano de Contas.',
-              variant: 'error',
-            },
-          })
-          window.dispatchEvent(eventoErro)
+          showNotification(
+            'Erro ao carregar os dados do Plano de Contas.',
+            'error',
+          )
         })
         .finally(() => {
           setLoading(false)
@@ -45,26 +52,16 @@ function PlanoContaDeleteModal({ open, onClose, planoId }) {
       setError(null)
 
       await axios.delete(`/api/PlanoContas/${planoId}`)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Plano de Contas excluído com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Plano de Contas excluído com sucesso.', 'success')
 
       onClose(true)
-    } catch (err) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem:
-            err.response.data.message || 'Erro ao excluir Plano de Contas.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+    } catch (error) {
+      showNotification(
+        error.response.data.message || 'Erro ao excluir Plano de Contas.',
+        'error',
+      )
       setError(
-        err.response?.data?.message || 'Erro ao excluir Plano de Contas.',
+        error.response?.data?.message || 'Erro ao excluir Plano de Contas.',
       )
       onClose(false)
     }

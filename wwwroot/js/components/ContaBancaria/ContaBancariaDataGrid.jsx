@@ -11,6 +11,15 @@ const defaultGridState = {
   pagination: { pageSize: 25 },
   layout: { height: 500 },
 }
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
 
 export default function ContaBancariaDataGrid() {
   const [loading, setLoading] = useState(true)
@@ -163,13 +172,7 @@ export default function ContaBancariaDataGrid() {
 
         setContas(contas)
       } catch (error) {
-        const eventoErro = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: 'Erro ao carregar as contas bancárias.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErro)
+        showNotification('Erro ao carregar as contas bancárias.', 'error')
       } finally {
         setLoading(false)
       }

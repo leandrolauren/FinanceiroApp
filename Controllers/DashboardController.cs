@@ -185,6 +185,49 @@ namespace FinanceiroApp.Controllers
             return Ok(topDespesas);
         }
 
+        [HttpGet("top-receitas")]
+        public async Task<IActionResult> GetTopReceitas(
+            [FromQuery] DateTime dataInicio,
+            [FromQuery] DateTime dataFim,
+            [FromQuery] StatusLancamentoFiltro status = StatusLancamentoFiltro.Todos
+        )
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var query = _context
+                .Lancamentos.AsNoTracking()
+                .Where(l =>
+                    l.UsuarioId == userId
+                    && (int)l.Tipo == (int)MovimentoTipo.Receita
+                    && l.DataCompetencia.Date >= dataInicio.Date
+                    && l.DataCompetencia.Date <= dataFim.Date
+                );
+
+            switch (status)
+            {
+                case StatusLancamentoFiltro.Pago:
+                    query = query.Where(l => l.Pago);
+                    break;
+                case StatusLancamentoFiltro.Aberto:
+                    query = query.Where(l => !l.Pago);
+                    break;
+            }
+
+            var topReceitas = await query
+                .Include(l => l.PlanoContas)
+                .GroupBy(l => l.PlanoContas.Descricao)
+                .Select(g => new CategoriaTotalDto
+                {
+                    Categoria = g.Key,
+                    Total = g.Sum(l => l.Valor),
+                })
+                .OrderByDescending(d => d.Total)
+                .Take(5)
+                .ToListAsync();
+
+            return Ok(topReceitas);
+        }
+
         [HttpGet("contas-proximas")]
         public async Task<IActionResult> GetContasProximas(
             [FromQuery] DateTime dataInicio,

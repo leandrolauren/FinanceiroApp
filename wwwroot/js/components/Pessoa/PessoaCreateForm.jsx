@@ -47,6 +47,16 @@ const initialState = {
   complemento: '',
 }
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 const PessoaCreateForm = () => {
   const navigate = useNavigate()
 
@@ -82,13 +92,7 @@ const PessoaCreateForm = () => {
           estado: data.uf,
         }))
       } else {
-        const eventoAlerta = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: 'CEP não encontrado.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoAlerta)
+        showNotification('CEP não encontrado.', 'warning')
       }
     } catch (error) {
       console.log(error.message || 'Erro ao buscar CEP.')
@@ -121,6 +125,7 @@ const PessoaCreateForm = () => {
       }))
     } catch (error) {
       console.log(error.message || 'Erro ao buscar CNPJ.')
+      showNotification('Erro ao buscar CNPJ', 'warning')
     } finally {
       setCnpjLoading(false)
     }
@@ -131,13 +136,7 @@ const PessoaCreateForm = () => {
 
     const { email } = formData
     if (email && !/\S+@\S+\.\S+/.test(email)) {
-      const eventoAlerta = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Formato do email é inválido.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoAlerta)
+      showNotification('Formato do email é inválido.', 'warning')
       setErrors((prev) => ({
         ...prev,
         Email: ['O formato do e-mail é inválido.'],
@@ -158,35 +157,22 @@ const PessoaCreateForm = () => {
 
     try {
       await axios.post('/api/pessoas', dados)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Pessoa cadastrada com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Pessoa cadastrada com sucesso.', 'success')
       setFormData(initialState)
       setErrors({})
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setErrors(error.response.data.errors || {})
-        const eventoAlerta = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem:
-              error.response.data.message ||
-              'Por favor, corrija os erros no formulário.',
-            variant: 'warning',
-          },
-        })
-        window.dispatchEvent(eventoAlerta)
+        showNotification(
+          error.response.data.message ||
+            'Por favor, corrija os erros no formulário.',
+          'warning',
+        )
       } else {
-        const eventoErro = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: error.response.data.message || 'Erro ao salvar pessoa.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErro)
+        showNotification(
+          error.response.data.message || 'Erro ao salvar pessoa.',
+          'error',
+        )
       }
     } finally {
       setLoading(false)

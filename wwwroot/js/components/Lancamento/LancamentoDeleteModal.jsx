@@ -10,11 +10,14 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 
-function formatarDataBR(data) {
-  if (!data) return '---'
-  const d = new Date(data)
-  if (isNaN(d)) return '---'
-  return d.toLocaleDateString('pt-BR')
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
 }
 
 function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
@@ -28,15 +31,16 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
       axios
         .get(`/api/Lancamentos/${lancamentoId}`)
         .then((res) => setLancamento(res.data.data))
-        .catch(() => {
-          setError('Erro ao carregar os dados do lançamento.')
-          const eventoErro = new CustomEvent('onNotificacao', {
-            detail: {
-              mensagem: 'Erro ao carregar os dados do lançamento.',
-              variant: 'error',
-            },
-          })
-          window.dispatchEvent(eventoErro)
+        .catch((error) => {
+          setError(
+            error.response.data.message ||
+              'Erro ao carregar os dados do lançamento.',
+          )
+          showNotification(
+            error.response.data.message ||
+              'Erro ao carregar os dados do lançamento.',
+            'error',
+          )
         })
         .finally(() => setLoading(false))
     }
@@ -45,22 +49,13 @@ function LancamentoDeleteModal({ open, onClose, lancamentoId }) {
   const handleDelete = async () => {
     try {
       await axios.delete(`/api/lancamentos/${lancamentoId}`)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Lançamento excluído com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Lançamento excluído com sucesso.', 'success')
       onClose(true)
     } catch (error) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: err.response.data.message || 'Erro ao excluir lançamento.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+      showNotification(
+        err.response.data.message || 'Erro ao excluir lançamento.',
+        'error',
+      )
       onClose(false)
       setError(err.response.data.message || 'Erro ao excluir lançamento.')
     }

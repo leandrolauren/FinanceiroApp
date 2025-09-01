@@ -20,17 +20,30 @@ import { FilterAlt } from '@mui/icons-material'
 import axios from 'axios'
 import { startOfYear, endOfYear } from 'date-fns'
 
+const getFiltrosSalvos = () => {
+  const filtrosSalvos = localStorage.getItem('entradaeSaidaFiltros')
+  if (filtrosSalvos) {
+    const filtros = JSON.parse(filtrosSalvos)
+    return {
+      dataInicio: new Date(filtros.dataInicio),
+      dataFim: new Date(filtros.dataFim),
+      status: filtros.status,
+    }
+  }
+  return {
+    dataInicio: startOfYear(new Date()),
+    dataFim: endOfYear(new Date()),
+    status: 'Todos',
+  }
+}
+
 export default function EntradaeSaida() {
   const [chartData, setChartData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
-  const [filtrosAtivos, setFiltrosAtivos] = useState(() => ({
-    dataInicio: startOfYear(new Date()),
-    dataFim: endOfYear(new Date()),
-    status: 'Todos',
-  }))
+  const [filtrosAtivos, setFiltrosAtivos] = useState(getFiltrosSalvos)
 
   const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
 
@@ -65,6 +78,10 @@ export default function EntradaeSaida() {
   }
 
   const aplicarFiltro = () => {
+    localStorage.setItem(
+      'entradaeSaidaFiltros',
+      JSON.stringify(filtrosEditando),
+    )
     setFiltrosAtivos(filtrosEditando)
     setMostrarFiltros(false)
   }
@@ -75,7 +92,7 @@ export default function EntradaeSaida() {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        height={500}
+        sx={{ width: '100%', aspectRatio: '1 / 1' }}
       >
         <CircularProgress />
       </Box>
@@ -88,7 +105,7 @@ export default function EntradaeSaida() {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        height={500}
+        sx={{ width: '100%', aspectRatio: '1 / 1' }}
       >
         <Alert severity="error">
           <AlertTitle>Erro</AlertTitle>
@@ -112,15 +129,15 @@ export default function EntradaeSaida() {
         boxShadow: 1,
       }}
     >
+      <Typography variant="h6">
+        Fluxo de Caixa (Receitas vs. Despesas)
+      </Typography>
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
       >
-        <Typography variant="h6">
-          Fluxo de Caixa (Receitas vs. Despesas)
-        </Typography>
         <Button
           variant="outlined"
           startIcon={<FilterAlt />}
@@ -185,7 +202,7 @@ export default function EntradaeSaida() {
 
       {chartData && chartData.meses.length > 0 ? (
         <BarChart
-          height={500}
+          sx={{ height: { xs: 300, md: 500 } }}
           series={[
             {
               data: chartData.receitas,
@@ -215,7 +232,7 @@ export default function EntradaeSaida() {
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={400}
+          sx={{ height: { xs: 300, md: 500 } }}
         >
           <Typography>
             Nenhum dado encontrado para o período selecionado.

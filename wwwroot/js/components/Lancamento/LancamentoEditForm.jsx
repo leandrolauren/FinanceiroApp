@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -14,50 +14,50 @@ import {
   FormControlLabel,
   Radio,
   Autocomplete,
-} from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { NumericFormat } from 'react-number-format';
-import SaveIcon from '@mui/icons-material/Save';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import axios from 'axios';
+} from '@mui/material'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { NumericFormat } from 'react-number-format'
+import SaveIcon from '@mui/icons-material/Save'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import axios from 'axios'
 
-const API_PESSOAS = '/api/pessoas';
-const API_PLANOS_CONTAS = '/api/planoContas/hierarquia';
-const API_CONTAS_BANCARIAS = '/api/contas';
+const API_PESSOAS = '/api/pessoas'
+const API_PLANOS_CONTAS = '/api/planoContas/hierarquia'
+const API_CONTAS_BANCARIAS = '/api/contas'
 
 const getLeafNodes = (nodes) => {
-  let leafNodes = [];
-  if (!Array.isArray(nodes)) return leafNodes;
+  let leafNodes = []
+  if (!Array.isArray(nodes)) return leafNodes
   nodes.forEach((node) => {
     if (!node.filhos || node.filhos.length === 0) {
-      leafNodes.push(node);
+      leafNodes.push(node)
     } else {
-      leafNodes = leafNodes.concat(getLeafNodes(node.filhos));
+      leafNodes = leafNodes.concat(getLeafNodes(node.filhos))
     }
-  });
-  return leafNodes;
-};
+  })
+  return leafNodes
+}
 
 const formatDate = (date) => {
   if (!(date instanceof Date) || isNaN(date)) {
-    return null;
+    return null
   }
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
+  const year = date.getFullYear()
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
 
 const LancamentoEditForm = ({ lancamentoId }) => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
-  const [formData, setFormData] = useState(null);
-  const [pessoas, setPessoas] = useState([]);
-  const [planosContas, setPlanosContas] = useState([]);
-  const [contasBancarias, setContasBancarias] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [formSubmitting, setFormSubmitting] = useState(false);
-  const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState(null)
+  const [pessoas, setPessoas] = useState([])
+  const [planosContas, setPlanosContas] = useState([])
+  const [contasBancarias, setContasBancarias] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [formSubmitting, setFormSubmitting] = useState(false)
+  const [errors, setErrors] = useState({})
 
   useEffect(() => {
     const fetchData = async () => {
@@ -68,55 +68,61 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             axios.get(API_PLANOS_CONTAS),
             axios.get(API_CONTAS_BANCARIAS),
             axios.get(`/api/lancamentos/${lancamentoId}`),
-          ]);
+          ])
 
-        setPessoas(pessoasRes.data || []);
-        setPlanosContas(planosRes.data || []);
-        setContasBancarias(contasRes.data.data || []);
+        setPessoas(pessoasRes.data || [])
+        setPlanosContas(planosRes.data || [])
+        setContasBancarias(contasRes.data.data || [])
 
-        const lancamento = lancamentoRes.data.data;
+        const lancamento = lancamentoRes.data.data
         setFormData({
           descricao: lancamento.descricao,
           tipo: lancamento.tipo === 'Receita' ? '1' : '2',
           valor: lancamento.valor,
-          dataCompetencia: lancamento.dataCompetencia ? new Date(lancamento.dataCompetencia) : null,
-          dataVencimento: lancamento.dataVencimento ? new Date(lancamento.dataVencimento) : null,
-          dataPagamento: lancamento.dataPagamento ? new Date(lancamento.dataPagamento) : null,
+          dataCompetencia: lancamento.dataCompetencia
+            ? new Date(lancamento.dataCompetencia)
+            : null,
+          dataVencimento: lancamento.dataVencimento
+            ? new Date(lancamento.dataVencimento)
+            : null,
+          dataPagamento: lancamento.dataPagamento
+            ? new Date(lancamento.dataPagamento)
+            : null,
           pago: lancamento.pago,
           contaBancariaId: lancamento.contaBancaria?.id || '',
           planoContasId: lancamento.planoContas?.id || '',
           pessoaId: lancamento.pessoa?.id || '',
-        });
+        })
       } catch (error) {
-        console.error('Erro ao carregar dados para edição:', error);
-        navigate('/lancamentos');
+        console.error('Erro ao carregar dados para edição:', error)
+        navigate('/lancamentos')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    fetchData();
-  }, [lancamentoId, navigate]);
+    }
+    fetchData()
+  }, [lancamentoId, navigate])
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const finalValue = type === 'checkbox' ? checked : value;
-    setFormData((prev) => ({ ...prev, [name]: finalValue }));
+    const { name, value, type, checked } = e.target
+    const finalValue = type === 'checkbox' ? checked : value
+    setFormData((prev) => ({ ...prev, [name]: finalValue }))
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
-  };
+  }
 
   const handleDateChange = (name, date) => {
-    setFormData((prev) => ({ ...prev, [name]: date }));
+    setFormData((prev) => ({ ...prev, [name]: date }))
     if (errors[name]) {
-     setErrors((prev) => ({ ...prev, [name]: undefined }));
-   }
- };
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
+    }
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormSubmitting(true);
-    setErrors({});
+    e.preventDefault()
+    setFormSubmitting(true)
+    setErrors({})
 
     const dados = {
       ...formData,
@@ -127,31 +133,31 @@ const LancamentoEditForm = ({ lancamentoId }) => {
       dataPagamento: formatDate(formData.dataPagamento),
       dataCompetencia: formatDate(formData.dataCompetencia),
       dataVencimento: formatDate(formData.dataVencimento),
-    };
+    }
 
     try {
-      await axios.put(`/api/lancamentos/${lancamentoId}`, dados);
-      navigate('/lancamentos');
+      await axios.put(`/api/lancamentos/${lancamentoId}`, dados)
+      navigate('/lancamentos')
     } catch (error) {
-      console.error('Erro ao atualizar lançamento:', error);
+      console.error('Erro ao atualizar lançamento:', error)
       if (error.response && error.response.status === 400) {
-        setErrors(error.response.data.errors || {});
+        setErrors(error.response.data.errors || {})
       }
     } finally {
-      setFormSubmitting(false);
+      setFormSubmitting(false)
     }
-  };
+  }
 
   const planosDeContaFilhos = getLeafNodes(
     planosContas.filter((p) => p.tipo.toString() === formData?.tipo),
-  );
+  )
 
   if (loading || !formData) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
         <CircularProgress />
       </Box>
-    );
+    )
   }
 
   return (
@@ -166,7 +172,12 @@ const LancamentoEditForm = ({ lancamentoId }) => {
 
       <FormControl component="fieldset" sx={{ mt: 2 }}>
         <FormLabel component="legend">Tipo de Lançamento</FormLabel>
-        <RadioGroup row name="tipo" value={formData.tipo} onChange={handleChange}>
+        <RadioGroup
+          row
+          name="tipo"
+          value={formData.tipo}
+          onChange={handleChange}
+        >
           <FormControlLabel value="1" control={<Radio />} label="Receita" />
           <FormControlLabel value="2" control={<Radio />} label="Despesa" />
         </RadioGroup>
@@ -174,9 +185,18 @@ const LancamentoEditForm = ({ lancamentoId }) => {
 
       <Grid container spacing={3} mt={2}>
         <Grid item xs={12} sm={8}>
-          <TextField name="descricao" label="Descrição" value={formData.descricao} onChange={handleChange} fullWidth required error={!!errors.Descricao} helperText={errors.Descricao?.[0]} />
+          <TextField
+            name="descricao"
+            label="Descrição"
+            value={formData.descricao}
+            onChange={handleChange}
+            fullWidth
+            required
+            error={!!errors.Descricao}
+            helperText={errors.Descricao?.[0]}
+          />
         </Grid>
-        
+
         <Grid item xs={12} sm={4}>
           <NumericFormat
             name="valor"
@@ -184,9 +204,12 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             value={formData.valor}
             customInput={TextField}
             onValueChange={(values) => {
-              setFormData(prev => ({ ...prev, valor: values.floatValue || '' }));
+              setFormData((prev) => ({
+                ...prev,
+                valor: values.floatValue || '',
+              }))
               if (errors.Valor) {
-                setErrors(prev => ({...prev, Valor: undefined}));
+                setErrors((prev) => ({ ...prev, Valor: undefined }))
               }
             }}
             prefix={'R$ '}
@@ -202,63 +225,143 @@ const LancamentoEditForm = ({ lancamentoId }) => {
         </Grid>
 
         <Grid item xs={12} sm={4} md={4}>
-          <Autocomplete options={pessoas} getOptionLabel={(option) => option.nome || ''} value={pessoas.find((p) => p.id === formData.pessoaId) || null}
-            onChange={(event, newValue) => { setFormData(prev => ({ ...prev, pessoaId: newValue ? newValue.id : '' })); }}
+          <Autocomplete
+            options={pessoas}
+            getOptionLabel={(option) => option.nome || ''}
+            value={pessoas.find((p) => p.id === formData.pessoaId) || null}
+            onChange={(event, newValue) => {
+              setFormData((prev) => ({
+                ...prev,
+                pessoaId: newValue ? newValue.id : '',
+              }))
+            }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            renderInput={(params) => (<TextField {...params} label="Pessoa (Cliente/Fornecedor)" error={!!errors.PessoaId} helperText={errors.PessoaId?.[0]} />)}
-            sx={{ minWidth: 300 }} />
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Pessoa (Cliente/Fornecedor)"
+                error={!!errors.PessoaId}
+                helperText={errors.PessoaId?.[0]}
+              />
+            )}
+            sx={{ minWidth: 300 }}
+          />
         </Grid>
         <Grid item xs={12} sm={4} md={4}>
-          <Autocomplete options={planosDeContaFilhos} getOptionLabel={(option) => option.descricao || ''} value={planosDeContaFilhos.find((p) => p.id === formData.planoContasId) || null}
-            onChange={(event, newValue) => { setFormData(prev => ({ ...prev, planoContasId: newValue ? newValue.id : '' })); }}
+          <Autocomplete
+            options={planosDeContaFilhos}
+            getOptionLabel={(option) => option.descricao || ''}
+            value={
+              planosDeContaFilhos.find(
+                (p) => p.id === formData.planoContasId,
+              ) || null
+            }
+            onChange={(event, newValue) => {
+              setFormData((prev) => ({
+                ...prev,
+                planoContasId: newValue ? newValue.id : '',
+              }))
+            }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            renderInput={(params) => (<TextField {...params} label="Plano de Contas" required error={!!errors.PlanoContasId} helperText={errors.PlanoContasId?.[0]} />)}
-            sx={{ minWidth: 300 }} />
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Plano de Contas"
+                required
+                error={!!errors.PlanoContasId}
+                helperText={errors.PlanoContasId?.[0]}
+              />
+            )}
+            sx={{ minWidth: 300 }}
+          />
         </Grid>
         <Grid item xs={12} sm={4} md={4}>
-          <Autocomplete options={contasBancarias} getOptionLabel={(option) => option.descricao || ''} value={contasBancarias.find((c) => c.id === formData.contaBancariaId) || null}
-            onChange={(event, newValue) => { setFormData(prev => ({ ...prev, contaBancariaId: newValue ? newValue.id : '' })); }}
+          <Autocomplete
+            options={contasBancarias}
+            getOptionLabel={(option) => option.descricao || ''}
+            value={
+              contasBancarias.find((c) => c.id === formData.contaBancariaId) ||
+              null
+            }
+            onChange={(event, newValue) => {
+              setFormData((prev) => ({
+                ...prev,
+                contaBancariaId: newValue ? newValue.id : '',
+              }))
+            }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            renderInput={(params) => (<TextField {...params} label="Conta Bancária" error={!!errors.ContaBancariaId} helperText={errors.ContaBancariaId?.[0]} />)}
-            sx={{ minWidth: 300 }} />
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Conta Bancária"
+                error={!!errors.ContaBancariaId}
+                helperText={errors.ContaBancariaId?.[0]}
+              />
+            )}
+            sx={{ minWidth: 300 }}
+          />
         </Grid>
-        
+
         <Grid item xs={12} sm={6} md={3}>
-            <DatePicker
-                label="Data de Competência"
-                value={formData.dataCompetencia}
-                onChange={(date) => handleDateChange('dataCompetencia', date)}
-                renderInput={(params) => 
-                  <TextField {...params} fullWidth required error={!!errors.DataCompetencia} helperText={errors.DataCompetencia?.[0] || ''} />
-                }
-            />
+          <DatePicker
+            label="Data de Competência"
+            value={formData.dataCompetencia}
+            onChange={(date) => handleDateChange('dataCompetencia', date)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                required
+                error={!!errors.DataCompetencia}
+                helperText={errors.DataCompetencia?.[0] || ''}
+              />
+            )}
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-            <DatePicker
-                label="Data de Vencimento"
-                value={formData.dataVencimento}
-                onChange={(date) => handleDateChange('dataVencimento', date)}
-                renderInput={(params) => 
-                  <TextField {...params} fullWidth required error={!!errors.DataVencimento} helperText={errors.DataVencimento?.[0] || ''} />
-                }
-            />
+          <DatePicker
+            label="Data de Vencimento"
+            value={formData.dataVencimento}
+            onChange={(date) => handleDateChange('dataVencimento', date)}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                required
+                error={!!errors.DataVencimento}
+                helperText={errors.DataVencimento?.[0] || ''}
+              />
+            )}
+          />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <TextField select label="Situação" name="pago" value={formData.pago} onChange={handleChange} fullWidth >
+          <TextField
+            select
+            label="Situação"
+            name="pago"
+            value={formData.pago}
+            onChange={handleChange}
+            fullWidth
+          >
             <MenuItem value={false}>Em Aberto</MenuItem>
             <MenuItem value={true}>Pago</MenuItem>
           </TextField>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-            <DatePicker
-                label="Data de Pagamento"
-                value={formData.dataPagamento}
-                onChange={(date) => handleDateChange('dataPagamento', date)}
-                disabled={!formData.pago}
-                renderInput={(params) => 
-                  <TextField {...params} fullWidth error={!!errors.DataPagamento} helperText={errors.DataPagamento?.[0] || ''} />
-                }
-            />
+          <DatePicker
+            label="Data de Pagamento"
+            value={formData.dataPagamento}
+            onChange={(date) => handleDateChange('dataPagamento', date)}
+            disabled={!formData.pago}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                fullWidth
+                error={!!errors.DataPagamento}
+                helperText={errors.DataPagamento?.[0] || ''}
+              />
+            )}
+          />
         </Grid>
       </Grid>
 
@@ -288,7 +391,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
         </Button>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default LancamentoEditForm;
+export default LancamentoEditForm

@@ -20,4 +20,4 @@ function Notificacao() {
   return null
 }
 
-export default Notificacao;
+export default Notificacao

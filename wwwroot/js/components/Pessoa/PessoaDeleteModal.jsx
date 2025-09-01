@@ -10,6 +10,16 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 function PessoaDeleteModal({ open, onClose, pessoaId }) {
   const [pessoa, setPessoa] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -24,15 +34,16 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
         .then((response) => {
           setPessoa(response.data)
         })
-        .catch(() => {
-          setError('Erro ao carregar os dados da pessoa.')
-          const eventoErro = new CustomEvent('onNotificacao', {
-            detail: {
-              mensagem: 'Erro ao carregar os dados da pessoa.',
-              variant: 'error',
-            },
-          })
-          window.dispatchEvent(eventoErro)
+        .catch((error) => {
+          setError(
+            error.response.data.message ||
+              'Erro ao carregar os dados da pessoa.',
+          )
+          showNotification(
+            error.response.data.message ||
+              'Erro ao carregar os dados da pessoa.',
+            'error',
+          )
         })
         .finally(() => {
           setLoading(false)
@@ -43,22 +54,13 @@ function PessoaDeleteModal({ open, onClose, pessoaId }) {
   const handleDelete = async () => {
     try {
       await axios.delete(`/api/Pessoas/${pessoaId}`)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Pessoa excluída com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Pessoa excluída com sucesso.', 'success')
       onClose(true)
     } catch (err) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: err.response.data.message || 'Erro ao excluir pessoa.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+      showNotification(
+        err.response.data.message || 'Erro ao excluir pessoa.',
+        'error',
+      )
       onClose(false)
       setError(err.response.data.message || 'Erro ao excluir pessoa.')
     }

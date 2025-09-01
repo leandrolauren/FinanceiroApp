@@ -14,6 +14,6 @@ if (container) {
     >
       <Notifcacao />
       <FormRegister />
-    </SnackbarProvider>
+    </SnackbarProvider>,
   )
 }

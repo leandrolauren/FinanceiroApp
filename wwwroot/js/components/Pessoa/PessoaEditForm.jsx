@@ -27,6 +27,16 @@ import {
   limparMascaras,
 } from '../../utils/form-utils'
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 const PessoaEditForm = ({ pessoaId }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState(null)
@@ -49,15 +59,10 @@ const PessoaEditForm = ({ pessoaId }) => {
         setFormData(data)
         setTipoPessoa(data.tipo.toString())
       } catch (error) {
-        const eventoErro = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem:
-              error.response.data.message ||
-              'Erro de rede ao carregar a pessoa.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErro)
+        showNotification(
+          error.response.data.message || 'Erro ao carregar a pessoa.',
+          'error',
+        )
         navigate('/pessoas')
       } finally {
         setLoading(false)
@@ -92,13 +97,7 @@ const PessoaEditForm = ({ pessoaId }) => {
         estado: data.uf,
       }))
     } catch (error) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: error.response.data.message || 'Erro ao buscar CEP.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+      showNotification('Erro ao buscar CEP.', 'warning')
     } finally {
       setCepLoading(false)
     }
@@ -127,13 +126,7 @@ const PessoaEditForm = ({ pessoaId }) => {
         complemento: data.complemento || '',
       }))
     } catch (error) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: error.response.data.message || 'Erro ao buscar CNPJ.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+      showNotification('Erro ao buscar CNPJ.', 'error')
     } finally {
       setCnpjLoading(false)
     }
@@ -144,13 +137,7 @@ const PessoaEditForm = ({ pessoaId }) => {
 
     const { email } = formData
     if (email && !/\S+@\S+\.\S+/.test(email)) {
-      const eventoAlerta = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'O formato do e-mail é inválido.',
-          variant: 'alert',
-        },
-      })
-      window.dispatchEvent(eventoAlerta)
+      showNotification('O formato do e-mail é inválido.', 'warning')
       setErrors((prev) => ({
         ...prev,
         Email: ['O formato do e-mail é inválido.'],
@@ -168,37 +155,22 @@ const PessoaEditForm = ({ pessoaId }) => {
 
     try {
       await axios.put(`/api/pessoas/${pessoaId}`, dados)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Pessoa alterada com sucesso!',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Pessoa alterada com sucesso!', 'success')
       setFormSubmitting(false)
       navigate('/pessoas')
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setErrors(error.response.data.errors || {})
-        const eventoAlert = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem:
-              error.response.data.message ||
-              'Por favor, corrija os erros no formulário.',
-            variant: 'alert',
-          },
-        })
-        window.dispatchEvent(eventoAlert)
+        showNotification(
+          error.response.data.message ||
+            'Por favor, corrija os erros no formulário.',
+          'warning',
+        )
       } else {
-        const eventoErroGeral = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem:
-              error.response.data.message ||
-              'Ocorreu um erro ao salvar a pessoa.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErroGeral)
+        showNotification(
+          error.response.data.message || 'Ocorreu um erro ao salvar a pessoa.',
+          'error',
+        )
       }
     } finally {
       setFormSubmitting(false)

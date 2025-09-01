@@ -1,7 +1,5 @@
-// Sidebar.jsx
-
-import React from 'react';
-import { NavLink } from 'react-router-dom';
+import React from 'react'
+import { NavLink } from 'react-router-dom'
 import {
   Box,
   Drawer,
@@ -16,32 +14,32 @@ import {
   ListSubheader,
   IconButton,
   useTheme,
-} from '@mui/material';
+} from '@mui/material'
 
-import HomeIcon from '@mui/icons-material/Home';
-import PeopleIcon from '@mui/icons-material/People';
-import DescriptionIcon from '@mui/icons-material/Description';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import HomeIcon from '@mui/icons-material/Home'
+import PeopleIcon from '@mui/icons-material/People'
+import DescriptionIcon from '@mui/icons-material/Description'
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 
-const drawerWidth = 240;
+const drawerWidth = 240
 
 const Sidebar = ({ isToggled, handleToggle }) => {
-  const theme = useTheme();
+  const theme = useTheme()
 
   const navLinkStyle = {
     textDecoration: 'none',
     color: 'inherit',
     width: '100%',
-  };
+  }
 
   const activeLinkStyle = {
     backgroundColor: 'rgba(25, 118, 210, 0.16)',
-  };
+  }
 
-  const iconColor = 'rgba(255, 255, 255, 0.85)';
+  const iconColor = 'rgba(255, 255, 255, 0.85)'
 
   return (
     <Drawer
@@ -85,8 +83,19 @@ const Sidebar = ({ isToggled, handleToggle }) => {
         }}
       >
         {isToggled && (
-          <Box sx={{ display: 'flex', alignItems: 'center', ml: 1, whiteSpace: 'nowrap' }}>
-            <img src="/favicon.ico" alt="Logo" style={{ width: 32, height: 32 }} />
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              ml: 1,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <img
+              src="/favicon.ico"
+              alt="Logo"
+              style={{ width: 32, height: 32 }}
+            />
             <Typography variant="h6" sx={{ ml: 2, color: 'white' }}>
               Financeiro
             </Typography>
@@ -102,10 +111,19 @@ const Sidebar = ({ isToggled, handleToggle }) => {
           <NavLink to="/home" style={navLinkStyle}>
             {({ isActive }) => (
               <ListItemButton sx={isActive ? activeLinkStyle : {}}>
-                <ListItemIcon sx={{ color: iconColor, minWidth: 'auto', mr: isToggled ? 3 : 'auto' }}>
+                <ListItemIcon
+                  sx={{
+                    color: iconColor,
+                    minWidth: 'auto',
+                    mr: isToggled ? 3 : 'auto',
+                  }}
+                >
                   <HomeIcon />
                 </ListItemIcon>
-                <ListItemText primary="Dashboards" sx={{ opacity: isToggled ? 1 : 0 }} />
+                <ListItemText
+                  primary="Dashboards"
+                  sx={{ opacity: isToggled ? 1 : 0 }}
+                />
               </ListItemButton>
             )}
           </NavLink>
@@ -128,15 +146,30 @@ const Sidebar = ({ isToggled, handleToggle }) => {
       >
         {[
           { text: 'Pessoas', to: '/Pessoas', icon: <PeopleIcon /> },
-          { text: 'Plano de Contas', to: '/Planocontas', icon: <DescriptionIcon /> },
+          {
+            text: 'Plano de Contas',
+            to: '/Planocontas',
+            icon: <DescriptionIcon />,
+          },
           { text: 'Contas', to: '/Contas', icon: <AccountBalanceIcon /> },
         ].map((item) => (
           <ListItem key={item.text} disablePadding>
             <NavLink to={item.to} style={navLinkStyle}>
               {({ isActive }) => (
                 <ListItemButton sx={isActive ? activeLinkStyle : {}}>
-                  <ListItemIcon sx={{ color: iconColor, minWidth: 'auto', mr: isToggled ? 3 : 'auto' }}>{item.icon}</ListItemIcon>
-                  <ListItemText primary={item.text} sx={{ opacity: isToggled ? 1 : 0 }} />
+                  <ListItemIcon
+                    sx={{
+                      color: iconColor,
+                      minWidth: 'auto',
+                      mr: isToggled ? 3 : 'auto',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: isToggled ? 1 : 0 }}
+                  />
                 </ListItemButton>
               )}
             </NavLink>
@@ -162,17 +195,26 @@ const Sidebar = ({ isToggled, handleToggle }) => {
           <NavLink to="/Lancamentos" style={navLinkStyle}>
             {({ isActive }) => (
               <ListItemButton sx={isActive ? activeLinkStyle : {}}>
-                <ListItemIcon sx={{ color: iconColor, minWidth: 'auto', mr: isToggled ? 3 : 'auto' }}>
+                <ListItemIcon
+                  sx={{
+                    color: iconColor,
+                    minWidth: 'auto',
+                    mr: isToggled ? 3 : 'auto',
+                  }}
+                >
                   <ReceiptLongIcon />
                 </ListItemIcon>
-                <ListItemText primary="Lançamento" sx={{ opacity: isToggled ? 1 : 0 }} />
+                <ListItemText
+                  primary="Lançamento"
+                  sx={{ opacity: isToggled ? 1 : 0 }}
+                />
               </ListItemButton>
             )}
           </NavLink>
         </ListItem>
       </List>
     </Drawer>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar

@@ -65,6 +65,16 @@ const initialState = {
   planoContasPaiId: '',
 }
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 const PlanoContaCreateForm = () => {
   const navigate = useNavigate()
 
@@ -135,16 +145,9 @@ const PlanoContaCreateForm = () => {
 
     try {
       await sendCreateRequest(false)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Plano de Contas criado com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
-
+      showNotification('Plano de Contas criado com sucesso.', 'success')
       setFormData(initialState)
-      fetchPlanosPai() // Recarrega a lista de pais
+      fetchPlanosPai()
     } catch (err) {
       const { response } = err
       if (
@@ -155,27 +158,32 @@ const PlanoContaCreateForm = () => {
         if (window.confirm(response.data.message)) {
           try {
             await sendCreateRequest(true)
-            const eventoSucesso = new CustomEvent('onNotificacao', {
-              detail: {
-                mensagem:
-                  'Plano de Contas criado e lançamentos migrados com sucesso.',
-                variant: 'success',
-              },
-            })
-            window.dispatchEvent(eventoSucesso)
+            showNotification(
+              'Plano de Contas criado e lançamentos migrados com sucesso.',
+              'success',
+            )
 
             setFormData(initialState)
-            fetchPlanosPai() // Recarrega a lista de pais
+            fetchPlanosPai()
           } catch (finalErr) {
             setError(
               finalErr.response?.data?.message ||
                 'Erro ao confirmar a criação com migração.',
+            )
+            showNotification(
+              finalErr.response?.data?.message ||
+                'Erro ao confirmar a criação com migração.',
+              'error',
             )
           }
         }
       } else {
         setError(
           response?.data?.message || 'Erro ao salvar. Verifique os dados.',
+        )
+        showNotification(
+          response?.data?.message || 'Erro ao salvar. Verifique os dados.',
+          'error',
         )
       }
     } finally {

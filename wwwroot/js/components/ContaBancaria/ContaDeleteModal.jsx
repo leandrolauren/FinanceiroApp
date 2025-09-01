@@ -10,6 +10,16 @@ import {
 } from '@mui/material'
 import axios from 'axios'
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 function ContaDeleteModal({ open, onClose, contaId }) {
   const [conta, setConta] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -22,15 +32,13 @@ function ContaDeleteModal({ open, onClose, contaId }) {
       axios
         .get(`/api/Contas/${contaId}`)
         .then((response) => setConta(response.data.data))
-        .catch(() => {
+        .catch((error) => {
           setError('Erro ao carregar os dados da conta.')
-          const eventoErro = new CustomEvent('onNotificacao', {
-            detail: {
-              mensagem: 'Erro ao carregar os dados da conta.',
-              variant: 'error',
-            },
-          })
-          window.dispatchEvent(eventoErro)
+          showNotification(
+            error.response.data.message ||
+              'Erro ao carregar os dados da conta.',
+            'error',
+          )
         })
         .finally(() => setLoading(false))
     }
@@ -39,22 +47,13 @@ function ContaDeleteModal({ open, onClose, contaId }) {
   const handleDelete = async () => {
     try {
       await axios.delete(`/api/Contas/${contaId}`)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Conta excluída com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Conta excluída com sucesso.', 'success')
       onClose(true)
     } catch (error) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: err.response.data.message || 'Erro ao excluir conta.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+      showNotification(
+        err.response.data.message || 'Erro ao excluir conta.',
+        'error',
+      )
       onclose(false)
       setError(err.response.data.message || 'Erro ao excluir pessoa.')
     }

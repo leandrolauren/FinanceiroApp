@@ -74,7 +74,13 @@ export default function ContasProximas({ filtros }) {
     fetchData()
   }, [filtros])
 
-  if (loading) return <Skeleton variant="rectangular" height={200} />
+  if (loading)
+    return (
+      <Skeleton
+        variant="rectangular"
+        sx={{ width: '100%', aspectRatio: '1 / 1' }}
+      />
+    )
 
   return (
     <Grid container spacing={3}>

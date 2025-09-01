@@ -1,7 +1,5 @@
-// Topbar.jsx
-
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   AppBar,
   Toolbar,
@@ -13,30 +11,30 @@ import {
   Avatar,
   ListItemIcon,
   useTheme,
-} from '@mui/material';
+} from '@mui/material'
 
-import MenuIcon from '@mui/icons-material/Menu';
-import PersonIcon from '@mui/icons-material/Person';
-import SettingsIcon from '@mui/icons-material/Settings';
-import LogoutIcon from '@mui/icons-material/Logout';
+import MenuIcon from '@mui/icons-material/Menu'
+import PersonIcon from '@mui/icons-material/Person'
+import SettingsIcon from '@mui/icons-material/Settings'
+import LogoutIcon from '@mui/icons-material/Logout'
 
 const Topbar = ({ handleSidebarToggle, userName, handleLogout }) => {
-  const theme = useTheme();
-  const [anchorEl, setAnchorEl] = useState(null);
-  const isMenuOpen = Boolean(anchorEl);
+  const theme = useTheme()
+  const [anchorEl, setAnchorEl] = useState(null)
+  const isMenuOpen = Boolean(anchorEl)
 
   const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    setAnchorEl(event.currentTarget)
+  }
 
   const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-  
+    setAnchorEl(null)
+  }
+
   const transition = theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
-  });
+  })
 
   return (
     <AppBar
@@ -58,7 +56,7 @@ const Topbar = ({ handleSidebarToggle, userName, handleLogout }) => {
         >
           <MenuIcon />
         </IconButton>
-        
+
         <Box sx={{ flexGrow: 1 }} />
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -75,7 +73,15 @@ const Topbar = ({ handleSidebarToggle, userName, handleLogout }) => {
             color="inherit"
             sx={{ ml: 1 }}
           >
-            <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', color: 'white', fontSize: '1rem' }}>
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: 'primary.main',
+                color: 'white',
+                fontSize: '1rem',
+              }}
+            >
               {userName ? userName.charAt(0).toUpperCase() : ''}
             </Avatar>
           </IconButton>
@@ -89,19 +95,12 @@ const Topbar = ({ handleSidebarToggle, userName, handleLogout }) => {
           open={isMenuOpen}
           onClose={handleMenuClose}
         >
-          <MenuItem component={Link} to="/Usuario/Perfil" onClick={handleMenuClose}>
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            Perfil
-          </MenuItem>
-          <MenuItem component={Link} to="/Configuracao" onClick={handleMenuClose}>
-            <ListItemIcon>
-              <SettingsIcon fontSize="small" />
-            </ListItemIcon>
-            Configurações
-          </MenuItem>
-          <MenuItem onClick={() => { handleMenuClose(); handleLogout(); }}>
+          <MenuItem
+            onClick={() => {
+              handleMenuClose()
+              handleLogout()
+            }}
+          >
             <ListItemIcon>
               <LogoutIcon fontSize="small" />
             </ListItemIcon>
@@ -110,7 +109,7 @@ const Topbar = ({ handleSidebarToggle, userName, handleLogout }) => {
         </Menu>
       </Toolbar>
     </AppBar>
-  );
-};
+  )
+}
 
-export default Topbar;
+export default Topbar

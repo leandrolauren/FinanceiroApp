@@ -36,7 +36,7 @@ export default function SaldosContasBancarias() {
 
   return (
     <Paper elevation={3} sx={{ p: 2, height: '100%' }}>
-      <Typography variant="h6">Saldos em Contas</Typography>
+      <Typography variant="h6">Saldos em Contas (Atual)</Typography>
       <List>
         {data.length > 0 ? (
           data.map((conta, index) => (

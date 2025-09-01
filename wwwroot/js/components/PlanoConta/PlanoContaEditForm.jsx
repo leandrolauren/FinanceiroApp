@@ -54,6 +54,16 @@ const renderTreeItems = (nodes, level = 0) => {
   ])
 }
 
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  })
+  window.dispatchEvent(event)
+}
+
 const PlanoContaEditForm = ({ planoContaId }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState(null)
@@ -63,12 +73,6 @@ const PlanoContaEditForm = ({ planoContaId }) => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (!planoContaId) {
-      setError('ID do plano de contas não fornecido.')
-      setPageLoading(false)
-      return
-    }
-
     const fetchPlanoAtual = axios.get(`/api/planoContas/${planoContaId}`)
     const fetchPlanosPai = axios.get('/api/planoContas/pais')
     const fetchDescendentes = axios.get(
@@ -98,9 +102,13 @@ const PlanoContaEditForm = ({ planoContaId }) => {
           ),
         )
       })
-      .catch((err) => {
-        setError('Erro ao carregar dados do plano de contas.')
-        console.error(err)
+      .catch((error) => {
+        setError(error.response || 'Erro ao carregar dados do plano de contas.')
+        showNotification(
+          error.response || 'Erro ao carregar dados do plano de contas.',
+          'error',
+        )
+        navigate('/PlanoContas')
       })
       .finally(() => {
         setPageLoading(false)
@@ -133,13 +141,7 @@ const PlanoContaEditForm = ({ planoContaId }) => {
 
     try {
       await sendUpdateRequest(false)
-      const eventoSucesso = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Plano de Contas atualizado com sucesso.',
-          variant: 'success',
-        },
-      })
-      window.dispatchEvent(eventoSucesso)
+      showNotification('Plano de Contas atualizado com sucesso.', 'success')
       navigate('/PlanoContas')
     } catch (err) {
       const { response } = err
@@ -151,14 +153,10 @@ const PlanoContaEditForm = ({ planoContaId }) => {
         if (window.confirm(response.data.message)) {
           try {
             await sendUpdateRequest(true)
-            const eventoSucesso = new CustomEvent('onNotificacao', {
-              detail: {
-                mensagem:
-                  'Plano de Contas atualizado e lançamentos migrados com sucesso.',
-                variant: 'success',
-              },
-            })
-            window.dispatchEvent(eventoSucesso)
+            showNotification(
+              'Plano de Contas atualizado e lançamentos migrados com sucesso.',
+              'success',
+            )
             navigate('/PlanoContas')
           } catch (finalErr) {
             setError(
@@ -170,6 +168,10 @@ const PlanoContaEditForm = ({ planoContaId }) => {
       } else {
         setError(
           response?.data?.message || 'Erro ao salvar. Verifique os dados.',
+        )
+        showNotification(
+          response?.data?.message || 'Erro ao salvar. Verifique os dados.',
+          'error',
         )
       }
     } finally {

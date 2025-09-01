@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { PieChart } from '@mui/x-charts/PieChart'
-import { Box, Typography, Skeleton } from '@mui/material'
+import { Box, Typography, Skeleton, Paper } from '@mui/material'
 import axios from 'axios'
 
-export default function TopDespesasChart({ filtros }) {
+export default function TopReceitas({ filtros }) {
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -16,7 +16,7 @@ export default function TopDespesasChart({ filtros }) {
           dataFim: filtros.dataFim.toISOString().slice(0, 10),
           status: filtros.status,
         }
-        const response = await axios.get('/api/dashboard/top-despesas', {
+        const response = await axios.get('/api/dashboard/top-receitas', {
           params,
         })
         const chartData = response.data.map((item, index) => ({
@@ -26,7 +26,7 @@ export default function TopDespesasChart({ filtros }) {
         }))
         setData(chartData)
       } catch (error) {
-        console.error('Erro ao buscar Top 5 Despesas:', error)
+        console.error('Erro ao buscar Top 5 Receitas:', error)
       } finally {
         setLoading(false)
       }
@@ -37,30 +37,31 @@ export default function TopDespesasChart({ filtros }) {
   if (loading)
     return (
       <Skeleton
-        variant="circular"
-        width={300}
-        height={300}
-        sx={{ mx: 'auto' }}
+        variant="rectangular"
+        sx={{ width: '100%', aspectRatio: '1 / 1' }}
       />
     )
 
   return (
-    <Box>
-      <Typography variant="h6" align="center">
-        Top 5 Despesas por Categoria
+    <Paper
+      elevation={3}
+      sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
+    >
+      <Typography variant="h6" align="center" mb={0}>
+        Top 5 Receitas por Categoria
       </Typography>
       {data.length > 0 ? (
         <PieChart
+          height={200}
           series={[
             {
               data,
-              innerRadius: 60,
-              outerRadius: 100,
+              innerRadius: 50,
+              outerRadius: 80,
               paddingAngle: 2,
               cornerRadius: 5,
             },
           ]}
-          height={300}
           slotProps={{
             legend: {
               direction: 'vertical',
@@ -73,11 +74,11 @@ export default function TopDespesasChart({ filtros }) {
           display="flex"
           justifyContent="center"
           alignItems="center"
-          height={300}
+          sx={{ height: 250 }}
         >
-          <Typography>Nenhuma despesa encontrada no período.</Typography>
+          <Typography>Nenhuma receita encontrada no período.</Typography>
         </Box>
       )}
-    </Box>
+    </Paper>
   )
 }

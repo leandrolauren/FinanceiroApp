@@ -17,20 +17,32 @@ import { startOfYear, endOfYear } from 'date-fns'
 
 import EntradaeSaida from './EntradaeSaida'
 import IndicadoresKPIs from './IndicadoresKPIs'
-import TopDespesasChart from './TopDespesasChart'
+import TopDespesas from './TopDespesas'
+import TopReceitas from './TopReceitas'
 import ContasProximas from './ContasProximas'
-import EvolucaoSaldoChart from './EvolucaoSaldoChart'
+import EvolucaoSaldo from './EvolucaoSaldo'
 import SaldosContasBancarias from './SaldosContasBancarias'
 
-export default function Dashboard() {
-  const [mostrarFiltros, setMostrarFiltros] = useState(false)
-
-  const [filtrosAtivos, setFiltrosAtivos] = useState(() => ({
+const getFiltrosSalvos = () => {
+  const filtrosSalvos = localStorage.getItem('dashboardFiltros')
+  if (filtrosSalvos) {
+    const filtros = JSON.parse(filtrosSalvos)
+    return {
+      dataInicio: new Date(filtros.dataInicio),
+      dataFim: new Date(filtros.dataFim),
+      status: filtros.status,
+    }
+  }
+  return {
     dataInicio: startOfYear(new Date()),
     dataFim: endOfYear(new Date()),
     status: 'Todos',
-  }))
+  }
+}
 
+export default function Dashboard() {
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
+  const [filtrosAtivos, setFiltrosAtivos] = useState(getFiltrosSalvos)
   const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
 
   const handleFiltroChange = (name, value) => {
@@ -38,13 +50,13 @@ export default function Dashboard() {
   }
 
   const aplicarFiltro = () => {
+    localStorage.setItem('dashboardFiltros', JSON.stringify(filtrosEditando))
     setFiltrosAtivos(filtrosEditando)
     setMostrarFiltros(false)
   }
 
   return (
     <Box sx={{ p: 3 }}>
-      {/* SEÇÃO DE FILTROS COMPARTILHADOS */}
       <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2}>
         <Button
           variant="outlined"
@@ -105,33 +117,33 @@ export default function Dashboard() {
         </Paper>
       </Collapse>
 
-      {/* GRID DO DASHBOARD */}
-      <Grid container spacing={3}>
-        {/* KPIs na primeira linha */}
-        <Grid item xs={12}>
+      <Grid container spacing={3} mb={3}>
+        <Grid item xs={12} md={4}>
           <IndicadoresKPIs filtros={filtrosAtivos} />
         </Grid>
-
         <Grid item xs={12} md={4}>
-          <TopDespesasChart filtros={filtrosAtivos} />
-        </Grid>
-        {/* Listas de Contas a Pagar/Receber */}
-        <Grid item xs={12}>
-          <ContasProximas filtros={filtrosAtivos} />
-        </Grid>
-
-        {/* Gráfico de Barras */}
-        <Grid item xs={12} md={12}>
-          <EntradaeSaida filtros={filtrosAtivos} />
-        </Grid>
-
-        {/* Gráfico de Evolução e Saldos Bancários */}
-        <Grid item xs={12} md={8}>
-          <EvolucaoSaldoChart filtros={filtrosAtivos} />
+          <TopDespesas filtros={filtrosAtivos} />
         </Grid>
         <Grid item xs={12} md={4}>
+          <TopReceitas filtros={filtrosAtivos} />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} mb={3}>
+        <Grid item xs={12} md={6}>
           <SaldosContasBancarias />
         </Grid>
+        <Grid item xs={12} md={6}>
+          <ContasProximas filtros={filtrosAtivos} />
+        </Grid>
+      </Grid>
+
+      <Grid container spacing={3} mb={3}>
+        <EvolucaoSaldo filtros={filtrosAtivos} />
+      </Grid>
+
+      <Grid container spacing={3}>
+        <EntradaeSaida />
       </Grid>
     </Box>
   )
