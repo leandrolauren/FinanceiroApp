@@ -220,11 +220,13 @@ const LancamentoEditForm = ({ lancamentoId }) => {
             value="1"
             control={<Radio disabled={isPago} />}
             label="Receita"
+            disabled
           />
           <FormControlLabel
             value="2"
             control={<Radio disabled={isPago} />}
             label="Despesa"
+            disabled
           />
         </RadioGroup>
       </FormControl>
