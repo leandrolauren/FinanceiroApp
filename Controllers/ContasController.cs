@@ -137,7 +137,6 @@ namespace FinanceiroApp.Controllers
                 var userId = GetUserId();
                 var contaBancaria = new ContaBancaria
                 {
-                    // Mapeamento do DTO
                     Descricao = dto.Descricao,
                     NumeroConta = dto.NumeroConta,
                     Agencia = dto.Agencia,

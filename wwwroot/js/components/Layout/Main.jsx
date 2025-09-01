@@ -1,9 +1,12 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Routes, Route, useParams } from 'react-router-dom';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { SnackbarProvider } from 'notistack';
 import Notifcacao from '../Shared/Notificacao';
 import { Box, CircularProgress, CssBaseline } from '@mui/material';
+import { ptBR } from 'date-fns/locale/pt-BR';
 
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
@@ -46,7 +49,15 @@ const drawerWidth = 240;
 
 const App = () => {
   const { userName, csrfToken } = window.APP_DATA || {};
-  const [isToggled, setIsToggled] = useState(true);
+  const [isToggled, setIsToggled] = useState(() => {
+  const savedState = localStorage.getItem('sidebarToggled');
+    return savedState !== null ? JSON.parse(savedState) : true;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('sidebarToggled', JSON.stringify(isToggled));
+  }, [isToggled]);
+
   const handleToggle = () => setIsToggled(!isToggled);
 
   const handleLogout = async () => {
@@ -132,13 +143,15 @@ if (container) {
   const root = createRoot(container);
   root.render(
     <React.StrictMode>
-      <SnackbarProvider
-        maxSnack={3}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Notifcacao />
-        <App />
-      </SnackbarProvider>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+        <SnackbarProvider
+          maxSnack={3}
+          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <Notifcacao />
+          <App />
+        </SnackbarProvider>
+      </LocalizationProvider>
     </React.StrictMode>
   );
 } else {

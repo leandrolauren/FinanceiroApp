@@ -223,7 +223,7 @@ namespace FinanceiroApp.Controllers
             {
                 context.Pessoas.Remove(pessoa);
                 await context.SaveChangesAsync();
-                return NoContent(); // Sucesso
+                return NoContent();
             }
             catch (Exception ex)
             {

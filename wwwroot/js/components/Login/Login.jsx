@@ -119,7 +119,7 @@ const Login = () => {
                 <img src="/js/components/sitemark.svg" alt="Logo" style={{ width: 40, height: 40 }} />
               </Avatar>
               <Typography component="h1" variant="h5" fontWeight="bold">
-                Bem-vindo de volta!
+                Bem-vindo(a) de volta!
               </Typography>              
               <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%', mt: 1 }}>
                 <Stack spacing={2}>

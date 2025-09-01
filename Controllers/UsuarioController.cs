@@ -72,7 +72,7 @@ public class UsuarioController(
             new
             {
                 success = true,
-                message = "Usuário pendente de confirmação, verifique seu e-mail!",
+                message = "Usuário criado com sucesso. Verifique seu e-mail para ativar a conta!",
             }
         );
     }

@@ -32,11 +32,31 @@ public class LoginController(
     {
         var user = await context.Usuarios.FirstOrDefaultAsync(u => u.Email == model.Email);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(model.Senha, user.SenhaHash))
-            return Unauthorized(new { success = false, message = "Credenciais inválidas." });
+        if (user != null)
+        {
+            if (BCrypt.Net.BCrypt.Verify(model.Senha, user.SenhaHash))
+            {
+                await AutenticarUsuario(user, 2);
+                return Ok(new { success = true, message = "Login realizado com sucesso." });
+            }
+        }
+        else
+        {
+            var usuarioPendente = await context
+                .UsuariosPendentes.AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Email == model.Email);
 
-        await AutenticarUsuario(user, 2); // expira em 2h
-        return Ok(new { success = true, message = "Login realizado com sucesso." });
+            if (usuarioPendente != null)
+                return Unauthorized(
+                    new
+                    {
+                        success = false,
+                        message = "Seu cadastro está pendente. Por favor, verifique seu e-mail para ativar sua conta.",
+                    }
+                );
+        }
+
+        return Unauthorized(new { success = false, message = "Credenciais inválidas." });
     }
 
     [HttpPost("GoogleSignIn")]
@@ -95,6 +115,7 @@ public class LoginController(
 
         return RedirectToAction(nameof(Index));
     }
+
     private async Task AutenticarUsuario(UsuarioModel usuario, int expiraHoras)
     {
         var claims = new List<Claim>

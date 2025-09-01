@@ -1,281 +1,205 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Typography,
+  Grid,
+  TextField,
+  Button,
+  CircularProgress,
+  FormControlLabel,
+  Checkbox,
+} from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import axios from 'axios';
+import '../../../css/leandro.css';
+
+const showNotification = (message, variant) => {
+  const event = new CustomEvent('onNotificacao', {
+    detail: {
+      mensagem: message,
+      variant: variant,
+    },
+  });
+  window.dispatchEvent(event);
+};
+
+const tipoEnumToString = {
+  1: 'Corrente',
+  2: 'Poupanca',
+  3: 'Salario',
+  4: 'Investimento',
+};
+const tipoStringToEnum = {
+  Corrente: 1,
+  Poupanca: 2,
+  Salario: 3,
+  Investimento: 4,
+};
+
 
 const EditContaForm = ({ contaId }) => {
-  const [formData, setFormData] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchConta = async () => {
       try {
-        const response = await fetch(`/api/Contas/${contaId}`)
-        const data = await response.json()
-        if (response.ok) {
-          setFormData(data.data)
-        } else {
-          const eventoErro = new CustomEvent('onNotificacao', {
-            detail: {
-              mensagem: 'Erro ao carregar dados da conta.',
-              variant: 'error',
-            },
-          })
-          window.dispatchEvent(eventoErro)
-        }
+        const response = await axios.get(`/api/contas/${contaId}`);
+        const contaData = response.data.data;
+        setFormData({
+          ...contaData,
+          tipo: tipoEnumToString[contaData.tipo],
+        });
       } catch (error) {
-        const eventoErro = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: error.data.message || 'Erro de rede ao carregar a conta.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErro)
+        showNotification(error.response?.data?.message || 'Erro ao carregar dados da conta.', 'error');
+        navigate('/contas');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-
-    if (contaId) {
-      fetchConta()
-    }
-  }, [contaId])
+    };
+    fetchConta();
+  }, [contaId, navigate]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }))
-  }
-
-  const handleCheckboxChange = (e) => {
-    const { name, checked } = e.target
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: checked,
-    }))
-  }
+    const { name, value, type, checked } = e.target;
+    const finalValue = type === 'checkbox' ? checked : value;
+    setFormData((prev) => ({ ...prev, [name]: finalValue }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
+
+    const dataToSubmit = {
+      ...formData,
+      tipo: tipoStringToEnum[formData.tipo],
+    };
 
     try {
-      const response = await fetch(`/api/Contas/${formData.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (response.ok) {
-        const eventoSucesso = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: 'Conta bancária editada com sucesso!',
-            variant: 'success',
-          },
-        })
-        window.dispatchEvent(eventoSucesso)
-        setTimeout(() => {
-          window.location.href = '/Contas'
-        }, 1500)
-      } else {
-        const result = await response.json()
-        const eventoErro = new CustomEvent('onNotificacao', {
-          detail: {
-            mensagem: result.message || 'Erro ao editar conta bancária.',
-            variant: 'error',
-          },
-        })
-        window.dispatchEvent(eventoErro)
-      }
+      await axios.put(`/api/contas/${contaId}`, dataToSubmit);
+      showNotification('Conta bancária atualizada com sucesso!', 'success');
+      navigate('/contas');
     } catch (error) {
-      const eventoErro = new CustomEvent('onNotificacao', {
-        detail: {
-          mensagem: 'Erro na requisição. Tente novamente.',
-          variant: 'error',
-        },
-      })
-      window.dispatchEvent(eventoErro)
+      if (error.response && error.response.status === 400) {
+        setErrors(error.response.data.errors || {});
+        showNotification(
+          error.response.data.message || 'Por favor, corrija os erros no formulário.',
+          'warning',
+        );
+      } else {
+        showNotification(
+          error.response?.data?.message || 'Erro ao atualizar a conta bancária.',
+          'error',
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
     }
-  }
+  };
 
   if (isLoading) {
-    return <div>Carregando...</div>
+    return (
+      <Box display="flex" justifyContent="center" mt={4}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <input type="hidden" name="Id" value={formData.id} />
-      <div className="row justify-content-center mb-3">
-        <div className="col-auto text-center">
-          <div className="container">
-            <div className="tabs">
-              <input
-                className="form-check-input radio-1"
-                type="radio"
-                id="tipoCorrente"
-                name="tipo"
-                value="Corrente"
-                checked={formData.tipo === 1 || formData.tipo === 'Corrente'}
-                onChange={handleChange}
-              />
-              <label className="tab" htmlFor="tipoCorrente">
-                Corrente
-              </label>
+   return (
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3 }}
+    >
+      <Typography variant="h4" component="h1" gutterBottom>
+        Editar Conta Bancária
+      </Typography>
+      
+      <Box className="container" sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+        <div className="tabs">
+          <input className="form-check-input radio-1" type="radio" id="tipoCorrente" name="tipo" value="Corrente" checked={formData.tipo === 'Corrente'} onChange={handleChange} />
+          <label className="tab" htmlFor="tipoCorrente">Corrente</label>
 
-              <input
-                className="form-check-input radio-2"
-                type="radio"
-                id="tipoPoupanca"
-                name="tipo"
-                value="Poupanca"
-                checked={formData.tipo === 2 || formData.tipo === 'Poupanca'}
-                onChange={handleChange}
-              />
-              <label className="tab" htmlFor="tipoPoupanca">
-                Poupança
-              </label>
+          <input className="form-check-input radio-2" type="radio" id="tipoPoupanca" name="tipo" value="Poupanca" checked={formData.tipo === 'Poupanca'} onChange={handleChange} />
+          <label className="tab" htmlFor="tipoPoupanca">Poupança</label>
 
-              <input
-                className="form-check-input radio-3"
-                type="radio"
-                id="tipoSalario"
-                name="tipo"
-                value="Salario"
-                checked={formData.tipo === 3 || formData.tipo === 'Salario'}
-                onChange={handleChange}
-              />
-              <label className="tab" htmlFor="tipoSalario">
-                Salário
-              </label>
+          <input className="form-check-input radio-3" type="radio" id="tipoSalario" name="tipo" value="Salario" checked={formData.tipo === 'Salario'} onChange={handleChange} />
+          <label className="tab" htmlFor="tipoSalario">Salário</label>
+          
+          <input className="form-check-input radio-4" type="radio" id="tipoInvestimento" name="tipo" value="Investimento" checked={formData.tipo === 'Investimento'} onChange={handleChange} />
+          <label className="tab" htmlFor="tipoInvestimento">Investimento</label>
+          <span className="glider"></span>
+        </div>
+      </Box>
 
-              <input
-                className="form-check-input radio-4"
-                type="radio"
-                id="tipoInvestimento"
-                name="tipo"
-                value="Investimento"
-                checked={
-                  formData.tipo === 4 || formData.tipo === 'Investimento'
-                }
-                onChange={handleChange}
-              />
-              <label className="tab" htmlFor="tipoInvestimento">
-                Investimento
-              </label>
-              <span className="glider"></span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6}>
+          <TextField name="descricao" label="Descrição da Conta" value={formData.descricao || ''}
+            onChange={handleChange} fullWidth required
+            error={!!errors.Descricao} helperText={errors.Descricao?.[0]}
+          />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <TextField name="banco" label="Banco" value={formData.banco || ''}
+            onChange={handleChange} fullWidth
+            error={!!errors.Banco} helperText={errors.Banco?.[0]}
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <TextField name="agencia" label="Agência" value={formData.agencia || ''}
+            onChange={handleChange} fullWidth
+            error={!!errors.Agencia} helperText={errors.Agencia?.[0]}
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <TextField name="digitoAgencia" label="Dígito Agência" value={formData.digitoAgencia || ''}
+            onChange={handleChange} fullWidth
+            inputProps={{ maxLength: 2 }}
+            error={!!errors.DigitoAgencia} helperText={errors.DigitoAgencia?.[0]}
+          />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <TextField name="numeroConta" label="Número da Conta" value={formData.numeroConta || ''}
+            onChange={handleChange} fullWidth required
+            error={!!errors.NumeroConta} helperText={errors.NumeroConta?.[0]}
+          />
+        </Grid>
+        <Grid item xs={12} sm={2}>
+          <TextField name="digitoConta" label="Dígito Conta" value={formData.digitoConta || ''}
+            onChange={handleChange} fullWidth
+            inputProps={{ maxLength: 2 }}
+            error={!!errors.DigitoConta} helperText={errors.DigitoConta?.[0]}
+          />
+        </Grid>
+         <Grid item xs={12} sm={2}>
+            <FormControlLabel
+                control={<Checkbox name="ativa" checked={formData.ativa || false} onChange={handleChange} />}
+                label="Conta Ativa?"
+            />
+        </Grid>
+      </Grid>
 
-      <div className="row mb-3">
-        <div className="col md-4">
-          <label htmlFor="descricao" className="control-label">
-            Descrição
-          </label>
-          <input
-            type="text"
-            className="input"
-            id="descricao"
-            name="descricao"
-            value={formData.descricao || ''}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="col md-4">
-          <label htmlFor="numeroConta" className="control-label">
-            Número da Conta
-          </label>
-          <input
-            type="text"
-            className="input"
-            id="numeroConta"
-            name="numeroConta"
-            value={formData.numeroConta || ''}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col md-4">
-          <label htmlFor="digitoConta" className="control-label">
-            Digito Conta
-          </label>
-          <input
-            type="text"
-            className="input"
-            id="digitoConta"
-            name="digitoConta"
-            value={formData.digitoConta || ''}
-            onChange={handleChange}
-            maxLength="2"
-          />
-        </div>
-      </div>
+      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+        <Button type="submit" variant="contained" color="primary" disabled={isSubmitting}
+          startIcon={ isSubmitting ? <CircularProgress size={20} color="inherit" /> : <SaveIcon /> }
+        >
+          {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+        </Button>
+        <Button variant="outlined" color="secondary" onClick={() => navigate('/contas')} startIcon={<ArrowBackIcon />}>
+          Voltar
+        </Button>
+      </Box>
+    </Box>
+  );
+};
 
-      <div className="row mb-3">
-        <div className="col md-2">
-          <label htmlFor="agencia" className="control-label">
-            Agência
-          </label>
-          <input
-            type="text"
-            className="input"
-            id="agencia"
-            name="agencia"
-            value={formData.agencia || ''}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col md-2">
-          <label htmlFor="digitoAgencia" className="control-label">
-            Digito Agência
-          </label>
-          <input
-            type="text"
-            className="input"
-            id="digitoAgencia"
-            name="digitoAgencia"
-            value={formData.digitoAgencia || ''}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col md-2">
-          <label htmlFor="banco" className="control-label">
-            Banco
-          </label>
-          <input
-            type="text"
-            className="input"
-            id="banco"
-            name="banco"
-            value={formData.banco || ''}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="col md-2 form-check">
-          <label className="form-check-label" htmlFor="Ativa">
-            Conta Ativa?
-          </label>
-          <br></br>
-          <input
-            type="checkbox"
-            className="form-check-input"
-            id="ativa"
-            name="ativa"
-            checked={formData.ativa}
-            onChange={handleCheckboxChange}
-          />
-        </div>
-      </div>
-
-      <button type="submit" className="btn btn-success">
-        Salvar
-      </button>
-      <a href="/Contas" className="btn btn-secondary ms-2">
-        Voltar
-      </a>
-    </form>
-  )
-}
-
-export default EditContaForm
+export default EditContaForm;

@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Security.Claims;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
-using FinanceiroApp.Models; // Import necessário para MovimentoTipo
+using FinanceiroApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -125,7 +125,6 @@ namespace FinanceiroApp.Controllers
                     break;
             }
 
-            // ALTERAÇÃO: Convertendo (cast) os enums para 'int' antes da comparação.
             var receitas = await query
                 .Where(l => (int)l.Tipo == (int)MovimentoTipo.Receita)
                 .SumAsync(l => l.Valor);
@@ -152,7 +151,6 @@ namespace FinanceiroApp.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            // ALTERAÇÃO: Convertendo (cast) o enum para 'int' antes da comparação.
             var query = _context
                 .Lancamentos.AsNoTracking()
                 .Where(l =>
@@ -203,7 +201,6 @@ namespace FinanceiroApp.Controllers
                     && l.DataVencimento.Date <= dataFim.Date
                 );
 
-            // ALTERAÇÃO: Convertendo (cast) os enums para 'int' antes da comparação.
             var aPagar = await query
                 .Where(l => (int)l.Tipo == (int)MovimentoTipo.Despesa)
                 .OrderBy(l => l.DataVencimento)
@@ -217,7 +214,6 @@ namespace FinanceiroApp.Controllers
                 })
                 .ToListAsync();
 
-            // ALTERAÇÃO: Convertendo (cast) os enums para 'int' antes da comparação.
             var aReceber = await query
                 .Where(l => (int)l.Tipo == (int)MovimentoTipo.Receita)
                 .OrderBy(l => l.DataVencimento)
@@ -242,7 +238,6 @@ namespace FinanceiroApp.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            // ALTERAÇÃO: Convertendo (cast) os enums para 'int' antes da comparação.
             var saldoInicial = await _context
                 .Lancamentos.AsNoTracking()
                 .Where(l => l.UsuarioId == userId && l.Pago && l.DataPagamento < dataInicio)
@@ -269,7 +264,6 @@ namespace FinanceiroApp.Controllers
                 var lancamentosDoDia = lancamentosNoPeriodo.Where(l =>
                     l.DataPagamento?.Date == dia.Date
                 );
-                // ALTERAÇÃO: Convertendo (cast) os enums para 'int' antes da comparação.
                 saldoCorrente += lancamentosDoDia.Sum(l =>
                     (int)l.Tipo == (int)MovimentoTipo.Receita ? l.Valor : -l.Valor
                 );
@@ -290,7 +284,6 @@ namespace FinanceiroApp.Controllers
                 .Select(cb => new SaldoContaBancariaDto
                 {
                     NomeConta = cb.Descricao,
-                    // ALTERAÇÃO: Convertendo (cast) os enums para 'int' antes da comparação.
                     SaldoAtual = _context
                         .Lancamentos.Where(l => l.ContaBancariaId == cb.Id && l.Pago)
                         .Sum(l => (int)l.Tipo == (int)MovimentoTipo.Receita ? l.Valor : -l.Valor),
