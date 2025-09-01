@@ -8,6 +8,10 @@ out/
 lib/
 wwwroot/js/dist/
 
+migrations/
+appsettings.json
+appsettings.Development.json
+
 # User-specific files
 *.user
 *.suo
