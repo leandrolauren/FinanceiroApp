@@ -144,6 +144,7 @@ namespace FinanceiroApp.Controllers
                     DigitoConta = dto.DigitoConta,
                     Tipo = dto.Tipo,
                     Banco = dto.Banco,
+                    Ativa = true,
                     UsuarioId = userId,
                 };
                 context.ContasBancarias.Add(contaBancaria);
