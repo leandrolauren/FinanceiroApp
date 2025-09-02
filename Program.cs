@@ -1,5 +1,5 @@
 using System.Globalization;
-using System.Reflection;
+using AspNetCoreRateLimit;
 using DotNetEnv;
 using FinanceiroApp.Data;
 using FinanceiroApp.Services;
@@ -61,6 +61,38 @@ namespace FinanceiroApp
             // Habilita Controllers e Views (MVC)
             builder.Services.AddControllersWithViews();
 
+            var rateLimitPeriod = Environment.GetEnvironmentVariable("RATE_LIMIT_PERIOD") ?? "1m";
+            var rateLimitLimit = int.TryParse(
+                Environment.GetEnvironmentVariable("RATE_LIMIT_LIMIT"),
+                out var lim
+            )
+                ? lim
+                : 15;
+
+            builder.Services.AddMemoryCache();
+            builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            builder.Services.AddInMemoryRateLimiting();
+
+            builder.Services.Configure<IpRateLimitOptions>(options =>
+            {
+                options.EnableEndpointRateLimiting = true;
+                options.StackBlockedRequests = false;
+                options.RealIpHeader = "X-Real-IP";
+                options.ClientIdHeader = "X-ClientId";
+                options.HttpStatusCode = 429;
+                options.GeneralRules = new List<RateLimitRule>
+                {
+                    new RateLimitRule
+                    {
+                        Endpoint = "*",
+                        Period = rateLimitPeriod,
+                        Limit = rateLimitLimit,
+                    },
+                };
+            });
+            builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+            builder.Services.AddInMemoryRateLimiting();
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -103,6 +135,7 @@ namespace FinanceiroApp
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
+            app.UseIpRateLimiting();
             app.UseRouting();
 
             app.UseAuthentication();
