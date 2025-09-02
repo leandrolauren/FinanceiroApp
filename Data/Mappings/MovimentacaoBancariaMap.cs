@@ -1,5 +1,3 @@
-// FinanceiroApp/Data/Mappings/MovimentacaoBancariaMap.cs
-
 using FinanceiroApp.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

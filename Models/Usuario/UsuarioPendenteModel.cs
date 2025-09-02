@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-
 public class UsuarioPendenteModel
 {
     public Guid Id { get; set; }

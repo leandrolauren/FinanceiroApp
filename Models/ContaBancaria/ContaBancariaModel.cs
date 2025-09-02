@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FinanceiroApp.Models
 {
-
     public class ContaBancaria
     {
         public int Id { get; set; }

@@ -94,7 +94,8 @@ namespace FinanceiroApp.Services
 
         private async Task EnviarEmailConfirmacaoAsync(string to, string token)
         {
-            var SERVER_HOST = Environment.GetEnvironmentVariable("SERVER_HOST") ?? "localhost:5084";
+            var SERVER_HOST =
+                Environment.GetEnvironmentVariable("SERVER_HOST") ?? "http://localhost:5084";
             var link = $"{SERVER_HOST}/usuario/confirmar?token={token}";
             var subject = "Confirme seu cadastro - Financeiro App";
             var body =

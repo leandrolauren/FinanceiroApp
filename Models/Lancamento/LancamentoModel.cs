@@ -41,7 +41,7 @@ namespace FinanceiroApp.Models
         public int UsuarioId { get; set; }
         public UsuarioModel? Usuario { get; set; }
 
-        public int? LancamentoPaiId { get; set; } // para controle de parcelamentos
+        public int? LancamentoPaiId { get; set; }
         public LancamentoModel? LancamentoPai { get; set; }
         public ICollection<LancamentoModel>? Parcelas { get; set; }
 

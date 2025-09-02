@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using FinanceiroApp.Models;
-
 namespace FinanceiroApp.Dtos
 {
     // DTO para os cartões de KPIs
@@ -27,7 +23,8 @@ namespace FinanceiroApp.Dtos
         public decimal Valor { get; set; }
         public DateTime DataVencimento { get; set; }
     }
-        public class GraficoEntradaSaidaDto
+
+    public class GraficoEntradaSaidaDto
     {
         public List<string> Meses { get; set; } = new List<string>();
         public List<decimal> Receitas { get; set; } = new List<decimal>();

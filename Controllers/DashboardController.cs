@@ -28,7 +28,7 @@ namespace FinanceiroApp.Controllers
             [FromQuery] StatusLancamentoFiltro status = StatusLancamentoFiltro.Todos
         )
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
 
             dataInicio = DateTime.SpecifyKind(dataInicio, DateTimeKind.Unspecified);
             dataFim = DateTime.SpecifyKind(dataFim, DateTimeKind.Unspecified);
@@ -106,7 +106,7 @@ namespace FinanceiroApp.Controllers
             [FromQuery] StatusLancamentoFiltro status = StatusLancamentoFiltro.Todos
         )
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
             var query = _context
                 .Lancamentos.AsNoTracking()
                 .Where(l =>
@@ -149,7 +149,7 @@ namespace FinanceiroApp.Controllers
             [FromQuery] StatusLancamentoFiltro status = StatusLancamentoFiltro.Todos
         )
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
 
             var query = _context
                 .Lancamentos.AsNoTracking()
@@ -172,7 +172,7 @@ namespace FinanceiroApp.Controllers
 
             var topDespesas = await query
                 .Include(l => l.PlanoContas)
-                .GroupBy(l => l.PlanoContas.Descricao)
+                .GroupBy(l => l.PlanoContas!.Descricao)
                 .Select(g => new CategoriaTotalDto
                 {
                     Categoria = g.Key,
@@ -192,7 +192,7 @@ namespace FinanceiroApp.Controllers
             [FromQuery] StatusLancamentoFiltro status = StatusLancamentoFiltro.Todos
         )
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
 
             var query = _context
                 .Lancamentos.AsNoTracking()
@@ -215,7 +215,7 @@ namespace FinanceiroApp.Controllers
 
             var topReceitas = await query
                 .Include(l => l.PlanoContas)
-                .GroupBy(l => l.PlanoContas.Descricao)
+                .GroupBy(l => l.PlanoContas!.Descricao)
                 .Select(g => new CategoriaTotalDto
                 {
                     Categoria = g.Key,
@@ -234,7 +234,7 @@ namespace FinanceiroApp.Controllers
             [FromQuery] DateTime dataFim
         )
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
             var query = _context
                 .Lancamentos.AsNoTracking()
                 .Where(l =>
@@ -279,7 +279,7 @@ namespace FinanceiroApp.Controllers
             [FromQuery] DateTime dataFim
         )
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
 
             var saldoInicial = await _context
                 .Lancamentos.AsNoTracking()
@@ -319,7 +319,7 @@ namespace FinanceiroApp.Controllers
         [HttpGet("saldos-bancarios")]
         public async Task<IActionResult> GetSaldosBancarios()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var userId = GetUserId();
 
             var saldos = await _context
                 .ContasBancarias.AsNoTracking()
@@ -334,6 +334,14 @@ namespace FinanceiroApp.Controllers
                 .ToListAsync();
 
             return Ok(saldos);
+        }
+
+        private int GetUserId()
+        {
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (claim == null)
+                throw new UnauthorizedAccessException("Usuário não autenticado.");
+            return int.Parse(claim.Value);
         }
     }
 }

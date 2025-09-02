@@ -16,7 +16,7 @@ public class MovimentacaoBancaria
     public decimal Valor { get; set; }
 
     [Required]
-    public string Historico { get; set; }
+    public required string Historico { get; set; }
 
     [Required]
     public int ContaBancariaId { get; set; }

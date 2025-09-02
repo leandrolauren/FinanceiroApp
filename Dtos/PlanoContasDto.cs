@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using FinanceiroApp.Models;
 
 namespace FinanceiroApp.Dtos

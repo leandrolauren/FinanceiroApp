@@ -1,8 +1,6 @@
 using FinanceiroApp.Data.Mappings;
 using FinanceiroApp.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TimeZoneConverter;
 
 namespace FinanceiroApp.Data;
 
