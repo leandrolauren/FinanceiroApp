@@ -184,9 +184,9 @@ export default function EntradaeSaida() {
                 value={filtrosEditando.status}
                 onChange={(e) => handleFiltroChange('status', e.target.value)}
               >
-                <MenuItem value="Todos">Todos</MenuItem>
-                <MenuItem value="Pago">Pagos</MenuItem>
-                <MenuItem value="Aberto">Em Aberto</MenuItem>
+                <MenuItem value="Todos">Todos - Competência</MenuItem>
+                <MenuItem value="Pago">Pagos - Pagamento</MenuItem>
+                <MenuItem value="Aberto">Em Aberto - Vencimento</MenuItem>
               </TextField>
             </Grid>
             <Grid item xs={12} sm={3}>

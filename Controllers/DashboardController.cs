@@ -33,36 +33,28 @@ namespace FinanceiroApp.Controllers
             dataInicio = DateTime.SpecifyKind(dataInicio, DateTimeKind.Unspecified);
             dataFim = DateTime.SpecifyKind(dataFim, DateTimeKind.Unspecified);
 
-            var query = _context
+            IQueryable<LancamentoModel> query = _context
                 .Lancamentos.AsNoTracking()
-                .Where(l =>
-                    l.UsuarioId == userId
-                    && l.DataCompetencia.Date >= dataInicio.Date
-                    && l.DataCompetencia.Date <= dataFim.Date
-                );
+                .Where(l => l.UsuarioId == userId);
 
-            switch (status)
-            {
-                case StatusLancamentoFiltro.Pago:
-                    query = query.Where(l => l.Pago);
-                    break;
-                case StatusLancamentoFiltro.Aberto:
-                    query = query.Where(l => !l.Pago);
-                    break;
-            }
+            query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
             var aggregatedData = await query
                 .GroupBy(l => new
                 {
-                    l.DataCompetencia.Year,
-                    l.DataCompetencia.Month,
+                    Ano = status == StatusLancamentoFiltro.Pago ? l.DataPagamento.Value.Year
+                    : status == StatusLancamentoFiltro.Aberto ? l.DataVencimento.Year
+                    : l.DataCompetencia.Year,
+                    Mes = status == StatusLancamentoFiltro.Pago ? l.DataPagamento.Value.Month
+                    : status == StatusLancamentoFiltro.Aberto ? l.DataVencimento.Month
+                    : l.DataCompetencia.Month,
                     l.Tipo,
                 })
                 .Select(g => new
                 {
-                    Ano = g.Key.Year,
-                    Mes = g.Key.Month,
-                    Tipo = g.Key.Tipo,
+                    g.Key.Ano,
+                    g.Key.Mes,
+                    g.Key.Tipo,
                     Total = g.Sum(l => l.Valor),
                 })
                 .ToListAsync();
@@ -107,23 +99,11 @@ namespace FinanceiroApp.Controllers
         )
         {
             var userId = GetUserId();
-            var query = _context
+            IQueryable<LancamentoModel> query = _context
                 .Lancamentos.AsNoTracking()
-                .Where(l =>
-                    l.UsuarioId == userId
-                    && l.DataCompetencia.Date >= dataInicio.Date
-                    && l.DataCompetencia.Date <= dataFim.Date
-                );
+                .Where(l => l.UsuarioId == userId);
 
-            switch (status)
-            {
-                case StatusLancamentoFiltro.Pago:
-                    query = query.Where(l => l.Pago);
-                    break;
-                case StatusLancamentoFiltro.Aberto:
-                    query = query.Where(l => !l.Pago);
-                    break;
-            }
+            query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
             var receitas = await query
                 .Where(l => (int)l.Tipo == (int)MovimentoTipo.Receita)
@@ -151,24 +131,11 @@ namespace FinanceiroApp.Controllers
         {
             var userId = GetUserId();
 
-            var query = _context
+            IQueryable<LancamentoModel> query = _context
                 .Lancamentos.AsNoTracking()
-                .Where(l =>
-                    l.UsuarioId == userId
-                    && (int)l.Tipo == (int)MovimentoTipo.Despesa
-                    && l.DataCompetencia.Date >= dataInicio.Date
-                    && l.DataCompetencia.Date <= dataFim.Date
-                );
+                .Where(l => l.UsuarioId == userId && (int)l.Tipo == (int)MovimentoTipo.Despesa);
 
-            switch (status)
-            {
-                case StatusLancamentoFiltro.Pago:
-                    query = query.Where(l => l.Pago);
-                    break;
-                case StatusLancamentoFiltro.Aberto:
-                    query = query.Where(l => !l.Pago);
-                    break;
-            }
+            query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
             var topDespesas = await query
                 .Include(l => l.PlanoContas)
@@ -194,24 +161,11 @@ namespace FinanceiroApp.Controllers
         {
             var userId = GetUserId();
 
-            var query = _context
+            IQueryable<LancamentoModel> query = _context
                 .Lancamentos.AsNoTracking()
-                .Where(l =>
-                    l.UsuarioId == userId
-                    && (int)l.Tipo == (int)MovimentoTipo.Receita
-                    && l.DataCompetencia.Date >= dataInicio.Date
-                    && l.DataCompetencia.Date <= dataFim.Date
-                );
+                .Where(l => l.UsuarioId == userId && (int)l.Tipo == (int)MovimentoTipo.Receita);
 
-            switch (status)
-            {
-                case StatusLancamentoFiltro.Pago:
-                    query = query.Where(l => l.Pago);
-                    break;
-                case StatusLancamentoFiltro.Aberto:
-                    query = query.Where(l => !l.Pago);
-                    break;
-            }
+            query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
             var topReceitas = await query
                 .Include(l => l.PlanoContas)
@@ -342,6 +296,31 @@ namespace FinanceiroApp.Controllers
             if (claim == null)
                 throw new UnauthorizedAccessException("Usuário não autenticado.");
             return int.Parse(claim.Value);
+        }
+
+        private static IQueryable<LancamentoModel> FiltrarPorPeriodo(
+            IQueryable<LancamentoModel> query,
+            StatusLancamentoFiltro status,
+            DateTime dataInicio,
+            DateTime dataFim
+        )
+        {
+            switch (status)
+            {
+                case StatusLancamentoFiltro.Pago:
+                    return query.Where(l =>
+                        l.Pago && l.DataPagamento >= dataInicio && l.DataPagamento <= dataFim
+                    );
+                case StatusLancamentoFiltro.Aberto:
+                    return query.Where(l =>
+                        !l.Pago && l.DataVencimento >= dataInicio && l.DataVencimento <= dataFim
+                    );
+                case StatusLancamentoFiltro.Todos:
+                default:
+                    return query.Where(l =>
+                        l.DataCompetencia >= dataInicio && l.DataCompetencia <= dataFim
+                    );
+            }
         }
     }
 }

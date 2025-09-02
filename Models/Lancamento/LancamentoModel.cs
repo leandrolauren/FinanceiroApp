@@ -16,9 +16,13 @@ namespace FinanceiroApp.Models
         [Required(ErrorMessage = "Descrição é obrigatória.")]
         public string Descricao { get; set; } = string.Empty;
 
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime DataLancamento { get; set; }
 
         [Required(ErrorMessage = "Data de Vencimento é obrigatória.")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime DataVencimento { get; set; }
 
         [Required(ErrorMessage = "Data de Competência é obrigatória.")]
@@ -46,6 +50,9 @@ namespace FinanceiroApp.Models
         public ICollection<LancamentoModel>? Parcelas { get; set; }
 
         public bool Pago { get; set; } = false;
+
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime? DataPagamento { get; set; }
     }
 
