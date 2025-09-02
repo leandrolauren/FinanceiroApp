@@ -158,7 +158,7 @@ Abra uma issue ou envie seu PR.
 ## 👨‍💻 Autor
 
 Desenvolvido por **Leandro Laurenzette**  
-[LinkedIn](https://linkedin.com/in/leandrolaurenzette)
+[LinkedIn](www.linkedin.com/in/leandro-laurenzette-3b03a2167)
 
 ---
 

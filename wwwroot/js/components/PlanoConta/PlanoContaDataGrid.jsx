@@ -33,15 +33,29 @@ export default function PlanoContaDataGrid() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  const [filtrosAtivos, setFiltrosAtivos] = useState(() => {
+  const getFiltrosSalvos = () => {
+    const filtrosSalvos = localStorage.getItem('planoContaFiltros')
+    if (filtrosSalvos) {
+      const filtros = JSON.parse(filtrosSalvos)
+      return {
+        tipoData: filtros.tipoData || 'vencimento',
+        dataInicio: filtros.dataInicio
+          ? new Date(filtros.dataInicio)
+          : new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        dataFim: filtros.dataFim
+          ? new Date(filtros.dataFim)
+          : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0),
+      }
+    }
     const hoje = new Date()
     return {
       tipoData: 'vencimento',
       dataInicio: new Date(hoje.getFullYear(), hoje.getMonth(), 1),
       dataFim: new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0),
     }
-  })
+  }
 
+  const [filtrosAtivos, setFiltrosAtivos] = useState(getFiltrosSalvos)
   const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
@@ -125,6 +139,7 @@ export default function PlanoContaDataGrid() {
   }
 
   const aplicarFiltro = () => {
+    localStorage.setItem('planoContaFiltros', JSON.stringify(filtrosEditando))
     setFiltrosAtivos(filtrosEditando)
     setMostrarFiltros(false)
   }
@@ -136,6 +151,7 @@ export default function PlanoContaDataGrid() {
       dataInicio: new Date(hoje.getFullYear(), hoje.getMonth(), 1),
       dataFim: new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0),
     }
+    localStorage.setItem('planoContaFiltros', JSON.stringify(filtrosPadrao))
     setFiltrosEditando(filtrosPadrao)
     setFiltrosAtivos(filtrosPadrao)
   }
