@@ -24,6 +24,8 @@ namespace FinanceiroApp
                 .Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
+            builder.Services.AddHttpContextAccessor();
+
             // Configuração do banco de dados PostgreSQL
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -32,6 +34,7 @@ namespace FinanceiroApp
             builder.Services.AddSingleton<IEmailWorker, EmailWorker>();
 
             builder.Services.AddScoped<IMovimentacaoBancariaService, MovimentacaoBancariaService>();
+            builder.Services.AddScoped<IImportacaoService, ImportacaoService>();
 
             builder.Services.Configure<SmtpSettings>(
                 builder.Configuration.GetSection("SmtpSettings")
@@ -146,6 +149,8 @@ namespace FinanceiroApp
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"
             );
+
+            app.MapFallbackToController("Index", "Home");
             app.MapControllers();
 
             app.Run();

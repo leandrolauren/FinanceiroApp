@@ -49,6 +49,7 @@ const EditLancamentoPage = () => {
   const { id } = useParams()
   return <EditLancamentoForm lancamentoId={id} />
 }
+const ImportacaoOfx = lazy(() => import('../Lancamento/ImportacaoOfx'))
 
 const PlanoContaDataGrid = lazy(() =>
   import('../PlanoConta/PlanoContaDataGrid'),
@@ -160,6 +161,10 @@ const App = () => {
             <Route
               path="/lancamentos/edit/:id"
               element={<EditLancamentoPage />}
+            />
+            <Route
+              path="/lancamentos/importar/ofx"
+              element={<ImportacaoOfx />}
             />
             <Route path="*" element={<h1>Página Não Encontrada</h1>} />
           </Routes>

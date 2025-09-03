@@ -2,7 +2,9 @@ import * as React from 'react'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { DataGrid } from '@mui/x-data-grid'
 import { Box, Button, CircularProgress } from '@mui/material'
+import UploadFileIcon from '@mui/icons-material/UploadFile'
 import { ptBR } from '@mui/x-data-grid/locales'
+import { useNavigate } from 'react-router-dom'
 import LancamentoDeleteModal from './LancamentoDeleteModal'
 import axios from 'axios'
 
@@ -39,6 +41,7 @@ const formatarParaExibicao = (value) => {
 }
 
 export default function LancamentoDataGrid() {
+  const navigate = useNavigate()
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -61,6 +64,11 @@ export default function LancamentoDataGrid() {
     return defaultGridState
   })
 
+  const handleOpenImportModal = () => {
+    navigate('/lancamentos/importar/ofx')
+  }
+
+  // Modal de Exclusao
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedLancamentoId, setSelectedLancamentoId] = useState(null)
   const fetchData = useCallback(async () => {
@@ -100,7 +108,7 @@ export default function LancamentoDataGrid() {
       try {
         const response = await axios.post(`/api/lancamentos/${id}/estornar`)
         showNotification(response.data.message, 'success')
-        fetchData() // Atualiza a tabela de lançamentos
+        fetchData()
         window.dispatchEvent(new CustomEvent('lancamentoAtualizado'))
       } catch (error) {
         showNotification(
@@ -313,6 +321,15 @@ export default function LancamentoDataGrid() {
         sx={{ alignSelf: 'flex-start' }}
       >
         Novo Lançamento
+      </Button>
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={handleOpenImportModal}
+        startIcon={<UploadFileIcon />}
+        sx={{ alignSelf: 'flex-start' }}
+      >
+        Importar Lançamentos
       </Button>
 
       {loading ? (

@@ -44,7 +44,7 @@ namespace FinanceiroApp.Models
 
         public int UsuarioId { get; set; }
         public UsuarioModel? Usuario { get; set; }
-
+        public string? OfxFitId { get; set; }
         public int? LancamentoPaiId { get; set; }
         public LancamentoModel? LancamentoPai { get; set; }
         public ICollection<LancamentoModel>? Parcelas { get; set; }

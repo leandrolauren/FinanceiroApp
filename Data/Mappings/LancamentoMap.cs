@@ -18,6 +18,8 @@ namespace FinanceiroApp.Data.Mappings
 
             builder.Property(l => l.Descricao).IsRequired().HasMaxLength(200);
 
+            builder.Property(l => l.OfxFitId).HasMaxLength(150);
+
             builder
                 .Property(l => l.DataLancamento)
                 .IsRequired()
