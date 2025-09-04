@@ -13,6 +13,8 @@ import Notifcacao from '../Shared/Notificacao'
 import { Box, CircularProgress, CssBaseline } from '@mui/material'
 import { ptBR } from 'date-fns/locale/pt-BR'
 import '../../../css/tailwind.css'
+import { AppThemeProvider, useTheme } from '../../contexts/ThemeContext'
+import { ThemeSwitcher } from './ThemeSwitcher'
 import { HeroUIProvider } from '@heroui/system'
 
 import Sidebar from './Sidebar'
@@ -48,9 +50,7 @@ const EditLancamentoPage = () => {
 }
 const ImportacaoOfx = lazy(() => import('../Lancamento/ImportacaoOfx'))
 
-const PlanoContaDataGrid = lazy(() =>
-  import('../PlanoConta/PlanoContaDataGrid'),
-)
+const PlanoContaIndex = lazy(() => import('../PlanoConta/PlanoConta'))
 const PlanoContaCreateForm = lazy(() =>
   import('../PlanoConta/PlanoContaCreateForm'),
 )
@@ -108,14 +108,13 @@ const App = () => {
         userName={userName}
         handleLogout={handleLogout}
       />
-
       <Box
         component="main"
         sx={{
           flexGrow: 1,
           p: 3,
-          backgroundColor: '#f4f6f8',
           minHeight: '100vh',
+          backgroundColor: (theme) => theme.palette.background.default,
           transition: (theme) =>
             theme.transitions.create(['margin'], {
               easing: theme.transitions.easing.sharp,
@@ -137,7 +136,7 @@ const App = () => {
             <Route path="/pessoas" element={<PessoasDataGrid />} />
             <Route path="/pessoas/create" element={<PessoaCreateForm />} />
             <Route path="/pessoas/edit/:id" element={<EditPessoaPage />} />
-            <Route path="/planocontas" element={<PlanoContaDataGrid />} />
+            <Route path="/planocontas" element={<PlanoContaIndex />} />
             <Route
               path="/planocontas/create"
               element={<PlanoContaCreateForm />}
@@ -175,17 +174,22 @@ if (container) {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <HeroUIProvider>
-        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-          <SnackbarProvider
-            maxSnack={3}
-            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      <AppThemeProvider>
+        <HeroUIProvider>
+          <LocalizationProvider
+            dateAdapter={AdapterDateFns}
+            adapterLocale={ptBR}
           >
-            <Notifcacao />
-            <App />
-          </SnackbarProvider>
-        </LocalizationProvider>
-      </HeroUIProvider>
+            <SnackbarProvider
+              maxSnack={3}
+              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+            >
+              <Notifcacao />
+              <App />
+            </SnackbarProvider>
+          </LocalizationProvider>
+        </HeroUIProvider>
+      </AppThemeProvider>
     </React.StrictMode>,
   )
 } else {

@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
   Button,
-  TextField,
-  MenuItem,
-  CircularProgress,
-  Alert,
-  Box,
-} from '@mui/material'
+  Input,
+  Select,
+  SelectItem,
+  Spinner,
+} from '@heroui/react'
+import { Alert } from '@mui/material'
 import axios from 'axios'
 
 const buildTree = (list) => {
@@ -30,13 +31,15 @@ const buildTree = (list) => {
 }
 const renderTreeItems = (nodes, level = 0) => {
   return nodes.flatMap((node) => [
-    <MenuItem
+    <SelectItem
       key={node.id}
-      value={node.id}
-      sx={{ paddingLeft: `${1 + level * 2}rem` }}
+      value={String(node.id)}
+      textValue={node.descricao}
     >
-      {node.descricao}
-    </MenuItem>,
+      <span style={{ paddingLeft: `${1 + level * 2}rem` }}>
+        {node.descricao}
+      </span>
+    </SelectItem>,
     ...(node.filhos.length > 0 ? renderTreeItems(node.filhos, level + 1) : []),
   ])
 }
@@ -107,65 +110,68 @@ function PlanoContaMigrateModal({ open, onClose, planoOrigem }) {
   const destinationTree = buildTree(potentialDestinations)
 
   return (
-    <Dialog open={open} onClose={() => onClose(false)} fullWidth maxWidth="sm">
-      <DialogTitle>Migrar Lançamentos</DialogTitle>
-      <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
+    <Modal isOpen={open} onOpenChange={() => onClose(false)} size="xl">
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              Migrar Lançamentos
+            </ModalHeader>
+            <ModalBody>
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {error}
+                </Alert>
+              )}
 
-        <TextField
-          label="Plano de Contas de Origem"
-          value={planoOrigem?.descricao || ''}
-          fullWidth
-          disabled
-          sx={{ mb: 3, mt: 1 }}
-        />
+              <Input
+                label="Plano de Contas de Origem"
+                value={planoOrigem?.descricao || ''}
+                isReadOnly
+                className="mb-4"
+              />
 
-        {loading && (
-          <Box display="flex" justifyContent="center">
-            <CircularProgress />
-          </Box>
+              {loading ? (
+                <div className="flex justify-center py-4">
+                  <Spinner />
+                </div>
+              ) : (
+                <Select
+                  label="Migrar Para o Plano de Contas"
+                  selectedKeys={destinationId ? [destinationId] : []}
+                  onSelectionChange={(keys) =>
+                    setDestinationId(Array.from(keys)[0] || '')
+                  }
+                  isRequired
+                  description="Apenas contas do mesmo tipo e que não sejam 'pai' são exibidas."
+                >
+                  {destinationTree.length > 0 ? (
+                    renderTreeItems(destinationTree)
+                  ) : (
+                    <SelectItem key="no-dest" value="" isDisabled>
+                      Nenhum destino válido encontrado.
+                    </SelectItem>
+                  )}
+                </Select>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="light" onPress={onClose} disabled={loading}>
+                Cancelar
+              </Button>
+              <Button
+                color="primary"
+                onPress={handleMigrate}
+                isLoading={loading}
+                isDisabled={!destinationId || loading}
+              >
+                {loading ? 'Migrando...' : 'Confirmar Migração'}
+              </Button>
+            </ModalFooter>
+          </>
         )}
-
-        {!loading && (
-          <TextField
-            select
-            label="Migrar Para o Plano de Contas"
-            value={destinationId}
-            onChange={(e) => setDestinationId(e.target.value)}
-            fullWidth
-            required
-            helperText="Apenas contas do mesmo tipo e que não sejam pais são exibidas."
-          >
-            {destinationTree.length > 0 ? (
-              renderTreeItems(destinationTree)
-            ) : (
-              <MenuItem disabled>Nenhum destino válido encontrado.</MenuItem>
-            )}
-          </TextField>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => onClose(false)}
-          color="secondary"
-          disabled={loading}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleMigrate}
-          color="primary"
-          variant="contained"
-          disabled={!destinationId || loading}
-        >
-          {loading ? 'Migrando...' : 'Confirmar Migração'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   )
 }
 

@@ -1,21 +1,47 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Box,
-  Typography,
-  Grid,
-  TextField,
-  Button,
-  CircularProgress,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-} from '@mui/material'
-import SaveIcon from '@mui/icons-material/Save'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { Button, Input, Tabs, Tab, Spinner } from '@heroui/react'
 import axios from 'axios'
+
+// --- Ícones ---
+const SaveIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+)
+
+const ArrowBackIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M19 12H5" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+)
 
 const showNotification = (message, variant) => {
   const event = new CustomEvent('onNotificacao', {
@@ -27,23 +53,27 @@ const showNotification = (message, variant) => {
   window.dispatchEvent(event)
 }
 
+const initialState = {
+  Descricao: '',
+  NumeroConta: '',
+  DigitoConta: '',
+  Agencia: '',
+  DigitoAgencia: '',
+  Banco: '',
+  Tipo: 'Corrente',
+}
+
 const CreateContaForm = () => {
   const navigate = useNavigate()
-  const [formData, setFormData] = useState({
-    Descricao: '',
-    NumeroConta: '',
-    DigitoConta: '',
-    Agencia: '',
-    DigitoAgencia: '',
-    Banco: '',
-    Tipo: 'Corrente',
-  })
+  const [formData, setFormData] = useState(initialState)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'Tipo' ? value : value,
+    }))
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
@@ -69,7 +99,7 @@ const CreateContaForm = () => {
     try {
       await axios.post('/api/contas', dataToSubmit)
       showNotification('Conta bancária cadastrada com sucesso!', 'success')
-      navigate('/contas')
+      setFormData(initialState)
     } catch (error) {
       if (error.response && error.response.status === 400) {
         setErrors(error.response.data.errors || {})
@@ -91,148 +121,112 @@ const CreateContaForm = () => {
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3 }}
-    >
-      <Typography variant="h4" component="h1" gutterBottom>
-        Nova Conta Bancária
-      </Typography>
+    <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+      <h1 className="text-2xl font-semibold mb-6">Nova Conta Bancária</h1>
 
-      <FormControl
-        component="fieldset"
-        sx={{ my: 2, width: '100%', alignItems: 'center' }}
-      >
-        <FormLabel component="legend">Tipo de Conta</FormLabel>
-        <RadioGroup
-          row
-          name="Tipo"
-          value={formData.Tipo}
-          onChange={handleChange}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <Tabs
+          aria-label="Tipo de Conta"
+          selectedKey={formData.Tipo}
+          onSelectionChange={(key) => handleChange('Tipo', key)}
+          color="primary"
+          radius="md"
         >
-          <FormControlLabel
-            value="Corrente"
-            control={<Radio />}
-            label="Corrente"
-          />
-          <FormControlLabel
-            value="Poupanca"
-            control={<Radio />}
-            label="Poupança"
-          />
-          <FormControlLabel
-            value="Salario"
-            control={<Radio />}
-            label="Salário"
-          />
-          <FormControlLabel
-            value="Investimento"
-            control={<Radio />}
-            label="Investimento"
-          />
-        </RadioGroup>
-      </FormControl>
+          <Tab key="Corrente" title="Corrente" />
+          <Tab key="Poupanca" title="Poupança" />
+          <Tab key="Salario" title="Salário" />
+          <Tab key="Investimento" title="Investimento" />
+        </Tabs>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
-          <TextField
+        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+          <Input
+            className="md:col-span-6"
             name="Descricao"
             label="Descrição da Conta"
             value={formData.Descricao}
-            onChange={handleChange}
-            fullWidth
-            required
-            error={!!errors.Descricao}
-            helperText={errors.Descricao?.[0]}
+            onValueChange={(v) => handleChange('Descricao', v)}
+            isRequired
+            isInvalid={!!errors.Descricao}
+            errorMessage={errors.Descricao?.[0]}
           />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
+
+          <Input
+            className="md:col-span-2"
             name="Banco"
             label="Banco"
             value={formData.Banco}
-            onChange={handleChange}
-            fullWidth
-            error={!!errors.Banco}
-            helperText={errors.Banco?.[0]}
+            onValueChange={(v) => handleChange('Banco', v)}
+            isInvalid={!!errors.Banco}
+            errorMessage={errors.Banco?.[0]}
           />
-        </Grid>
-        <Grid item xs={12} sm={2}>
-          <TextField
+
+          <Input
             name="Agencia"
             label="Agência"
             value={formData.Agencia}
-            onChange={handleChange}
-            fullWidth
-            error={!!errors.Agencia}
-            helperText={errors.Agencia?.[0]}
+            onValueChange={(v) => handleChange('Agencia', v)}
+            isInvalid={!!errors.Agencia}
+            errorMessage={errors.Agencia?.[0]}
           />
-        </Grid>
-        <Grid item xs={12} sm={2}>
-          <TextField
+
+          <Input
             name="DigitoAgencia"
             label="Dígito Agência"
             value={formData.DigitoAgencia}
-            onChange={handleChange}
-            fullWidth
-            inputProps={{ maxLength: 2 }}
-            error={!!errors.DigitoAgencia}
-            helperText={errors.DigitoAgencia?.[0]}
+            onValueChange={(v) => handleChange('DigitoAgencia', v)}
+            maxLength={2}
+            isInvalid={!!errors.DigitoAgencia}
+            errorMessage={errors.DigitoAgencia?.[0]}
           />
-        </Grid>
-        <Grid item xs={12} sm={4}>
-          <TextField
+
+          <Input
+            className="md:col-span-3"
             name="NumeroConta"
             label="Número da Conta"
             value={formData.NumeroConta}
-            onChange={handleChange}
-            fullWidth
-            required
-            error={!!errors.NumeroConta}
-            helperText={errors.NumeroConta?.[0]}
+            onValueChange={(v) => handleChange('NumeroConta', v)}
+            isRequired
+            isInvalid={!!errors.NumeroConta}
+            errorMessage={errors.NumeroConta?.[0]}
           />
-        </Grid>
-        <Grid item xs={12} sm={2}>
-          <TextField
+
+          <Input
+            className="md:col-span-3"
             name="DigitoConta"
             label="Dígito Conta"
             value={formData.DigitoConta}
-            onChange={handleChange}
-            fullWidth
-            inputProps={{ maxLength: 2 }}
-            error={!!errors.DigitoConta}
-            helperText={errors.DigitoConta?.[0]}
+            onValueChange={(v) => handleChange('DigitoConta', v)}
+            maxLength={2}
+            isInvalid={!!errors.DigitoConta}
+            errorMessage={errors.DigitoConta?.[0]}
           />
-        </Grid>
-      </Grid>
+        </div>
 
-      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={isSubmitting}
-          startIcon={
-            isSubmitting ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SaveIcon />
-            )
-          }
-        >
-          {isSubmitting ? 'Salvando...' : 'Salvar'}
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => navigate('/contas')}
-          startIcon={<ArrowBackIcon />}
-        >
-          Voltar
-        </Button>
-      </Box>
-    </Box>
+        <div className="flex gap-2 pt-4">
+          <Button
+            type="submit"
+            color="primary"
+            isDisabled={isSubmitting}
+            startIcon={
+              isSubmitting ? (
+                <Spinner color="current" size="sm" />
+              ) : (
+                <SaveIcon />
+              )
+            }
+          >
+            {isSubmitting ? 'Salvando...' : 'Salvar'}
+          </Button>
+          <Button
+            variant="bordered"
+            onClick={() => navigate('/contas')}
+            startIcon={<ArrowBackIcon />}
+          >
+            Voltar
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }
 

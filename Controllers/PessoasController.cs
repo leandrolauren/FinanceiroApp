@@ -82,6 +82,7 @@ namespace FinanceiroApp.Controllers
                     Email = dto.Email,
                     Telefone = dto.Telefone,
                     Endereco = dto.Endereco,
+                    Cep = dto.Cep,
                     Numero = dto.Numero,
                     Bairro = dto.Bairro,
                     Complemento = dto.Complemento,
@@ -145,6 +146,7 @@ namespace FinanceiroApp.Controllers
             pessoaDb.Email = dto.Email;
             pessoaDb.Telefone = dto.Telefone;
             pessoaDb.Endereco = dto.Endereco;
+            pessoaDb.Cep = dto.Cep;
             pessoaDb.Numero = dto.Numero;
             pessoaDb.Bairro = dto.Bairro;
             pessoaDb.Complemento = dto.Complemento;

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import {
-  Box,
-  Typography,
-  Button,
-  CircularProgress,
-  Alert,
   Modal,
-  Divider,
-} from '@mui/material'
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Spinner,
+} from '@heroui/react'
+import { Alert } from '@mui/material'
 import axios from 'axios'
 
 const showNotification = (message, variant) => {
@@ -68,57 +69,44 @@ function PlanoContaDeleteModal({ open, onClose, planoId }) {
   }
 
   const handleClose = () => {
-    onClose(false)
+    if (!loading) {
+      onClose(false)
+    }
   }
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: 24,
-          p: 4,
-          width: { xs: '90%', sm: 450 },
-        }}
-      >
-        <Typography variant="h5" component="h2" gutterBottom>
-          Confirmar Exclusão
-        </Typography>
-        <Divider sx={{ my: 2 }} />
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 3 }}>
-            <CircularProgress />
-          </Box>
-        ) : error ? (
-          <Alert severity="error">{error}</Alert>
-        ) : (
-          <Typography sx={{ my: 2 }}>
-            Tem certeza que deseja excluir o plano de contas:{' '}
-            <strong>{plano?.descricao || 'Carregando...'}</strong>?
-          </Typography>
+    <Modal isOpen={open} onOpenChange={handleClose} isDismissable={!loading}>
+      <ModalContent>
+        {(onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              Confirmar Exclusão
+            </ModalHeader>
+            <ModalBody>
+              {loading && !error ? (
+                <div className="flex justify-center items-center h-24">
+                  <Spinner />
+                </div>
+              ) : error ? (
+                <Alert severity="error">{error}</Alert>
+              ) : (
+                <p>
+                  Tem certeza que deseja excluir o plano de contas:{' '}
+                  <strong>{plano?.descricao || ''}</strong>?
+                </p>
+              )}
+            </ModalBody>
+            <ModalFooter>
+              <Button variant="light" onPress={onClose} disabled={loading}>
+                Cancelar
+              </Button>
+              <Button color="danger" onPress={handleDelete} isLoading={loading}>
+                Excluir
+              </Button>
+            </ModalFooter>
+          </>
         )}
-
-        <Box
-          sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}
-        >
-          <Button onClick={handleClose} variant="outlined">
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleDelete}
-            variant="contained"
-            color="error"
-            disabled={loading || error}
-          >
-            Excluir
-          </Button>
-        </Box>
-      </Box>
+      </ModalContent>
     </Modal>
   )
 }

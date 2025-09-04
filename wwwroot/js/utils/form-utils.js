@@ -1,58 +1,4 @@
-import React from 'react'
-import { IMaskInput } from 'react-imask'
 import axios from 'axios'
-
-export const CpfMask = React.forwardRef(function CpfMask(props, ref) {
-  const { onChange, ...other } = props
-  return (
-    <IMaskInput
-      {...other}
-      mask="000.000.000-00"
-      inputRef={ref}
-      onAccept={(value) => onChange({ target: { name: props.name, value } })}
-      overwrite
-    />
-  )
-})
-
-export const CnpjMask = React.forwardRef(function CnpjMask(props, ref) {
-  const { onChange, ...other } = props
-  return (
-    <IMaskInput
-      {...other}
-      mask="00.000.000/0000-00"
-      inputRef={ref}
-      onAccept={(value) => onChange({ target: { name: props.name, value } })}
-      overwrite
-    />
-  )
-})
-
-export const TelefoneMask = React.forwardRef(function TelefoneMask(props, ref) {
-  const { onChange, ...other } = props
-  return (
-    <IMaskInput
-      {...other}
-      mask={[{ mask: '(00) 0000-0000' }, { mask: '(00) 00000-0000' }]}
-      inputRef={ref}
-      onAccept={(value) => onChange({ target: { name: props.name, value } })}
-      overwrite
-    />
-  )
-})
-
-export const CepMask = React.forwardRef(function CepMask(props, ref) {
-  const { onChange, ...other } = props
-  return (
-    <IMaskInput
-      {...other}
-      mask="00000-000"
-      inputRef={ref}
-      onAccept={(value) => onChange({ target: { name: props.name, value } })}
-      overwrite
-    />
-  )
-})
 
 export const buscarEnderecoPorCep = async (cep) => {
   const cepLimpo = cep.replace(/\D/g, '')
@@ -77,40 +23,49 @@ export const buscarDadosPorCnpj = async (cnpj) => {
   return response.data
 }
 
-export function formatarCpf(cpf) {
-  if (!cpf) return ''
-  const cleaned = String(cpf).replace(/\D/g, '')
-  if (cleaned.length !== 11) return cpf
-  return cleaned.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, '$1.$2.$3-$4')
+export function formatarCpf(value) {
+  if (!value) return ''
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 11)
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
 }
 
-export function formatarCnpj(cnpj) {
-  if (!cnpj) return ''
-  const cleaned = String(cnpj).replace(/\D/g, '')
-  if (cleaned.length !== 14) return cnpj
-  return cleaned.replace(
-    /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
-    '$1.$2.$3/$4-$5',
-  )
+export function formatarCnpj(value) {
+  if (!value) return ''
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 14)
+    .replace(/(\d{2})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1/$2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
 }
 
-export function formatarTelefone(tel) {
-  if (!tel) return ''
-  const cleaned = String(tel).replace(/\D/g, '')
-  if (cleaned.length === 11) {
-    return cleaned.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3')
+export function formatarTelefone(value) {
+  if (!value) return ''
+  const cleaned = value.replace(/\D/g, '').slice(0, 11)
+
+  if (cleaned.length > 10) {
+    // Celular (11 dígitos)
+    return cleaned
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d)/, '$1-$2')
   }
-  if (cleaned.length === 10) {
-    return cleaned.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3')
-  }
-  return tel
+  // Telefone (10 dígitos ou menos)
+  return cleaned
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{4})(\d)/, '$1-$2')
 }
 
-export function formatarCep(cep) {
-  if (!cep) return ''
-  const cleaned = String(cep).replace(/\D/g, '')
-  if (cleaned.length !== 8) return cep
-  return cleaned.replace(/^(\d{5})(\d{3})$/, '$1-$2')
+export function formatarCep(value) {
+  if (!value) return ''
+  return value
+    .replace(/\D/g, '')
+    .slice(0, 8)
+    .replace(/(\d{5})(\d)/, '$1-$2')
 }
 
 export const formatarData = (data) => {

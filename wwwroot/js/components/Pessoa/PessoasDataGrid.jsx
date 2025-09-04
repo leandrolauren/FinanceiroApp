@@ -398,7 +398,7 @@ export default function PessoasDataGrid() {
   const bottomContent = useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
+        <span className="w-[30%] text-small text-gray-600 dark:text-gray-400">
           {selectedKeys === 'all'
             ? 'Todos os itens selecionados'
             : `${selectedKeys.size} de ${filteredItems.length} selecionados`}
@@ -413,10 +413,10 @@ export default function PessoasDataGrid() {
           onChange={setPage}
         />
         <div className="flex justify-between items-center">
-          <label className="flex items-center text-default-400 text-small">
+          <label className="flex items-center text-gray-600 dark:text-gray-400 text-small">
             Linhas por página:
             <select
-              className="bg-transparent outline-none text-default-400 text-small"
+              className="bg-transparent outline-none text-gray-600 dark:text-gray-400 text-small"
               onChange={onRowsPerPageChange}
               defaultValue={rowsPerPage}
             >
@@ -463,7 +463,7 @@ export default function PessoasDataGrid() {
   }, [fetchData])
 
   return (
-    <Box sx={{ p: 1 }}>
+    <div className="p-4 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"
@@ -525,6 +525,6 @@ export default function PessoasDataGrid() {
           onClose={handleCloseDeleteModal}
         />
       )}
-    </Box>
+    </div>
   )
 }

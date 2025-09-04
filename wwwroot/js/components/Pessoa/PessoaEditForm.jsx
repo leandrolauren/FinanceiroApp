@@ -1,31 +1,56 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Box,
-  Typography,
-  Grid,
-  TextField,
-  Button,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  CircularProgress,
-  InputAdornment,
-} from '@mui/material'
-import SaveIcon from '@mui/icons-material/Save'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { Button, Input, Tabs, Tab, Spinner } from '@heroui/react'
 import axios from 'axios'
 import {
-  CpfMask,
-  CnpjMask,
-  TelefoneMask,
-  CepMask,
   buscarDadosPorCnpj,
   buscarEnderecoPorCep,
   limparMascaras,
+  formatarCpf,
+  formatarCnpj,
+  formatarTelefone,
+  formatarCep,
 } from '../../utils/form-utils'
+
+// --- Ícones ---
+const SaveIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+)
+
+const ArrowBackIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M19 12H5" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+)
 
 const showNotification = (message, variant) => {
   const event = new CustomEvent('onNotificacao', {
@@ -40,7 +65,6 @@ const showNotification = (message, variant) => {
 const PessoaEditForm = ({ pessoaId }) => {
   const navigate = useNavigate()
   const [formData, setFormData] = useState(null)
-  const [tipoPessoa, setTipoPessoa] = useState('1')
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(true)
   const [formSubmitting, setFormSubmitting] = useState(false)
@@ -52,12 +76,17 @@ const PessoaEditForm = ({ pessoaId }) => {
       try {
         const response = await axios.get(`/api/pessoas/${pessoaId}`)
         const data = response.data
-        console.log('Dados da pessoa:', data)
         if (data.dataNascimento) {
           data.dataNascimento = data.dataNascimento.split('T')[0]
         }
-        setFormData(data)
-        setTipoPessoa(data.tipo.toString())
+        const maskedData = {
+          ...data,
+          cpf: data.cpf ? formatarCpf(data.cpf) : '',
+          cnpj: data.cnpj ? formatarCnpj(data.cnpj) : '',
+          telefone: data.telefone ? formatarTelefone(data.telefone) : '',
+          cep: data.cep ? formatarCep(data.cep) : '',
+        }
+        setFormData(maskedData)
       } catch (error) {
         showNotification(
           error.response.data.message || 'Erro ao carregar a pessoa.',
@@ -74,13 +103,28 @@ const PessoaEditForm = ({ pessoaId }) => {
     }
   }, [pessoaId, navigate])
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = useCallback((name, value) => {
+    let formattedValue = value
+    switch (name) {
+      case 'cpf':
+        formattedValue = formatarCpf(value)
+        break
+      case 'cnpj':
+        formattedValue = formatarCnpj(value)
+        break
+      case 'telefone':
+        formattedValue = formatarTelefone(value)
+        break
+      case 'cep':
+        formattedValue = formatarCep(value)
+        break
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }))
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
-  }
+  }, [])
 
   const handleCepBlur = async () => {
     const cep = formData.cep?.replace(/\D/g, '')
@@ -91,13 +135,14 @@ const PessoaEditForm = ({ pessoaId }) => {
       const data = await buscarEnderecoPorCep(formData.cep)
       setFormData((prev) => ({
         ...prev,
-        endereco: data.logradouro,
-        bairro: data.bairro,
-        cidade: data.localidade,
-        estado: data.uf,
+        endereco: data.logradouro || '',
+        bairro: data.bairro || '',
+        cidade: data.localidade || '',
+        estado: data.uf || '',
       }))
     } catch (error) {
-      showNotification('Erro ao buscar CEP.', 'warning')
+      showNotification('CEP não encontrado ou inválido.', 'warning')
+      console.error(error.message || 'Erro ao buscar CEP.')
     } finally {
       setCepLoading(false)
     }
@@ -146,7 +191,7 @@ const PessoaEditForm = ({ pessoaId }) => {
     }
     setFormSubmitting(true)
 
-    const dados = { ...limparMascaras(formData), tipo: tipoPessoa }
+    const dados = { ...limparMascaras(formData), tipo: formData.tipo }
     if (!dados.nome && dados.razaoSocial) dados.nome = dados.razaoSocial
 
     for (const key in dados) {
@@ -158,7 +203,6 @@ const PessoaEditForm = ({ pessoaId }) => {
     try {
       await axios.put(`/api/pessoas/${pessoaId}`, dados)
       showNotification('Pessoa alterada com sucesso!', 'success')
-      setFormSubmitting(false)
       navigate('/pessoas')
     } catch (error) {
       if (error.response && error.response.status === 400) {
@@ -181,279 +225,197 @@ const PessoaEditForm = ({ pessoaId }) => {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '80vh',
-        }}
-      >
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center h-64">
+        <Spinner label="Carregando dados da pessoa..." />
+      </div>
     )
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3 }}
-    >
-      <Typography variant="h4" component="h1" gutterBottom>
-        Editar Pessoa
-      </Typography>
+    <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+      <h1 className="text-2xl font-semibold mb-6">Editar Pessoa</h1>
 
-      <FormControl component="fieldset" sx={{ mb: 3 }}>
-        <RadioGroup row value={tipoPessoa}>
-          <FormControlLabel
-            value="1"
-            control={<Radio />}
-            label="Física"
-            disabled
-          />
-          <FormControlLabel
-            value="2"
-            control={<Radio />}
-            label="Jurídica"
-            disabled
-          />
-        </RadioGroup>
-      </FormControl>
-
-      <Grid container spacing={3}>
-        {tipoPessoa === '1' && (
-          <>
-            <Grid xs={12} sm={6}>
-              <TextField
-                name="nome"
-                label="Nome Completo"
-                value={formData.nome || ''}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.Nome}
-                helperText={errors.Nome?.[0]}
-              />
-            </Grid>
-            <Grid xs={12} sm={3}>
-              <TextField
-                name="cpf"
-                label="CPF"
-                value={formData.cpf || ''}
-                onChange={handleChange}
-                fullWidth
-                required
-                slotProps={{ input: { inputComponent: CpfMask } }}
-                error={!!errors.Cpf}
-                helperText={errors.Cpf?.[0]}
-              />
-            </Grid>
-            <Grid xs={12} sm={3}>
-              <TextField
-                name="rg"
-                label="RG"
-                value={formData.rg || ''}
-                onChange={handleChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid xs={12} sm={3}>
-              <TextField
-                name="dataNascimento"
-                label="Data de Nascimento"
-                type="date"
-                value={formData.dataNascimento || ''}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-          </>
-        )}
-
-        {tipoPessoa === '2' && (
-          <>
-            <Grid xs={12} sm={6}>
-              <TextField
-                name="razaoSocial"
-                label="Razão Social"
-                value={formData.razaoSocial || ''}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.razaoSocial}
-                helperText={errors.razaoSocial?.[0]}
-              />
-            </Grid>
-            <Grid xs={12} sm={6}>
-              <TextField
-                name="nomeFantasia"
-                label="Nome Fantasia"
-                value={formData.nomeFantasia || ''}
-                onChange={handleChange}
-                fullWidth
-              />
-            </Grid>
-            <Grid xs={12} sm={6}>
-              <TextField
-                name="cnpj"
-                label="CNPJ"
-                value={formData.cnpj || ''}
-                onChange={handleChange}
-                onBlur={handleCnpjBlur}
-                fullWidth
-                required
-                slotProps={{
-                  input: {
-                    inputComponent: CnpjMask,
-                    endAdornment: cnpjLoading && (
-                      <InputAdornment position="end">
-                        <CircularProgress size={20} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                error={!!errors.Cnpj}
-                helperText={errors.Cnpj?.[0]}
-              />
-            </Grid>
-            <Grid xs={12} sm={6}>
-              <TextField
-                name="inscricaoEstadual"
-                label="Inscrição Estadual"
-                value={formData.inscricaoEstadual || ''}
-                onChange={handleChange}
-                fullWidth
-              />
-            </Grid>
-          </>
-        )}
-
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="telefone"
-            label="Telefone"
-            value={formData.telefone || ''}
-            onChange={handleChange}
-            fullWidth
-            slotProps={{ input: { inputComponent: TelefoneMask } }}
-          />
-        </Grid>
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="email"
-            label="E-mail"
-            type="email"
-            value={formData.email || ''}
-            onChange={handleChange}
-            fullWidth
-            error={!!errors.Email}
-            helperText={errors.Email?.[0]}
-          />
-        </Grid>
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="cep"
-            label="CEP"
-            value={formData.cep || ''}
-            onChange={handleChange}
-            onBlur={handleCepBlur}
-            fullWidth
-            slotProps={{
-              input: {
-                inputComponent: CepMask,
-                endAdornment: cepLoading && (
-                  <InputAdornment position="end">
-                    <CircularProgress size={20} />
-                  </InputAdornment>
-                ),
-              },
+      {formData && (
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <Tabs
+            aria-label="Tipo de Pessoa"
+            selectedKey={String(formData.tipo)}
+            color="primary"
+            radius="md"
+            isDisabled
+            classNames={{
+              tabContent:
+                'group-data-[selected=true]:group-data-[disabled=true]:text-white/90',
             }}
-          />
-        </Grid>
-        <Grid xs={12} sm={8}>
-          <TextField
-            name="endereco"
-            label="Endereço"
-            value={formData.endereco || ''}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Grid>
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="numero"
-            label="Número"
-            value={formData.numero || ''}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Grid>
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="bairro"
-            label="Bairro"
-            value={formData.bairro || ''}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Grid>
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="cidade"
-            label="Cidade"
-            value={formData.cidade || ''}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Grid>
-        <Grid xs={12} sm={4}>
-          <TextField
-            name="estado"
-            label="Estado"
-            value={formData.estado || ''}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Grid>
-        <Grid xs={12}>
-          <TextField
-            name="complemento"
-            label="Complemento"
-            value={formData.complemento || ''}
-            onChange={handleChange}
-            fullWidth
-          />
-        </Grid>
-      </Grid>
+          >
+            <Tab key="1" title="Pessoa Física" />
+            <Tab key="2" title="Pessoa Jurídica" />
+          </Tabs>
 
-      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={formSubmitting}
-          startIcon={
-            formSubmitting ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SaveIcon />
-            )
-          }
-        >
-          {formSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => navigate('/pessoas')}
-          startIcon={<ArrowBackIcon />}
-        >
-          Voltar
-        </Button>
-      </Box>
-    </Box>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {String(formData.tipo) === '1' && (
+              <>
+                <Input
+                  name="nome"
+                  label="Nome Completo"
+                  value={formData.nome || ''}
+                  onValueChange={(v) => handleChange('nome', v)}
+                  isRequired
+                  isInvalid={!!errors.Nome}
+                  errorMessage={errors.Nome?.[0]}
+                />
+                <Input
+                  name="cpf"
+                  label="CPF"
+                  value={formData.cpf || ''}
+                  onValueChange={(v) => handleChange('cpf', v)}
+                  isRequired
+                  isInvalid={!!errors.Cpf}
+                  errorMessage={errors.Cpf?.[0]}
+                />
+                <Input
+                  name="rg"
+                  label="RG"
+                  value={formData.rg || ''}
+                  onValueChange={(v) => handleChange('rg', v)}
+                />
+                <Input
+                  name="dataNascimento"
+                  label="Data de Nascimento"
+                  type="date"
+                  value={formData.dataNascimento || ''}
+                  onValueChange={(v) => handleChange('dataNascimento', v)}
+                />
+              </>
+            )}
+
+            {String(formData.tipo) === '2' && (
+              <>
+                <Input
+                  name="razaoSocial"
+                  label="Razão Social"
+                  value={formData.razaoSocial || ''}
+                  onValueChange={(v) => handleChange('razaoSocial', v)}
+                  isRequired
+                  isInvalid={!!errors.razaoSocial}
+                  errorMessage={errors.razaoSocial?.[0]}
+                />
+                <Input
+                  name="nomeFantasia"
+                  label="Nome Fantasia"
+                  value={formData.nomeFantasia || ''}
+                  onValueChange={(v) => handleChange('nomeFantasia', v)}
+                />
+                <Input
+                  name="cnpj"
+                  label="CNPJ"
+                  value={formData.cnpj || ''}
+                  onValueChange={(v) => handleChange('cnpj', v)}
+                  onBlur={handleCnpjBlur}
+                  isRequired
+                  isInvalid={!!errors.Cnpj}
+                  errorMessage={errors.Cnpj?.[0]}
+                  endContent={
+                    cnpjLoading && <Spinner size="sm" color="primary" />
+                  }
+                />
+                <Input
+                  name="inscricaoEstadual"
+                  label="Inscrição Estadual"
+                  value={formData.inscricaoEstadual || ''}
+                  onValueChange={(v) => handleChange('inscricaoEstadual', v)}
+                />
+              </>
+            )}
+
+            <Input
+              name="telefone"
+              label="Telefone"
+              value={formData.telefone || ''}
+              onValueChange={(v) => handleChange('telefone', v)}
+            />
+            <Input
+              name="email"
+              label="E-mail"
+              type="email"
+              value={formData.email || ''}
+              onValueChange={(v) => handleChange('email', v)}
+              isInvalid={!!errors.Email}
+              errorMessage={errors.Email?.[0]}
+            />
+            <Input
+              name="cep"
+              label="CEP"
+              value={formData.cep || ''}
+              onValueChange={(v) => handleChange('cep', v)}
+              onBlur={handleCepBlur}
+              endContent={cepLoading && <Spinner size="sm" color="primary" />}
+            />
+            <Input
+              name="endereco"
+              label="Endereço"
+              value={formData.endereco || ''}
+              onValueChange={(v) => handleChange('endereco', v)}
+            />
+            <Input
+              name="numero"
+              label="Número"
+              value={formData.numero || ''}
+              onValueChange={(v) => handleChange('numero', v)}
+            />
+            <Input
+              name="bairro"
+              label="Bairro"
+              value={formData.bairro || ''}
+              onValueChange={(v) => handleChange('bairro', v)}
+            />
+            <Input
+              name="cidade"
+              label="Cidade"
+              value={formData.cidade || ''}
+              onValueChange={(v) => handleChange('cidade', v)}
+            />
+            <Input
+              name="estado"
+              label="Estado"
+              value={formData.estado || ''}
+              onValueChange={(v) => handleChange('estado', v)}
+            />
+            <Input
+              name="complemento"
+              label="Complemento"
+              value={formData.complemento || ''}
+              onValueChange={(v) => handleChange('complemento', v)}
+              className="md:col-span-2"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="submit"
+              color="primary"
+              isDisabled={formSubmitting}
+              startIcon={
+                formSubmitting ? (
+                  <Spinner color="current" size="sm" />
+                ) : (
+                  <SaveIcon />
+                )
+              }
+            >
+              {formSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+            <Button
+              variant="bordered"
+              onClick={() => navigate('/pessoas')}
+              startIcon={<ArrowBackIcon />}
+            >
+              Voltar
+            </Button>
+          </div>
+        </form>
+      )}
+    </div>
   )
 }
 

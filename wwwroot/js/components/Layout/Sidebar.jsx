@@ -27,6 +27,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import LogoutIcon from '@mui/icons-material/Logout'
+import { ThemeSwitcher } from './ThemeSwitcher'
 
 const drawerWidth = 240
 
@@ -71,14 +72,12 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           }),
           overflowX: 'hidden',
           borderRight: 'none',
-          backgroundColor: '#0c1e35',
-          color: '#e0e0e0',
+          backgroundColor: theme.palette.background.paper,
+          color: theme.palette.text.primary,
         },
         ...(!isToggled && {
           '& .MuiDrawer-paper': {
             width: theme.spacing(7),
-            backgroundColor: '#0c1e35',
-            color: '#e0e0e0',
             transition: theme.transitions.create('width', {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
@@ -93,7 +92,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           alignItems: 'center',
           justifyContent: 'space-between',
           px: [1],
-          backgroundColor: '#08172b',
+          backgroundColor: theme.palette.background.default,
         }}
       >
         {isToggled && (
@@ -110,16 +109,26 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
               alt="Logo"
               style={{ width: 32, height: 32 }}
             />
-            <Typography variant="h6" sx={{ ml: 2, color: 'white' }}>
+            <Typography variant="h6" sx={{ ml: 2, color: 'inherit' }}>
               Financeiro
             </Typography>
           </Box>
         )}
-        <IconButton onClick={handleToggle} sx={{ color: 'white' }}>
-          {isToggled ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-        </IconButton>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+            flexGrow: 1,
+          }}
+        >
+          <IconButton onClick={handleToggle} sx={{ color: 'inherit' }}>
+            {isToggled ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
+        </Box>
+        <ThemeSwitcher />
       </Toolbar>
-      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.12)' }} />
+      <Divider />
       <List>
         <ListItem disablePadding>
           <NavLink to="/home" style={navLinkStyle}>
@@ -127,7 +136,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
               <ListItemButton sx={isActive ? activeLinkStyle : {}}>
                 <ListItemIcon
                   sx={{
-                    color: iconColor,
+                    color: 'inherit',
                     minWidth: 'auto',
                     mr: isToggled ? 3 : 'auto',
                   }}
@@ -143,14 +152,14 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           </NavLink>
         </ListItem>
       </List>
-      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.12)' }} />
+      <Divider />
       <List
         subheader={
           <ListSubheader
             component="div"
             sx={{
               backgroundColor: 'transparent',
-              color: '#8a99af',
+              color: 'text.secondary',
               display: isToggled ? 'block' : 'none',
             }}
           >
@@ -173,7 +182,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
                 <ListItemButton sx={isActive ? activeLinkStyle : {}}>
                   <ListItemIcon
                     sx={{
-                      color: iconColor,
+                      color: 'inherit',
                       minWidth: 'auto',
                       mr: isToggled ? 3 : 'auto',
                     }}
@@ -190,14 +199,14 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           </ListItem>
         ))}
       </List>
-      <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.12)' }} />
+      <Divider />
       <List
         subheader={
           <ListSubheader
             component="div"
             sx={{
               backgroundColor: 'transparent',
-              color: '#8a99af',
+              color: 'text.secondary',
               display: isToggled ? 'block' : 'none',
             }}
           >
@@ -211,7 +220,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
               <ListItemButton sx={isActive ? activeLinkStyle : {}}>
                 <ListItemIcon
                   sx={{
-                    color: iconColor,
+                    color: 'inherit',
                     minWidth: 'auto',
                     mr: isToggled ? 3 : 'auto',
                   }}
@@ -228,7 +237,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
         </ListItem>
       </List>
       <Box sx={{ mt: 'auto' }}>
-        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.12)' }} />
+        <Divider />
         <ListItemButton
           onClick={handleProfileMenuOpen}
           sx={{
@@ -248,7 +257,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
               sx={{
                 width: 32,
                 height: 32,
-                bgcolor: 'primary.main',
+                bgcolor: theme.palette.primary.main,
                 color: 'white',
                 fontSize: '1rem',
               }}
@@ -258,7 +267,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           </ListItemIcon>
           <ListItemText
             primary={userName}
-            sx={{ opacity: isToggled ? 1 : 0, color: 'white' }}
+            sx={{ opacity: isToggled ? 1 : 0, color: 'inherit' }}
           />
         </ListItemButton>
         <Menu

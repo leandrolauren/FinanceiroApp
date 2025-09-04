@@ -1,31 +1,56 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import {
-  Box,
-  Typography,
-  Grid,
-  TextField,
-  Button,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  CircularProgress,
-  InputAdornment,
-} from '@mui/material'
-import SaveIcon from '@mui/icons-material/Save'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import { Button, Input, Tabs, Tab, Spinner } from '@heroui/react'
 import axios from 'axios'
 import {
   buscarDadosPorCnpj,
   buscarEnderecoPorCep,
   limparMascaras,
-  CpfMask,
-  CnpjMask,
-  TelefoneMask,
-  CepMask,
+  formatarCpf,
+  formatarCnpj,
+  formatarTelefone,
+  formatarCep,
 } from '../../utils/form-utils'
+
+// --- Ícones ---
+const SaveIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+)
+
+const ArrowBackIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M19 12H5" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+)
 
 const initialState = {
   nome: '',
@@ -60,7 +85,7 @@ const showNotification = (message, variant) => {
 const PessoaCreateForm = () => {
   const navigate = useNavigate()
 
-  const [tipoPessoa, setTipoPessoa] = useState('2')
+  const [tipoPessoa, setTipoPessoa] = useState('2') // 1: Física, 2: Jurídica
   const [formData, setFormData] = useState(initialState)
 
   const [errors, setErrors] = useState({})
@@ -68,9 +93,23 @@ const PessoaCreateForm = () => {
   const [cepLoading, setCepLoading] = useState(false)
   const [cnpjLoading, setCnpjLoading] = useState(false)
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleChange = (name, value) => {
+    let formattedValue = value
+    switch (name) {
+      case 'cpf':
+        formattedValue = formatarCpf(value)
+        break
+      case 'cnpj':
+        formattedValue = formatarCnpj(value)
+        break
+      case 'telefone':
+        formattedValue = formatarTelefone(value)
+        break
+      case 'cep':
+        formattedValue = formatarCep(value)
+        break
+    }
+    setFormData((prev) => ({ ...prev, [name]: formattedValue }))
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
@@ -83,19 +122,16 @@ const PessoaCreateForm = () => {
     setCepLoading(true)
     try {
       const data = await buscarEnderecoPorCep(formData.cep)
-      if (!data.erro) {
-        setFormData((prev) => ({
-          ...prev,
-          endereco: data.logradouro,
-          bairro: data.bairro,
-          cidade: data.localidade,
-          estado: data.uf,
-        }))
-      } else {
-        showNotification('CEP não encontrado.', 'warning')
-      }
+      setFormData((prev) => ({
+        ...prev,
+        endereco: data.logradouro || '',
+        bairro: data.bairro || '',
+        cidade: data.localidade || '',
+        estado: data.uf || '',
+      }))
     } catch (error) {
-      console.log(error.message || 'Erro ao buscar CEP.')
+      showNotification('CEP não encontrado ou inválido.', 'warning')
+      console.error(error.message || 'Erro ao buscar CEP.')
     } finally {
       setCepLoading(false)
     }
@@ -180,261 +216,180 @@ const PessoaCreateForm = () => {
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3 }}
-    >
-      <Typography variant="h4" component="h1" gutterBottom>
-        Nova Pessoa
-      </Typography>
+    <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+      <h1 className="text-2xl font-semibold mb-6">Nova Pessoa</h1>
 
-      <FormControl component="fieldset" sx={{ mb: 3 }}>
-        <RadioGroup
-          row
-          value={tipoPessoa}
-          onChange={(e) => setTipoPessoa(e.target.value)}
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <Tabs
+          aria-label="Tipo de Pessoa"
+          selectedKey={tipoPessoa}
+          onSelectionChange={(key) => setTipoPessoa(key)}
+          color="primary"
+          radius="md"
         >
-          <FormControlLabel value="1" control={<Radio />} label="Física" />
-          <FormControlLabel value="2" control={<Radio />} label="Jurídica" />
-        </RadioGroup>
-      </FormControl>
+          <Tab key="1" title="Pessoa Física" />
+          <Tab key="2" title="Pessoa Jurídica" />
+        </Tabs>
 
-      <Grid container spacing={3}>
-        {tipoPessoa === '1' && (
-          <>
-            <Grid item xs={12} md={6}>
-              <TextField
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {tipoPessoa === '1' && (
+            <>
+              <Input
                 name="nome"
                 label="Nome Completo"
                 value={formData.nome}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.Nome}
-                helperText={errors.Nome?.[0]}
+                onValueChange={(v) => handleChange('nome', v)}
+                isRequired
+                isInvalid={!!errors.Nome}
+                errorMessage={errors.Nome?.[0]}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
+              <Input
                 name="cpf"
                 label="CPF"
                 value={formData.cpf}
-                onChange={handleChange}
-                fullWidth
-                required
-                slotProps={{ input: { inputComponent: CpfMask } }}
-                error={!!errors.Cpf}
-                helperText={errors.Cpf?.[0]}
+                onValueChange={(v) => handleChange('cpf', v)}
+                isRequired
+                isInvalid={!!errors.Cpf}
+                errorMessage={errors.Cpf?.[0]}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
+              <Input
                 name="rg"
                 label="RG"
                 value={formData.rg}
-                onChange={handleChange}
-                fullWidth
+                onValueChange={(v) => handleChange('rg', v)}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
+              <Input
                 name="dataNascimento"
                 label="Data de Nascimento"
                 type="date"
                 value={formData.dataNascimento}
-                onChange={handleChange}
-                fullWidth
-                InputLabelProps={{ shrink: true }}
+                onValueChange={(v) => handleChange('dataNascimento', v)}
               />
-            </Grid>
-          </>
-        )}
+            </>
+          )}
 
-        {tipoPessoa === '2' && (
-          <>
-            <Grid item xs={12} md={6}>
-              <TextField
+          {tipoPessoa === '2' && (
+            <>
+              <Input
                 name="razaoSocial"
                 label="Razão Social"
                 value={formData.razaoSocial}
-                onChange={handleChange}
-                fullWidth
-                required
-                error={!!errors.RazaoSocial}
-                helperText={errors.RazaoSocial?.[0]}
+                onValueChange={(v) => handleChange('razaoSocial', v)}
+                isRequired
+                isInvalid={!!errors.RazaoSocial}
+                errorMessage={errors.RazaoSocial?.[0]}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
+              <Input
                 name="nomeFantasia"
                 label="Nome Fantasia"
                 value={formData.nomeFantasia}
-                onChange={handleChange}
-                fullWidth
+                onValueChange={(v) => handleChange('nomeFantasia', v)}
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
+              <Input
                 name="cnpj"
                 label="CNPJ"
                 value={formData.cnpj}
-                onChange={handleChange}
+                onValueChange={(v) => handleChange('cnpj', v)}
                 onBlur={handleCnpjBlur}
-                fullWidth
-                required
-                slotProps={{
-                  input: {
-                    inputComponent: CnpjMask,
-                    endAdornment: cnpjLoading && (
-                      <InputAdornment position="end">
-                        <CircularProgress size={20} />
-                      </InputAdornment>
-                    ),
-                  },
-                }}
-                error={!!errors.Cnpj}
-                helperText={errors.Cnpj?.[0]}
+                isRequired
+                isInvalid={!!errors.Cnpj}
+                errorMessage={errors.Cnpj?.[0]}
+                endContent={
+                  cnpjLoading && <Spinner size="sm" color="primary" />
+                }
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
+              <Input
                 name="inscricaoEstadual"
                 label="Inscrição Estadual"
                 value={formData.inscricaoEstadual}
-                onChange={handleChange}
-                fullWidth
+                onValueChange={(v) => handleChange('inscricaoEstadual', v)}
               />
-            </Grid>
-          </>
-        )}
+            </>
+          )}
 
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="telefone"
             label="Telefone"
             value={formData.telefone}
-            onChange={handleChange}
-            fullWidth
-            slotProps={{ input: { inputComponent: TelefoneMask } }}
+            onValueChange={(v) => handleChange('telefone', v)}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="email"
             label="E-mail"
             type="email"
             value={formData.email}
-            onChange={handleChange}
-            fullWidth
-            error={!!errors.Email}
-            helperText={errors.Email?.[0]}
+            onValueChange={(v) => handleChange('email', v)}
+            isInvalid={!!errors.Email}
+            errorMessage={errors.Email?.[0]}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="cep"
             label="CEP"
             value={formData.cep}
-            onChange={handleChange}
+            onValueChange={(v) => handleChange('cep', v)}
             onBlur={handleCepBlur}
-            fullWidth
-            slotProps={{
-              input: {
-                inputComponent: CepMask,
-                endAdornment: cepLoading && (
-                  <InputAdornment position="end">
-                    <CircularProgress size={20} />
-                  </InputAdornment>
-                ),
-              },
-            }}
+            endContent={cepLoading && <Spinner size="sm" color="primary" />}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="endereco"
             label="Endereço"
             value={formData.endereco}
-            onChange={handleChange}
-            fullWidth
+            onValueChange={(v) => handleChange('endereco', v)}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="numero"
             label="Número"
             value={formData.numero}
-            onChange={handleChange}
-            fullWidth
+            onValueChange={(v) => handleChange('numero', v)}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="bairro"
             label="Bairro"
             value={formData.bairro}
-            onChange={handleChange}
-            fullWidth
+            onValueChange={(v) => handleChange('bairro', v)}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="cidade"
             label="Cidade"
             value={formData.cidade}
-            onChange={handleChange}
-            fullWidth
+            onValueChange={(v) => handleChange('cidade', v)}
           />
-        </Grid>
-        <Grid item xs={12} md={6}>
-          <TextField
+          <Input
             name="estado"
             label="Estado"
             value={formData.estado}
-            onChange={handleChange}
-            fullWidth
+            onValueChange={(v) => handleChange('estado', v)}
           />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
+          <Input
             name="complemento"
             label="Complemento"
             value={formData.complemento}
-            onChange={handleChange}
-            fullWidth
+            onValueChange={(v) => handleChange('complemento', v)}
+            className="md:col-span-2"
           />
-        </Grid>
-      </Grid>
+        </div>
 
-      <Box
-        sx={{ mt: 4, display: 'flex', justifyContent: 'flex-start', gap: 2 }}
-      >
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={loading}
-          startIcon={
-            loading ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SaveIcon />
-            )
-          }
-        >
-          {loading ? 'Salvando...' : 'Salvar'}
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => navigate('/pessoas')}
-          startIcon={<ArrowBackIcon />}
-        >
-          Voltar
-        </Button>
-      </Box>
-    </Box>
+        <div className="flex gap-2 pt-4">
+          <Button
+            type="submit"
+            color="primary"
+            isDisabled={loading}
+            startIcon={
+              loading ? <Spinner color="current" size="sm" /> : <SaveIcon />
+            }
+          >
+            {loading ? 'Salvando...' : 'Salvar'}
+          </Button>
+          <Button
+            variant="bordered"
+            onClick={() => navigate('/pessoas')}
+            startIcon={<ArrowBackIcon />}
+          >
+            Voltar
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }
 

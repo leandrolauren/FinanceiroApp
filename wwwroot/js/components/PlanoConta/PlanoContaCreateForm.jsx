@@ -1,23 +1,56 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Box,
-  Typography,
-  Grid,
-  TextField,
   Button,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  CircularProgress,
-  MenuItem,
-  Alert,
-} from '@mui/material'
-import SaveIcon from '@mui/icons-material/Save'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+  Input,
+  Select,
+  SelectItem,
+  Tabs,
+  Tab,
+  Spinner,
+} from '@heroui/react'
+import { Alert } from '@mui/material'
 import axios from 'axios'
+
+// --- Ícones ---
+const SaveIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    {...props}
+  >
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+    <polyline points="17 21 17 13 7 13 7 21" />
+    <polyline points="7 3 7 8 15 8" />
+  </svg>
+)
+
+const ArrowBackIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M19 12H5" />
+    <polyline points="12 19 5 12 12 5" />
+  </svg>
+)
 
 const buildTree = (list) => {
   const map = {}
@@ -48,13 +81,13 @@ const sortTree = (nodes) => {
 
 const renderTreeItems = (nodes, level = 0) => {
   return nodes.flatMap((node) => [
-    <MenuItem
+    <SelectItem
       key={node.id}
-      value={node.id}
-      sx={{ paddingLeft: `${1 + level * 2}rem` }}
+      value={String(node.id)}
+      textValue={node.descricao}
     >
-      {node.descricao}
-    </MenuItem>,
+      <span style={{ paddingLeft: `${level * 1.5}rem` }}>{node.descricao}</span>
+    </SelectItem>,
     ...(node.filhos.length > 0 ? renderTreeItems(node.filhos, level + 1) : []),
   ])
 }
@@ -80,7 +113,6 @@ const PlanoContaCreateForm = () => {
 
   const [formData, setFormData] = useState(initialState)
   const [todosPlanosPai, setTodosPlanosPai] = useState([])
-  const [planosPaiFiltrados, setPlanosPaiFiltrados] = useState([])
 
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
@@ -90,43 +122,51 @@ const PlanoContaCreateForm = () => {
     axios
       .get('/api/planoContas/pais')
       .then((response) => {
-        const planos = response.data
-        setTodosPlanosPai(planos)
+        setTodosPlanosPai(response.data)
+      })
+      .catch((err) => {
+        setError('Erro ao recarregar a lista de planos de contas.')
+        console.error(err)
+      })
+  }, [])
 
-        setPlanosPaiFiltrados(planos.filter((p) => p.tipo === formData.tipo))
+  useEffect(() => {
+    setPageLoading(true)
+    axios
+      .get('/api/planoContas/pais')
+      .then((response) => {
+        setTodosPlanosPai(response.data)
       })
       .catch((err) => {
         setError('Erro ao carregar a lista de planos de contas.')
         console.error(err)
       })
-      .finally(() => {
-        setPageLoading(false)
-      })
-  }, [formData.tipo])
+      .finally(() => setPageLoading(false))
+  }, [])
 
-  useEffect(() => {
-    setPageLoading(true)
-    fetchPlanosPai()
-  }, [fetchPlanosPai])
+  const planosPaiFiltrados = useMemo(() => {
+    return todosPlanosPai.filter((p) => p.tipo === formData.tipo)
+  }, [todosPlanosPai, formData.tipo])
 
-  const handleChange = (event) => {
-    const { name, value } = event.target
+  const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleTipoChange = (event) => {
-    const novoTipo = parseInt(event.target.value, 10)
+  const handleTipoChange = (key) => {
+    const novoTipo = parseInt(key, 10)
     setFormData((prev) => ({
       ...prev,
       tipo: novoTipo,
       planoContasPaiId: '',
     }))
-    setPlanosPaiFiltrados(todosPlanosPai.filter((p) => p.tipo === novoTipo))
   }
 
   const sendCreateRequest = async (confirmarMigracao = false) => {
     const dadosParaEnviar = {
       ...formData,
+      // Garante que o tipo seja enviado como número
+      tipo: Number(formData.tipo),
+      // Envia null se o campo estiver vazio
       planoContasPaiId: formData.planoContasPaiId || null,
     }
 
@@ -162,7 +202,6 @@ const PlanoContaCreateForm = () => {
               'Plano de Contas criado e lançamentos migrados com sucesso.',
               'success',
             )
-
             setFormData(initialState)
             fetchPlanosPai()
           } catch (finalErr) {
@@ -191,96 +230,89 @@ const PlanoContaCreateForm = () => {
     }
   }
 
-  const arvoreFiltrada = sortTree(buildTree(planosPaiFiltrados))
+  const arvoreFiltrada = useMemo(
+    () => sortTree(buildTree(planosPaiFiltrados)),
+    [planosPaiFiltrados],
+  )
 
   if (pageLoading) {
     return (
-      <Box display="flex" justifyContent="center" mt={4}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center h-64">
+        <Spinner label="Carregando..." />
+      </div>
     )
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 3 }}
-    >
-      <Typography variant="h4" component="h1" gutterBottom>
+    <div className="p-4 md:p-6 rounded-lg shadow-sm">
+      <h1 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-gray-100">
         Novo Plano de Contas
-      </Typography>
+      </h1>
 
-      <FormControl component="fieldset" sx={{ mb: 3 }}>
-        <FormLabel component="legend">Tipo do Plano</FormLabel>
-        <RadioGroup
-          row
-          name="tipo"
-          value={formData.tipo}
-          onChange={handleTipoChange}
-        >
-          <FormControlLabel value={1} control={<Radio />} label="Receita" />
-          <FormControlLabel value={2} control={<Radio />} label="Despesa" />
-        </RadioGroup>
-      </FormControl>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
+      )}
 
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <TextField
-            name="descricao"
-            label="Descrição"
-            value={formData.descricao}
-            onChange={handleChange}
-            sx={{ minWidth: 270 }}
-            fullWidth
-            required
-          />
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField
-            select
-            name="planoContasPaiId"
-            label="Plano de Contas Pai (Opcional)"
-            value={formData.planoContasPaiId}
-            onChange={handleChange}
-            fullWidth
-            sx={{ minWidth: 270 }}
-          >
-            <MenuItem value="">
-              <em>Nenhum</em>
-            </MenuItem>
-            {renderTreeItems(arvoreFiltrada)}
-          </TextField>
-        </Grid>
-      </Grid>
-
-      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
-        <Button
-          type="submit"
-          variant="contained"
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs
+          aria-label="Tipo do Plano"
+          selectedKey={String(formData.tipo)}
+          onSelectionChange={handleTipoChange}
           color="primary"
-          disabled={loading}
-          startIcon={
-            loading ? (
-              <CircularProgress size={20} color="inherit" />
-            ) : (
-              <SaveIcon />
-            )
+          radius="md"
+        >
+          <Tab key="1" title="Receita" />
+          <Tab key="2" title="Despesa" />
+        </Tabs>
+
+        <Input
+          label="Descrição"
+          name="descricao"
+          value={formData.descricao}
+          onValueChange={(value) => handleChange('descricao', value)}
+          isRequired
+          fullWidth
+        />
+
+        <Select
+          label="Plano de Contas Pai (Opcional)"
+          selectedKeys={
+            formData.planoContasPaiId ? [String(formData.planoContasPaiId)] : []
           }
+          onSelectionChange={(keys) =>
+            handleChange('planoContasPaiId', Array.from(keys)[0] || '')
+          }
+          fullWidth
         >
-          {loading ? 'Salvando...' : 'Salvar'}
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => navigate('/PlanoContas')}
-          startIcon={<ArrowBackIcon />}
-        >
-          Voltar
-        </Button>
-      </Box>
-    </Box>
+          <SelectItem key="" value="">
+            Nenhum
+          </SelectItem>
+          {renderTreeItems(arvoreFiltrada)}
+        </Select>
+
+        <div className="flex gap-2 pt-4">
+          <Button
+            type="submit"
+            color="primary"
+            isDisabled={loading}
+            startIcon={
+              loading ? <Spinner color="current" size="sm" /> : <SaveIcon />
+            }
+          >
+            {loading ? 'Salvando...' : 'Salvar'}
+          </Button>
+          <Button
+            variant="bordered"
+            onClick={() => navigate('/PlanoContas')}
+            startIcon={<ArrowBackIcon />}
+          >
+            Voltar
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }
 
