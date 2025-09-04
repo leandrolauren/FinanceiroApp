@@ -409,14 +409,14 @@ export default function ImportacaoOfx() {
                 </Table>
               </TableContainer>
               <TablePagination
-                rowsPerPageOptions={[50, 100, 150]}
+                rowsPerPageOptions={[25, 50, 75]}
                 component="div"
                 count={transactions.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={(e, newPage) => setPage(newPage)}
                 onRowsPerPageChange={(e) => {
-                  setRowsPerPage(parseInt(e.target.value, 50))
+                  setRowsPerPage(parseInt(e.target.value, 25))
                   setPage(0)
                 }}
                 labelRowsPerPage="Linhas por pág."

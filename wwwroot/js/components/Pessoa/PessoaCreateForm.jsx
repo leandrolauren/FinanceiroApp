@@ -190,7 +190,6 @@ const PessoaCreateForm = () => {
       </Typography>
 
       <FormControl component="fieldset" sx={{ mb: 3 }}>
-        <FormLabel component="legend">Tipo de Pessoa</FormLabel>
         <RadioGroup
           row
           value={tipoPessoa}
@@ -204,7 +203,7 @@ const PessoaCreateForm = () => {
       <Grid container spacing={3}>
         {tipoPessoa === '1' && (
           <>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="nome"
                 label="Nome Completo"
@@ -216,7 +215,7 @@ const PessoaCreateForm = () => {
                 helperText={errors.Nome?.[0]}
               />
             </Grid>
-            <Grid xs={12} sm={3}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="cpf"
                 label="CPF"
@@ -229,7 +228,7 @@ const PessoaCreateForm = () => {
                 helperText={errors.Cpf?.[0]}
               />
             </Grid>
-            <Grid xs={12} sm={3}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="rg"
                 label="RG"
@@ -238,7 +237,7 @@ const PessoaCreateForm = () => {
                 fullWidth
               />
             </Grid>
-            <Grid xs={12} sm={3}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="dataNascimento"
                 label="Data de Nascimento"
@@ -254,7 +253,7 @@ const PessoaCreateForm = () => {
 
         {tipoPessoa === '2' && (
           <>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="razaoSocial"
                 label="Razão Social"
@@ -266,7 +265,7 @@ const PessoaCreateForm = () => {
                 helperText={errors.RazaoSocial?.[0]}
               />
             </Grid>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="nomeFantasia"
                 label="Nome Fantasia"
@@ -275,7 +274,7 @@ const PessoaCreateForm = () => {
                 fullWidth
               />
             </Grid>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="cnpj"
                 label="CNPJ"
@@ -298,7 +297,7 @@ const PessoaCreateForm = () => {
                 helperText={errors.Cnpj?.[0]}
               />
             </Grid>
-            <Grid xs={12} sm={6}>
+            <Grid item xs={12} md={6}>
               <TextField
                 name="inscricaoEstadual"
                 label="Inscrição Estadual"
@@ -310,7 +309,7 @@ const PessoaCreateForm = () => {
           </>
         )}
 
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="telefone"
             label="Telefone"
@@ -320,7 +319,7 @@ const PessoaCreateForm = () => {
             slotProps={{ input: { inputComponent: TelefoneMask } }}
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="email"
             label="E-mail"
@@ -332,7 +331,7 @@ const PessoaCreateForm = () => {
             helperText={errors.Email?.[0]}
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="cep"
             label="CEP"
@@ -352,7 +351,7 @@ const PessoaCreateForm = () => {
             }}
           />
         </Grid>
-        <Grid xs={12} sm={8}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="endereco"
             label="Endereço"
@@ -361,7 +360,7 @@ const PessoaCreateForm = () => {
             fullWidth
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="numero"
             label="Número"
@@ -370,7 +369,7 @@ const PessoaCreateForm = () => {
             fullWidth
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="bairro"
             label="Bairro"
@@ -379,7 +378,7 @@ const PessoaCreateForm = () => {
             fullWidth
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="cidade"
             label="Cidade"
@@ -388,7 +387,7 @@ const PessoaCreateForm = () => {
             fullWidth
           />
         </Grid>
-        <Grid xs={12} sm={4}>
+        <Grid item xs={12} md={6}>
           <TextField
             name="estado"
             label="Estado"
@@ -397,7 +396,7 @@ const PessoaCreateForm = () => {
             fullWidth
           />
         </Grid>
-        <Grid xs={12}>
+        <Grid item xs={12}>
           <TextField
             name="complemento"
             label="Complemento"
@@ -408,7 +407,9 @@ const PessoaCreateForm = () => {
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 4, display: 'flex', gap: 2 }}>
+      <Box
+        sx={{ mt: 4, display: 'flex', justifyContent: 'flex-start', gap: 2 }}
+      >
         <Button
           type="submit"
           variant="contained"

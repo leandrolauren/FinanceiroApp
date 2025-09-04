@@ -12,6 +12,8 @@ import { SnackbarProvider } from 'notistack'
 import Notifcacao from '../Shared/Notificacao'
 import { Box, CircularProgress, CssBaseline } from '@mui/material'
 import { ptBR } from 'date-fns/locale/pt-BR'
+import '../../../css/tailwind.css'
+import { HeroUIProvider } from '@heroui/system'
 
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
@@ -36,9 +38,7 @@ const EditContaPage = () => {
   return <EditContaForm contaId={id} />
 }
 
-const LancamentoDataGrid = lazy(() =>
-  import('../Lancamento/LancamentosDataGrid'),
-)
+const LancamentoIndex = lazy(() => import('../Lancamento/Lancamentos'))
 const LancamentoCreateForm = lazy(() =>
   import('../Lancamento/LancamentoCreateForm'),
 )
@@ -153,7 +153,7 @@ const App = () => {
             <Route path="/contas" element={<ContaBancariaDataGrid />} />
             <Route path="/contas/create" element={<CreateContaForm />} />
             <Route path="/contas/edit/:id" element={<EditContaPage />} />
-            <Route path="/lancamentos" element={<LancamentoDataGrid />} />
+            <Route path="/lancamentos" element={<LancamentoIndex />} />
             <Route
               path="/lancamentos/create"
               element={<LancamentoCreateForm />}
@@ -179,15 +179,17 @@ if (container) {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-        <SnackbarProvider
-          maxSnack={3}
-          anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-        >
-          <Notifcacao />
-          <App />
-        </SnackbarProvider>
-      </LocalizationProvider>
+      <HeroUIProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+          <SnackbarProvider
+            maxSnack={3}
+            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <Notifcacao />
+            <App />
+          </SnackbarProvider>
+        </LocalizationProvider>
+      </HeroUIProvider>
     </React.StrictMode>,
   )
 } else {
