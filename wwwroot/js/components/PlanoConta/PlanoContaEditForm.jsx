@@ -199,11 +199,23 @@ const PlanoContaEditForm = ({ planoContaId }) => {
         Editar Plano de Contas
       </Typography>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+      <FormControl component="fieldset" sx={{ mb: 3 }}>
+        <FormLabel component="legend">Tipo do Plano</FormLabel>
+        <RadioGroup row name="tipo" value={formData.tipo || ''}>
+          <FormControlLabel
+            value={1}
+            control={<Radio />}
+            label="Receita"
+            disabled
+          />
+          <FormControlLabel
+            value={2}
+            control={<Radio />}
+            label="Despesa"
+            disabled
+          />
+        </RadioGroup>
+      </FormControl>
 
       <Grid container spacing={3}>
         <Grid item xs={12}>
@@ -212,29 +224,11 @@ const PlanoContaEditForm = ({ planoContaId }) => {
             label="Descrição"
             value={formData.descricao || ''}
             onChange={handleChange}
+            sx={{ minWidth: 270 }}
             fullWidth
+            error={!!error}
             required
           />
-        </Grid>
-
-        <Grid item xs={12}>
-          <FormControl component="fieldset">
-            <FormLabel component="legend">Tipo</FormLabel>
-            <RadioGroup row name="tipo" value={formData.tipo || ''}>
-              <FormControlLabel
-                value={1}
-                control={<Radio />}
-                label="Receita"
-                disabled
-              />
-              <FormControlLabel
-                value={2}
-                control={<Radio />}
-                label="Despesa"
-                disabled
-              />
-            </RadioGroup>
-          </FormControl>
         </Grid>
 
         <Grid item xs={12}>
@@ -248,7 +242,7 @@ const PlanoContaEditForm = ({ planoContaId }) => {
             sx={{ minWidth: 270 }}
           >
             <MenuItem value="">
-              <em>Nenhum (Conta Principal)</em>
+              <em>Nenhum</em>
             </MenuItem>
             {renderTreeItems(arvoreFiltrada)}
           </TextField>
@@ -277,7 +271,7 @@ const PlanoContaEditForm = ({ planoContaId }) => {
           onClick={() => navigate('/PlanoContas')}
           startIcon={<ArrowBackIcon />}
         >
-          Voltar para Lista
+          Voltar
         </Button>
       </Box>
     </Box>

@@ -46,16 +46,25 @@ function ContaDeleteModal({ open, onClose, contaId }) {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/Contas/${contaId}`)
-      showNotification('Conta excluída com sucesso.', 'success')
-      onClose(true)
+      const response = await axios.delete(`/api/Contas/${contaId}`)
+
+      if (response.data.success) {
+        showNotification('Conta excluída com sucesso.', 'success')
+        onClose(true)
+      } else {
+        const errorMessage =
+          response.data.message || 'Ocorreu um erro ao excluir a conta.'
+        showNotification(errorMessage, 'error')
+        setError(errorMessage)
+        onClose(false)
+      }
     } catch (error) {
-      showNotification(
-        err.response.data.message || 'Erro ao excluir conta.',
-        'error',
-      )
-      onclose(false)
-      setError(err.response.data.message || 'Erro ao excluir pessoa.')
+      const errorMessage =
+        error.response?.data?.message ||
+        'Erro de comunicação ao excluir a conta.'
+      showNotification(errorMessage, 'error')
+      setError(errorMessage)
+      onClose(false)
     }
   }
 

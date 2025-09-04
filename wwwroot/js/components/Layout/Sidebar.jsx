@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   Box,
@@ -14,6 +14,9 @@ import {
   ListSubheader,
   IconButton,
   useTheme,
+  Avatar,
+  Menu,
+  MenuItem,
 } from '@mui/material'
 
 import HomeIcon from '@mui/icons-material/Home'
@@ -23,11 +26,22 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import LogoutIcon from '@mui/icons-material/Logout'
 
 const drawerWidth = 240
 
-const Sidebar = ({ isToggled, handleToggle }) => {
+const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
   const theme = useTheme()
+  const [anchorEl, setAnchorEl] = useState(null)
+  const isMenuOpen = Boolean(anchorEl)
+
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null)
+  }
 
   const navLinkStyle = {
     textDecoration: 'none',
@@ -213,6 +227,66 @@ const Sidebar = ({ isToggled, handleToggle }) => {
           </NavLink>
         </ListItem>
       </List>
+      <Box sx={{ mt: 'auto' }}>
+        <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.12)' }} />
+        <ListItemButton
+          onClick={handleProfileMenuOpen}
+          sx={{
+            py: 2,
+            px: isToggled ? 2 : 'auto',
+            justifyContent: 'center',
+          }}
+        >
+          <ListItemIcon
+            sx={{
+              minWidth: 0,
+              mr: isToggled ? 2 : 'auto',
+              justifyContent: 'center',
+            }}
+          >
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: 'primary.main',
+                color: 'white',
+                fontSize: '1rem',
+              }}
+            >
+              {userName ? userName.charAt(0) : ''}
+            </Avatar>
+          </ListItemIcon>
+          <ListItemText
+            primary={userName}
+            sx={{ opacity: isToggled ? 1 : 0, color: 'white' }}
+          />
+        </ListItemButton>
+        <Menu
+          anchorEl={anchorEl}
+          open={isMenuOpen}
+          onClose={handleMenuClose}
+          anchorOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              handleMenuClose()
+              handleLogout()
+            }}
+          >
+            <ListItemIcon>
+              <LogoutIcon fontSize="small" />
+            </ListItemIcon>
+            Sair
+          </MenuItem>
+        </Menu>
+      </Box>
     </Drawer>
   )
 }

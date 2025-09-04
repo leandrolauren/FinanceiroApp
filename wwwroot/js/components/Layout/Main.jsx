@@ -16,7 +16,6 @@ import '../../../css/tailwind.css'
 import { HeroUIProvider } from '@heroui/system'
 
 import Sidebar from './Sidebar'
-import Topbar from './Topbar'
 
 const HomePage = lazy(() => import('./HomePage'))
 
@@ -28,9 +27,7 @@ const EditPessoaPage = () => {
   return <PessoaEditForm pessoaId={id} />
 }
 
-const ContaBancariaDataGrid = lazy(() =>
-  import('../ContaBancaria/ContaBancariaDataGrid'),
-)
+const ContaBancariaIndex = lazy(() => import('../ContaBancaria/ContaBancaria'))
 const CreateContaForm = lazy(() => import('../ContaBancaria/CreateContaForm'))
 const EditContaForm = lazy(() => import('../ContaBancaria/EditContaForm'))
 const EditContaPage = () => {
@@ -104,14 +101,13 @@ const App = () => {
   return (
     <Router>
       <CssBaseline />
-      <Topbar
-        isSidebarOpen={isToggled}
-        handleSidebarToggle={handleToggle}
+
+      <Sidebar
+        isToggled={isToggled}
+        handleToggle={handleToggle}
         userName={userName}
         handleLogout={handleLogout}
       />
-
-      <Sidebar isToggled={isToggled} handleToggle={handleToggle} />
 
       <Box
         component="main"
@@ -150,7 +146,7 @@ const App = () => {
               path="/planocontas/edit/:id"
               element={<EditPlanoContaPage />}
             />
-            <Route path="/contas" element={<ContaBancariaDataGrid />} />
+            <Route path="/contas" element={<ContaBancariaIndex />} />
             <Route path="/contas/create" element={<CreateContaForm />} />
             <Route path="/contas/edit/:id" element={<EditContaPage />} />
             <Route path="/lancamentos" element={<LancamentoIndex />} />

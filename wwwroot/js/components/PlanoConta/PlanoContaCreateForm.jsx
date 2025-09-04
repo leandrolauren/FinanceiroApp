@@ -231,6 +231,7 @@ const PlanoContaCreateForm = () => {
             label="Descrição"
             value={formData.descricao}
             onChange={handleChange}
+            sx={{ minWidth: 270 }}
             fullWidth
             required
           />

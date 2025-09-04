@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import {
   Table,
   TableHeader,
@@ -13,18 +13,12 @@ import {
   Dropdown,
   DropdownMenu,
   DropdownItem,
+  Chip,
   Pagination,
 } from '@heroui/react'
 import { Box, CircularProgress } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
-import {
-  formatarCpf,
-  formatarCnpj,
-  formatarTelefone,
-  formatarCep,
-  formatarData,
-} from '../../utils/form-utils'
-import PessoaDeleteModal from './PessoaDeleteModal'
+import ContaDeleteModal from './ContaDeleteModal'
 
 // --- Ícones e Helpers ---
 const PlusIcon = ({ size = 24, width, height, ...props }) => (
@@ -123,6 +117,37 @@ function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ''
 }
 
+// --- Configurações da Tabela ---
+const columns = [
+  { name: 'DESCRIÇÃO', uid: 'descricao', sortable: true },
+  { name: 'TIPO', uid: 'tipo', sortable: true },
+  { name: 'BANCO', uid: 'banco', sortable: true },
+  { name: 'AGÊNCIA', uid: 'agencia' },
+  { name: 'CONTA', uid: 'numeroConta' },
+  { name: 'SALDO', uid: 'saldo', sortable: true },
+  { name: 'STATUS', uid: 'ativoTexto', sortable: true },
+  { name: 'AÇÕES', uid: 'acoes' },
+]
+
+const statusOptions = [
+  { name: 'Ativo', uid: 'Ativo' },
+  { name: 'Inativo', uid: 'Inativo' },
+]
+
+const statusColorMap = {
+  Ativo: 'success',
+  Inativo: 'danger',
+}
+
+const INITIAL_VISIBLE_COLUMNS = [
+  'descricao',
+  'tipo',
+  'banco',
+  'saldo',
+  'ativoTexto',
+  'acoes',
+]
+
 const showNotification = (message, variant) => {
   const event = new CustomEvent('onNotificacao', {
     detail: {
@@ -133,118 +158,91 @@ const showNotification = (message, variant) => {
   window.dispatchEvent(event)
 }
 
-// --- Configurações da Tabela ---
-const columns = [
-  { name: 'NOME', uid: 'nome', sortable: true },
-  { name: 'RAZÃO SOCIAL', uid: 'razaoSocial', sortable: true },
-  { name: 'NOME FANTASIA', uid: 'nomeFantasia', sortable: true },
-  { name: 'CNPJ', uid: 'cnpj' },
-  { name: 'INSC. ESTADUAL', uid: 'inscricaoEstadual' },
-  { name: 'CPF', uid: 'cpf' },
-  { name: 'RG', uid: 'rg' },
-  { name: 'NASCIMENTO', uid: 'dataNascimento' },
-  { name: 'TELEFONE', uid: 'telefone' },
-  { name: 'E-MAIL', uid: 'email', sortable: true },
-  { name: 'CEP', uid: 'cep' },
-  { name: 'ENDEREÇO', uid: 'endereco' },
-  { name: 'NÚMERO', uid: 'numero' },
-  { name: 'BAIRRO', uid: 'bairro' },
-  { name: 'CIDADE', uid: 'cidade', sortable: true },
-  { name: 'ESTADO', uid: 'estado', sortable: true },
-  { name: 'COMPLEMENTO', uid: 'complemento' },
-  { name: 'AÇÕES', uid: 'acoes' },
-]
-
-const INITIAL_VISIBLE_COLUMNS = [
-  'nome',
-  'cpf',
-  'cnpj',
-  'telefone',
-  'email',
-  'cidade',
-  'acoes',
-]
-
-export default function PessoasDataGrid() {
+export default function ContaBancaria() {
   const navigate = useNavigate()
-  const [pessoas, setPessoas] = useState([])
   const [loading, setLoading] = useState(true)
+  const [contas, setContas] = useState([])
 
   // Modal de exclusão
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedPessoaId, setSelectedPessoaId] = useState(null)
+  const [selectedContaId, setSelectedContaId] = useState(null)
 
   // States da tabela
   const [filterValue, setFilterValue] = useState('')
   const [selectedKeys, setSelectedKeys] = useState(new Set([]))
   const [visibleColumns, setVisibleColumns] = useState(() => {
-    const saved = localStorage.getItem('pessoasVisibleColumns')
+    const saved = localStorage.getItem('contaBancariaVisibleColumns')
     return saved ? new Set(JSON.parse(saved)) : new Set(INITIAL_VISIBLE_COLUMNS)
   })
-  const [rowsPerPage, setRowsPerPage] = useState(() => {
-    const saved = localStorage.getItem('pessoasRowsPerPage')
-    return saved ? Number(saved) : 25
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const saved = localStorage.getItem('contaBancariaStatusFilter')
+    if (saved) {
+      return saved === 'all' ? 'all' : new Set(JSON.parse(saved))
+    }
+    return 'all'
   })
-  const [sortDescriptor, setSortDescriptor] = useState(() => {
-    const saved = localStorage.getItem('pessoasSortDescriptor')
-    return saved
-      ? JSON.parse(saved)
-      : { column: 'nome', direction: 'ascending' }
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [sortDescriptor, setSortDescriptor] = useState({
+    column: 'descricao',
+    direction: 'ascending',
   })
   const [page, setPage] = useState(1)
 
   useEffect(() => {
     localStorage.setItem(
-      'pessoasVisibleColumns',
+      'contaBancariaVisibleColumns',
       JSON.stringify(Array.from(visibleColumns)),
     )
   }, [visibleColumns])
 
   useEffect(() => {
-    localStorage.setItem('pessoasRowsPerPage', rowsPerPage)
-  }, [rowsPerPage])
-
-  useEffect(() => {
-    localStorage.setItem(
-      'pessoasSortDescriptor',
-      JSON.stringify(sortDescriptor),
-    )
-  }, [sortDescriptor])
+    if (statusFilter === 'all') {
+      localStorage.setItem('contaBancariaStatusFilter', 'all')
+    } else {
+      localStorage.setItem(
+        'contaBancariaStatusFilter',
+        JSON.stringify(Array.from(statusFilter)),
+      )
+    }
+  }, [statusFilter])
 
   const hasSearchFilter = Boolean(filterValue)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/Pessoas')
+      const response = await fetch('/api/contas')
       const data = await response.json()
 
-      const formattedRows = data.map((item) => ({
+      const tipoEnumToString = {
+        1: 'Corrente',
+        2: 'Poupança',
+        3: 'Salário',
+        4: 'Investimento',
+      }
+
+      const contasAdaptadas = data.data.map((item) => ({
         ...item,
-        dataNascimento: formatarData(item.dataNascimento),
-        cpf: formatarCpf(item.cpf),
-        cnpj: formatarCnpj(item.cnpj),
-        telefone: formatarTelefone(item.telefone),
-        cep: formatarCep(item.cep),
+        ativoTexto: item?.ativa ? 'Ativo' : 'Inativo',
+        tipo: tipoEnumToString[item.tipo] || 'Desconhecido',
       }))
 
-      setPessoas(formattedRows)
+      setContas(contasAdaptadas)
     } catch (error) {
-      showNotification('Erro ao carregar as Pessoas', 'error')
-      console.error('Erro ao carregar as Pessoas: ', error)
+      showNotification('Erro ao carregar as contas bancárias.', 'error')
     } finally {
       setLoading(false)
     }
   }, [])
 
   const handleOpenDeleteModal = useCallback((id) => {
-    setSelectedPessoaId(id)
+    setSelectedContaId(id)
     setIsModalOpen(true)
   }, [])
 
   const handleCloseDeleteModal = (deleted) => {
     setIsModalOpen(false)
-    setSelectedPessoaId(null)
+    setSelectedContaId(null)
     if (deleted) {
       fetchData()
     }
@@ -258,16 +256,24 @@ export default function PessoasDataGrid() {
   }, [visibleColumns])
 
   const filteredItems = useMemo(() => {
-    let filteredPessoas = [...pessoas]
+    let filteredContas = [...contas]
 
     if (hasSearchFilter) {
-      filteredPessoas = filteredPessoas.filter((pessoa) =>
-        pessoa.nome.toLowerCase().includes(filterValue.toLowerCase()),
+      filteredContas = filteredContas.filter((conta) =>
+        conta.descricao.toLowerCase().includes(filterValue.toLowerCase()),
+      )
+    }
+    if (
+      statusFilter !== 'all' &&
+      Array.from(statusFilter).length !== statusOptions.length
+    ) {
+      filteredContas = filteredContas.filter((conta) =>
+        Array.from(statusFilter).includes(conta.ativoTexto),
       )
     }
 
-    return filteredPessoas
-  }, [pessoas, filterValue])
+    return filteredContas
+  }, [contas, filterValue, statusFilter])
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage) || 1
 
@@ -287,10 +293,32 @@ export default function PessoasDataGrid() {
   }, [sortDescriptor, items])
 
   const renderCell = useCallback(
-    (pessoa, columnKey) => {
-      const cellValue = pessoa[columnKey]
+    (conta, columnKey) => {
+      const cellValue = conta[columnKey]
 
       switch (columnKey) {
+        case 'saldo':
+          return (
+            <span
+              className={cellValue >= 0 ? 'text-green-600' : 'text-red-600'}
+            >
+              {new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+              }).format(cellValue)}
+            </span>
+          )
+        case 'ativoTexto':
+          return (
+            <Chip
+              className="capitalize"
+              color={statusColorMap[conta.ativoTexto]}
+              size="sm"
+              variant="flat"
+            >
+              {cellValue}
+            </Chip>
+          )
         case 'acoes':
           return (
             <div className="relative flex justify-end items-center gap-2">
@@ -300,16 +328,16 @@ export default function PessoasDataGrid() {
                     <VerticalDotsIcon className="text-default-300" />
                   </Button>
                 </DropdownTrigger>
-                <DropdownMenu aria-label="Ações da Pessoa">
+                <DropdownMenu aria-label="Ações da Conta">
                   <DropdownItem
-                    onPress={() => navigate(`/Pessoas/Edit/${pessoa.id}`)}
+                    onPress={() => navigate(`/Contas/Edit/${conta.id}`)}
                   >
                     Editar
                   </DropdownItem>
                   <DropdownItem
                     className="text-danger"
                     color="danger"
-                    onPress={() => handleOpenDeleteModal(pessoa.id)}
+                    onPress={() => handleOpenDeleteModal(conta.id)}
                   >
                     Excluir
                   </DropdownItem>
@@ -358,13 +386,37 @@ export default function PessoasDataGrid() {
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
-            placeholder="Buscar por nome..."
+            placeholder="Buscar por descrição..."
             startContent={<SearchIcon />}
             value={filterValue}
             onClear={onClear}
             onValueChange={onSearchChange}
           />
           <div className="flex gap-3">
+            <Dropdown>
+              <DropdownTrigger className="hidden sm:flex">
+                <Button
+                  endContent={<ChevronDownIcon className="text-small" />}
+                  variant="flat"
+                >
+                  Status
+                </Button>
+              </DropdownTrigger>
+              <DropdownMenu
+                disallowEmptySelection
+                aria-label="Filtrar por Status"
+                closeOnSelect={false}
+                selectedKeys={statusFilter}
+                selectionMode="multiple"
+                onSelectionChange={setStatusFilter}
+              >
+                {statusOptions.map((status) => (
+                  <DropdownItem key={status.uid} className="capitalize">
+                    {capitalize(status.name)}
+                  </DropdownItem>
+                ))}
+              </DropdownMenu>
+            </Dropdown>
             <Dropdown>
               <DropdownTrigger className="hidden sm:flex">
                 <Button
@@ -393,7 +445,16 @@ export default function PessoasDataGrid() {
         </div>
       </div>
     )
-  }, [filterValue, visibleColumns, onSearchChange, onClear])
+  }, [
+    filterValue,
+    statusFilter,
+    visibleColumns,
+    onRowsPerPageChange,
+    contas.length,
+    onSearchChange,
+    onClear,
+    rowsPerPage,
+  ])
 
   const bottomContent = useMemo(() => {
     return (
@@ -420,10 +481,10 @@ export default function PessoasDataGrid() {
               onChange={onRowsPerPageChange}
               defaultValue={rowsPerPage}
             >
+              <option value="5">5</option>
               <option value="10">10</option>
               <option value="25">25</option>
               <option value="50">50</option>
-              <option value="100">100</option>
             </select>
           </label>
         </div>
@@ -454,13 +515,17 @@ export default function PessoasDataGrid() {
     filteredItems.length,
     onPreviousPage,
     onNextPage,
-    rowsPerPage,
-    onRowsPerPageChange,
   ])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    window.atualizarTabelaContas = (idRemovido) => {
+      setContas((prevContas) => prevContas.filter((p) => p.id !== idRemovido))
+    }
+  }, [])
 
   return (
     <Box sx={{ p: 1 }}>
@@ -468,9 +533,9 @@ export default function PessoasDataGrid() {
         <Button
           color="primary"
           endContent={<PlusIcon />}
-          onPress={() => navigate('/Pessoas/Create')}
+          onPress={() => navigate('/Contas/Create')}
         >
-          Nova Pessoa
+          Nova Conta
         </Button>
       </Box>
 
@@ -480,7 +545,7 @@ export default function PessoasDataGrid() {
         </Box>
       ) : (
         <Table
-          aria-label="Tabela de Pessoas"
+          aria-label="Tabela de Contas Bancárias"
           isHeaderSticky
           bottomContent={bottomContent}
           bottomContentPlacement="outside"
@@ -505,7 +570,7 @@ export default function PessoasDataGrid() {
             )}
           </TableHeader>
           <TableBody
-            emptyContent={'Nenhuma pessoa encontrada'}
+            emptyContent={'Nenhuma conta encontrada'}
             items={sortedItems}
           >
             {(item) => (
@@ -519,9 +584,9 @@ export default function PessoasDataGrid() {
         </Table>
       )}
       {isModalOpen && (
-        <PessoaDeleteModal
+        <ContaDeleteModal
           open={isModalOpen}
-          pessoaId={selectedPessoaId}
+          contaId={selectedContaId}
           onClose={handleCloseDeleteModal}
         />
       )}

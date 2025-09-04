@@ -205,7 +205,6 @@ const PessoaEditForm = ({ pessoaId }) => {
       </Typography>
 
       <FormControl component="fieldset" sx={{ mb: 3 }}>
-        <FormLabel component="legend">Tipo de Pessoa</FormLabel>
         <RadioGroup row value={tipoPessoa}>
           <FormControlLabel
             value="1"
