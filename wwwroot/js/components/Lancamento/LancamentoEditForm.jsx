@@ -160,6 +160,16 @@ const LancamentoEditForm = ({ lancamentoId }) => {
     e.preventDefault()
     if (isPago) return
 
+    if (formData.pago && !formData.dataPagamento) {
+      setErrors((prev) => ({
+        ...prev,
+        DataPagamento: ['A Data de Pagamento é obrigatória.'],
+      }))
+      showNotification('A Data de Pagamento é obrigatória.', 'warning')
+      setFormSubmitting(false)
+      return
+    }
+
     setFormSubmitting(true)
     setErrors({})
 
@@ -340,8 +350,9 @@ const LancamentoEditForm = ({ lancamentoId }) => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Conta Bancária"
+                  label={formData.pago ? 'Conta Bancária *' : 'Conta Bancária'}
                   error={!!errors.ContaBancariaId}
+                  required={formData.pago}
                   helperText={errors.ContaBancariaId?.[0]}
                 />
               )}
@@ -400,16 +411,27 @@ const LancamentoEditForm = ({ lancamentoId }) => {
 
           <div className="md:col-span-1">
             <DatePicker
-              label="Data de Pagamento"
+              label={
+                formData.pago ? 'Data de Pagamento *' : 'Data de Pagamento'
+              }
               value={formData.dataPagamento}
               onChange={(date) => handleValueChange('dataPagamento', date)}
               disabled={!formData.pago || isPago}
               renderInput={(params) => (
                 <TextField
                   {...params}
+                  required={formData.pago}
                   fullWidth
-                  error={!!errors.DataPagamento}
-                  helperText={errors.DataPagamento?.[0] || ''}
+                  error={
+                    !!errors.DataPagamento ||
+                    (formData.pago && !formData.dataPagamento)
+                  }
+                  helperText={
+                    errors.DataPagamento?.[0] ||
+                    (formData.pago && !formData.dataPagamento
+                      ? 'Campo obrigatório.'
+                      : '')
+                  }
                 />
               )}
             />

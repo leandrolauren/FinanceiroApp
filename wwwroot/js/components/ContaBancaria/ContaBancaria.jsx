@@ -16,9 +16,16 @@ import {
   Chip,
   Pagination,
 } from '@heroui/react'
-import { Box, CircularProgress } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Tooltip,
+  IconButton,
+} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import ContaDeleteModal from './ContaDeleteModal'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 // --- Ícones e Helpers ---
 const PlusIcon = ({ size = 24, width, height, ...props }) => (
@@ -529,6 +536,20 @@ export default function ContaBancaria() {
 
   return (
     <Box sx={{ p: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <Typography variant="h5" component="h1">
+          Contas Bancárias
+        </Typography>
+        <Tooltip title="Cadastre aqui suas contas bancárias, carteiras ou cartões de crédito. Manter os saldos atualizados é fundamental para uma visão precisa da sua saúde financeira.">
+          <IconButton size="small">
+            <InfoOutlinedIcon
+              fontSize="small"
+              sx={{ color: 'text.secondary' }}
+            />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"

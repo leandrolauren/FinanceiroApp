@@ -185,7 +185,6 @@ const CreateContaForm = () => {
             label="Número da Conta"
             value={formData.NumeroConta}
             onValueChange={(v) => handleChange('NumeroConta', v)}
-            isRequired
             isInvalid={!!errors.NumeroConta}
             errorMessage={errors.NumeroConta?.[0]}
           />

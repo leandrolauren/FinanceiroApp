@@ -147,6 +147,16 @@ const LancamentoCreateForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if (formData.pago && !formData.dataPagamento) {
+      setErrors((prev) => ({
+        ...prev,
+        DataPagamento: ['A Data de Pagamento é obrigatória.'],
+      }))
+      showNotification('A Data de Pagamento é obrigatória.', 'warning')
+      return
+    }
+
     setLoading(true)
     setErrors({})
 
@@ -165,6 +175,7 @@ const LancamentoCreateForm = () => {
       await axios.post('/api/lancamentos', dados)
       showNotification('Lançamento cadastrado com sucesso!', 'success')
       setFormData(initialFormState)
+      window.dispatchEvent(new CustomEvent('lancamentosAtualizados'))
     } catch (error) {
       console.error('Erro ao salvar lançamento:', error)
       if (error.response && error.response.status === 400) {
@@ -308,8 +319,9 @@ const LancamentoCreateForm = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Conta Bancária"
+                  label={formData.pago ? 'Conta Bancária *' : 'Conta Bancária'}
                   error={!!errors.ContaBancariaId}
+                  required={formData.pago}
                   helperText={errors.ContaBancariaId?.[0]}
                 />
               )}
@@ -364,16 +376,27 @@ const LancamentoCreateForm = () => {
 
           <div className="md:col-span-1">
             <DatePicker
-              label="Data de Pagamento"
+              label={
+                formData.pago ? 'Data de Pagamento *' : 'Data de Pagamento'
+              }
               value={formData.dataPagamento}
               onChange={(date) => handleValueChange('dataPagamento', date)}
               disabled={!formData.pago}
               renderInput={(params) => (
                 <TextField
                   {...params}
+                  required={formData.pago}
                   fullWidth
-                  error={!!errors.DataPagamento}
-                  helperText={errors.DataPagamento?.[0] || ''}
+                  error={
+                    !!errors.DataPagamento ||
+                    (formData.pago && !formData.dataPagamento)
+                  }
+                  helperText={
+                    errors.DataPagamento?.[0] ||
+                    (formData.pago && !formData.dataPagamento
+                      ? 'Campo obrigatório.'
+                      : '')
+                  }
                 />
               )}
             />

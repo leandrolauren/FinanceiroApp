@@ -15,7 +15,13 @@ import {
   DropdownItem,
   Pagination,
 } from '@heroui/react'
-import { Box, CircularProgress } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Tooltip,
+  IconButton,
+} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import {
   formatarCpf,
@@ -25,6 +31,7 @@ import {
   formatarData,
 } from '../../utils/form-utils'
 import PessoaDeleteModal from './PessoaDeleteModal'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 // --- Ícones e Helpers ---
 const PlusIcon = ({ size = 24, width, height, ...props }) => (
@@ -464,6 +471,20 @@ export default function PessoasDataGrid() {
 
   return (
     <div className="p-4 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <Typography variant="h5" component="h1">
+          Pessoas
+        </Typography>
+        <Tooltip title="Aqui você gerencia todas as pessoas e empresas (clientes, fornecedores, etc.) com quem você transaciona. Mantenha os cadastros atualizados para facilitar seus lançamentos.">
+          <IconButton size="small">
+            <InfoOutlinedIcon
+              fontSize="small"
+              sx={{ color: 'text.secondary' }}
+            />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"

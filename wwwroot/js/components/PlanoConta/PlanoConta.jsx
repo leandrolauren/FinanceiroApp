@@ -15,12 +15,21 @@ import {
   TableRow,
   TableCell,
 } from '@heroui/react'
-import { Box, CircularProgress, Alert, AlertTitle } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  Alert,
+  AlertTitle,
+  Typography,
+  Tooltip,
+  IconButton,
+} from '@mui/material'
 import { I18nProvider } from '@react-aria/i18n'
 import { getLocalTimeZone, parseDate } from '@internationalized/date'
 import { useNavigate } from 'react-router-dom'
 import PlanoContaDeleteModal from './PlanoContaDeleteModal'
 import PlanoContaMigrateModal from './PlanoContaMigrateModal'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 // --- Ícones ---
 const FilterIcon = (props) => (
@@ -135,7 +144,6 @@ export default function PlanoContaDataGrid() {
   const [isMigrateModalOpen, setIsMigrateModalOpen] = useState(false)
   const [selectedPlano, setSelectedPlano] = useState(null)
   const [migrationSource, setMigrationSource] = useState(null)
-  const [planoParaAcao, setPlanoParaAcao] = useState(null)
 
   const handleOpenDeleteModal = (plano) => {
     setSelectedPlano(plano)
@@ -336,6 +344,20 @@ export default function PlanoContaDataGrid() {
 
   return (
     <div className="p-4 rounded-lg shadow-sm">
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <Typography variant="h5" component="h1">
+          Plano de Contas
+        </Typography>
+        <Tooltip title="O Plano de Contas é a estrutura que organiza suas finanças. Crie categorias como 'Salário', 'Aluguel' ou 'Supermercado' para classificar suas receitas e despesas e entender para onde seu dinheiro está indo.">
+          <IconButton size="small">
+            <InfoOutlinedIcon
+              fontSize="small"
+              sx={{ color: 'text.secondary' }}
+            />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       <div className="flex justify-between items-center mb-4">
         <Button color="primary" onPress={() => navigate('/PlanoContas/Create')}>
           Novo Plano de Contas

@@ -36,6 +36,19 @@ const showNotification = (message, variant) => {
   window.dispatchEvent(event)
 }
 
+const getLeafNodes = (nodes) => {
+  let leafNodes = []
+  if (!Array.isArray(nodes)) return leafNodes
+  nodes.forEach((node) => {
+    if (!node.filhos || node.filhos.length === 0) {
+      leafNodes.push(node)
+    } else {
+      leafNodes = leafNodes.concat(getLeafNodes(node.filhos))
+    }
+  })
+  return leafNodes
+}
+
 const steps = ['1. Configurar Arquivo', '2. Selecionar Transações']
 
 export default function ImportacaoOfx() {
@@ -84,20 +97,15 @@ export default function ImportacaoOfx() {
     fetchInitialData()
   }, [])
 
-  const planosReceita = useMemo(
-    () =>
-      planosDeContas.filter(
-        (p) => p.tipo === 1 && (!p.filhos || p.filhos.length === 0),
-      ),
-    [planosDeContas],
-  )
-  const planosDespesa = useMemo(
-    () =>
-      planosDeContas.filter(
-        (p) => p.tipo === 2 && (!p.filhos || p.filhos.length === 0),
-      ),
-    [planosDeContas],
-  )
+  const planosReceita = useMemo(() => {
+    const receitas = planosDeContas.filter((p) => p.tipo === 1)
+    return getLeafNodes(receitas)
+  }, [planosDeContas])
+
+  const planosDespesa = useMemo(() => {
+    const despesas = planosDeContas.filter((p) => p.tipo === 2)
+    return getLeafNodes(despesas)
+  }, [planosDeContas])
 
   const handleParseFile = useCallback(async () => {
     if (!file || !selectedConta || !dataInicio || !dataFim) {

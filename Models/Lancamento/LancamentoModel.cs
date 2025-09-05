@@ -31,8 +31,8 @@ namespace FinanceiroApp.Models
         [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
         public DateTime DataCompetencia { get; set; }
 
-        public int ContaBancariaId { get; set; }
-        public ContaBancaria? ContaBancaria { get; set; }
+        public int? ContaBancariaId { get; set; }
+        public virtual ContaBancaria? ContaBancaria { get; set; }
 
         [Required(ErrorMessage = "Plano de Contas é obrigatório.")]
         public int PlanoContaId { get; set; }

@@ -16,10 +16,17 @@ import {
   Chip,
   Pagination,
 } from '@heroui/react'
-import { Box, CircularProgress } from '@mui/material'
+import {
+  Box,
+  CircularProgress,
+  Typography,
+  Tooltip,
+  IconButton,
+} from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import LancamentoDeleteModal from './LancamentoDeleteModal'
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 const PlusIcon = ({ size = 24, width, height, ...props }) => (
   <svg
@@ -171,12 +178,13 @@ const formatarParaExibicao = (value) => {
 // --- Configurações da Tabela ---
 const columns = [
   { name: 'DESCRIÇÃO', uid: 'descricao', sortable: true },
-  { name: 'VALOR', uid: 'valor', sortable: true },
   { name: 'PESSOA', uid: 'pessoaNome', sortable: true },
+  { name: 'VALOR', uid: 'valor', sortable: true },
   { name: 'VENCIMENTO', uid: 'dataVencimento', sortable: true },
   { name: 'COMPETENCIA', uid: 'dataCompetencia', sortable: true },
   { name: 'PAGAMENTO', uid: 'dataPagamento', sortable: true },
   { name: 'PLANOCONTAS', uid: 'planoContasDescricao', sortable: true },
+  { name: 'CONTA BANCÁRIA', uid: 'contaBancariaDescricao', sortable: true },
   { name: 'TIPO', uid: 'tipo', sortable: true },
   { name: 'STATUS', uid: 'pagoTexto', sortable: true },
   { name: 'AÇÕES', uid: 'acoes' },
@@ -275,6 +283,7 @@ export default function Lancamentos() {
           pessoaNome: item?.pessoa?.nome ?? '--',
           planoContasDescricao: item?.planoContas?.descricao ?? '--',
           pagoTexto: item.pago ? 'Pago' : 'Não Pago',
+          contaBancariaDescricao: item?.contaBancaria?.nome ?? '--',
         }))
         setLancamentos(rowsAdaptadas)
       } else {
@@ -491,6 +500,13 @@ export default function Lancamentos() {
   }, [fetchData])
 
   useEffect(() => {
+    const listener = () => fetchData()
+    window.addEventListener('lancamentosAtualizados', listener)
+
+    return () => window.removeEventListener('lancamentosAtualizados', listener)
+  }, [fetchData])
+
+  useEffect(() => {
     window.atualizarTabelaLancamentos = (idRemovido) => {
       setLancamentos((prev) => prev.filter((l) => l.id !== idRemovido))
     }
@@ -636,6 +652,20 @@ export default function Lancamentos() {
 
   return (
     <Box sx={{ p: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <Typography variant="h5" component="h1">
+          Lançamentos Financeiros
+        </Typography>
+        <Tooltip title="Esta é a tela principal para registrar todas as suas movimentações: receitas (o que você ganha) e despesas (o que você gasta). Um registro detalhado ajuda a manter o controle.">
+          <IconButton size="small">
+            <InfoOutlinedIcon
+              fontSize="small"
+              sx={{ color: 'text.secondary' }}
+            />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"

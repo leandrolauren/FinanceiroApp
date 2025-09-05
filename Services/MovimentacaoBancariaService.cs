@@ -10,7 +10,7 @@ public class MovimentacaoBancariaService(ApplicationDbContext context)
     {
         if (
             !lancamento.Pago
-            || lancamento.ContaBancariaId <= 0
+            || !lancamento.ContaBancariaId.HasValue
             || !lancamento.DataPagamento.HasValue
         )
             throw new InvalidOperationException(
@@ -22,13 +22,13 @@ public class MovimentacaoBancariaService(ApplicationDbContext context)
             DataMovimentacao = lancamento.DataPagamento.Value,
             Valor = lancamento.Valor,
             Historico = $"PGTO: {lancamento.Descricao}",
-            ContaBancariaId = lancamento.ContaBancariaId,
+            ContaBancariaId = lancamento.ContaBancariaId.Value,
             UsuarioId = lancamento.UsuarioId,
             Lancamento = lancamento,
         };
 
         var conta =
-            await context.ContasBancarias.FindAsync(lancamento.ContaBancariaId)
+            await context.ContasBancarias.FindAsync(lancamento.ContaBancariaId.Value)
             ?? throw new KeyNotFoundException(
                 $"Conta bancária ID {lancamento.ContaBancariaId} não encontrada."
             );
@@ -50,7 +50,7 @@ public class MovimentacaoBancariaService(ApplicationDbContext context)
 
     public async Task RegistrarMovimentacaoDeEstorno(LancamentoModel lancamento)
     {
-        if (lancamento.ContaBancariaId <= 0)
+        if (!lancamento.ContaBancariaId.HasValue)
             throw new InvalidOperationException(
                 "Lançamento inválido para registrar movimentação de estorno."
             );
@@ -60,13 +60,13 @@ public class MovimentacaoBancariaService(ApplicationDbContext context)
             DataMovimentacao = DateTime.Now,
             Valor = lancamento.Valor,
             Historico = $"ESTORNO: {lancamento.Descricao}",
-            ContaBancariaId = lancamento.ContaBancariaId,
+            ContaBancariaId = lancamento.ContaBancariaId.Value,
             UsuarioId = lancamento.UsuarioId,
             Lancamento = lancamento,
         };
 
         var conta =
-            await context.ContasBancarias.FindAsync(lancamento.ContaBancariaId)
+            await context.ContasBancarias.FindAsync(lancamento.ContaBancariaId.Value)
             ?? throw new KeyNotFoundException(
                 $"Conta bancária ID {lancamento.ContaBancariaId} não encontrada."
             );

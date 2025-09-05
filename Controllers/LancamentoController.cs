@@ -165,19 +165,18 @@ public class LancamentosApiController(
     }
 
     [HttpPost("lancamentos")]
-    public async Task<ResponseModel<string>> Create([FromBody] CriarLancamentoDto dto)
+    public async Task<IActionResult> Create([FromBody] CriarLancamentoDto dto)
     {
         ResponseModel<string> resposta = new();
         if (!ModelState.IsValid)
         {
             resposta.Success = false;
             resposta.Message = "Dados inválidos.";
-            resposta.StatusCode = 400;
             resposta.Errors = ModelState
                 .Values.SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .ToList();
-            return resposta;
+            return BadRequest(resposta);
         }
 
         var userId = ObterUsuarioId();
@@ -189,19 +188,23 @@ public class LancamentosApiController(
         {
             resposta.Success = false;
             resposta.Message = "Não é possível lançar em um Plano de Contas que possui filhos.";
-            resposta.StatusCode = 400;
-            return resposta;
+            return BadRequest(resposta);
         }
 
-        if (dto.Pago && (dto.ContaBancariaId <= 0))
+        if (dto.Pago && (!dto.ContaBancariaId.HasValue || dto.ContaBancariaId.Value <= 0))
         {
-            return new ResponseModel<string>
-            {
-                Success = false,
-                Message =
-                    "Para um lançamento ser salvo como 'Pago', é obrigatório selecionar uma Conta Bancária.",
-                StatusCode = 400,
-            };
+            resposta.Success = false;
+            resposta.Message =
+                "Para um lançamento ser salvo como 'Pago', é obrigatório selecionar uma Conta Bancária.";
+            return BadRequest(resposta);
+        }
+
+        if (dto.Pago && !dto.DataPagamento.HasValue)
+        {
+            resposta.Success = false;
+            resposta.Message =
+                "Para um lançamento ser salvo como 'Pago', a Data de Pagamento é obrigatória.";
+            return BadRequest(resposta);
         }
 
         using var transaction = await context.Database.BeginTransactionAsync();
@@ -224,7 +227,7 @@ public class LancamentosApiController(
             };
             context.Lancamentos.Add(lancamento);
 
-            if (lancamento.Pago && lancamento.ContaBancariaId > 0)
+            if (lancamento.Pago && lancamento.ContaBancariaId.HasValue)
                 await movimentacaoService.RegistrarMovimentacaoDePagamento(lancamento);
 
             await context.SaveChangesAsync();
@@ -232,16 +235,16 @@ public class LancamentosApiController(
 
             resposta.Data = lancamento.Id.ToString();
             resposta.Message = "Lançamento cadastrado com sucesso.";
+            return Ok(resposta);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
             resposta.Message = "Erro ao criar Lançamento";
             resposta.Success = false;
-            resposta.StatusCode = 500;
             resposta.Errors.Add(ex.Message);
+            return StatusCode(500, resposta);
         }
-        return resposta;
     }
 
     [HttpPut("lancamentos/{id}")]
@@ -250,13 +253,25 @@ public class LancamentosApiController(
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        if (dto.Pago && (dto.ContaBancariaId <= 0))
+        if (dto.Pago && (!dto.ContaBancariaId.HasValue || dto.ContaBancariaId.Value <= 0))
         {
             return BadRequest(
                 new
                 {
                     success = false,
                     message = "Para marcar um lançamento como 'Pago', é obrigatório selecionar uma Conta Bancária.",
+                }
+            );
+        }
+
+        if (dto.Pago && !dto.DataPagamento.HasValue)
+        {
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message =
+                        "Para marcar um lançamento como 'Pago', a Data de Pagamento é obrigatória.",
                 }
             );
         }
@@ -300,7 +315,7 @@ public class LancamentosApiController(
             if (
                 !lancamentoOriginal.Pago
                 && lancamentoParaAtualizar.Pago
-                && lancamentoParaAtualizar.ContaBancariaId > 0
+                && lancamentoParaAtualizar.ContaBancariaId.HasValue
             )
                 await movimentacaoService.RegistrarMovimentacaoDePagamento(lancamentoParaAtualizar);
 

@@ -214,7 +214,6 @@ const EditContaForm = ({ contaId }) => {
               label="Número da Conta"
               value={formData.numeroConta || ''}
               onValueChange={(v) => handleDynamicChange('numeroConta', v)}
-              isRequired
               isInvalid={!!errors.NumeroConta}
               errorMessage={errors.NumeroConta?.[0]}
             />

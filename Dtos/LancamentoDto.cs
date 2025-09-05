@@ -22,9 +22,7 @@ namespace FinanceiroApp.Dtos
 
         public bool Pago { get; set; }
 
-        [Required(ErrorMessage = "A conta bancária é obrigatória.")]
-        [Range(1, int.MaxValue, ErrorMessage = "ID da conta bancária inválido.")]
-        public int ContaBancariaId { get; set; }
+        public int? ContaBancariaId { get; set; }
 
         [Required(ErrorMessage = "O plano de contas é obrigatório.")]
         [Range(1, int.MaxValue, ErrorMessage = "ID do plano de contas inválido.")]
@@ -38,7 +36,6 @@ namespace FinanceiroApp.Dtos
     public class CriarLancamentoDto : BaseLancamentoDto
     {
         [Required(ErrorMessage = "O tipo (Receita/Despesa) é obrigatório.")]
-        // Exemplo: Validação para aceitar apenas "R" para Receita ou "D" para Despesa
         [RegularExpression(
             "^[RD]$",
             ErrorMessage = "O tipo deve ser 'R' para Receita ou 'D' para Despesa."

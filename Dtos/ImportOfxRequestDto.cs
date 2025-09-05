@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace FinanceiroApp.Dtos
 {
     public class ImportOfxRequestDto
@@ -8,6 +10,8 @@ namespace FinanceiroApp.Dtos
         public int PessoaId { get; set; }
         public DateTime DataVencimento { get; set; }
         public DateTime DataCompetencia { get; set; }
+
+        [JsonIgnore]
         public List<OfxTransactionDto> Transactions { get; set; } = [];
     }
 }

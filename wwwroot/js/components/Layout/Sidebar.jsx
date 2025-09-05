@@ -31,6 +31,13 @@ import { ThemeSwitcher } from './ThemeSwitcher'
 
 const drawerWidth = 240
 
+function decodeHtml(html) {
+  if (!html) return ''
+  const txt = document.createElement('textarea')
+  txt.innerHTML = html
+  return txt.value
+}
+
 const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
   const theme = useTheme()
   const [anchorEl, setAnchorEl] = useState(null)
@@ -43,6 +50,8 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
   const handleMenuClose = () => {
     setAnchorEl(null)
   }
+
+  const decodedUserName = decodeHtml(userName)
 
   const navLinkStyle = {
     textDecoration: 'none',
@@ -114,18 +123,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
             </Typography>
           </Box>
         )}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'flex-end',
-            flexGrow: 1,
-          }}
-        >
-          <IconButton onClick={handleToggle} sx={{ color: 'inherit' }}>
-            {isToggled ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </IconButton>
-        </Box>
+        <Box sx={{ flexGrow: 1 }} />
         <ThemeSwitcher />
       </Toolbar>
       <Divider />
@@ -236,6 +234,17 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           </NavLink>
         </ListItem>
       </List>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <IconButton onClick={handleToggle} sx={{ color: 'inherit' }}>
+          {isToggled ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+        </IconButton>
+      </Box>
       <Box sx={{ mt: 'auto' }}>
         <Divider />
         <ListItemButton
@@ -262,11 +271,11 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
                 fontSize: '1rem',
               }}
             >
-              {userName ? userName.charAt(0) : ''}
+              {decodedUserName ? decodedUserName.charAt(0) : ''}
             </Avatar>
           </ListItemIcon>
           <ListItemText
-            primary={userName}
+            primary={decodedUserName}
             sx={{ opacity: isToggled ? 1 : 0, color: 'inherit' }}
           />
         </ListItemButton>
