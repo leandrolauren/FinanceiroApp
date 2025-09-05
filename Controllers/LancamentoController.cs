@@ -29,7 +29,8 @@ public class LancamentosController : Controller
 [Route("api/")]
 public class LancamentosApiController(
     ApplicationDbContext context,
-    IMovimentacaoBancariaService movimentacaoService
+    IMovimentacaoBancariaService movimentacaoService,
+    ILancamentoService lancamentoService
 ) : ControllerBase
 {
     [HttpGet("lancamentos")]
@@ -179,67 +180,24 @@ public class LancamentosApiController(
             return BadRequest(resposta);
         }
 
-        var userId = ObterUsuarioId();
-        var planoContaEhPai = await context.PlanosContas.AnyAsync(p =>
-            p.PlanoContasPaiId == dto.PlanoContasId && p.UsuarioId == userId
-        );
-
-        if (planoContaEhPai)
-        {
-            resposta.Success = false;
-            resposta.Message = "Não é possível lançar em um Plano de Contas que possui filhos.";
-            return BadRequest(resposta);
-        }
-
-        if (dto.Pago && (!dto.ContaBancariaId.HasValue || dto.ContaBancariaId.Value <= 0))
-        {
-            resposta.Success = false;
-            resposta.Message =
-                "Para um lançamento ser salvo como 'Pago', é obrigatório selecionar uma Conta Bancária.";
-            return BadRequest(resposta);
-        }
-
-        if (dto.Pago && !dto.DataPagamento.HasValue)
-        {
-            resposta.Success = false;
-            resposta.Message =
-                "Para um lançamento ser salvo como 'Pago', a Data de Pagamento é obrigatória.";
-            return BadRequest(resposta);
-        }
-
-        using var transaction = await context.Database.BeginTransactionAsync();
         try
         {
-            var lancamento = new LancamentoModel
-            {
-                Descricao = dto.Descricao,
-                Tipo = dto.Tipo.ToUpper() == "R" ? TipoLancamento.Receita : TipoLancamento.Despesa,
-                Valor = dto.Valor,
-                DataCompetencia = dto.DataCompetencia,
-                DataVencimento = dto.DataVencimento,
-                DataPagamento = dto.DataPagamento,
-                Pago = dto.Pago,
-                ContaBancariaId = dto.ContaBancariaId,
-                PlanoContaId = dto.PlanoContasId,
-                PessoaId = dto.PessoaId,
-                UsuarioId = userId,
-                DataLancamento = DateTime.Now,
-            };
-            context.Lancamentos.Add(lancamento);
-
-            if (lancamento.Pago && lancamento.ContaBancariaId.HasValue)
-                await movimentacaoService.RegistrarMovimentacaoDePagamento(lancamento);
-
-            await context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            var userId = ObterUsuarioId();
+            var lancamento = await lancamentoService.CreateLancamentoAsync(dto, userId);
 
             resposta.Data = lancamento.Id.ToString();
             resposta.Message = "Lançamento cadastrado com sucesso.";
             return Ok(resposta);
         }
+        catch (InvalidOperationException ex)
+        {
+            resposta.Success = false;
+            resposta.Message = ex.Message;
+            resposta.Errors.Add(ex.Message);
+            return BadRequest(resposta);
+        }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
             resposta.Message = "Erro ao criar Lançamento";
             resposta.Success = false;
             resposta.Errors.Add(ex.Message);

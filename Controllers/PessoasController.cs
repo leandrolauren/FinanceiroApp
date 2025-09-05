@@ -2,6 +2,7 @@ using System.Security.Claims;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
 using FinanceiroApp.Models;
+using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,8 @@ namespace FinanceiroApp.Controllers
     [Route("api/")]
     public class PessoasApiController(
         ApplicationDbContext context,
-        ILogger<PessoasController> logger
+        ILogger<PessoasController> logger,
+        IPessoaService pessoaService
     ) : ControllerBase
     {
         // GET: /api/Pessoas
@@ -72,31 +74,7 @@ namespace FinanceiroApp.Controllers
             try
             {
                 var userId = GetUserId();
-                var pessoa = new PessoaModel
-                {
-                    Nome = dto.Nome,
-                    RazaoSocial = dto.RazaoSocial,
-                    NomeFantasia = dto.NomeFantasia,
-                    Cnpj = dto.Cnpj,
-                    Tipo = dto.Tipo,
-                    Email = dto.Email,
-                    Telefone = dto.Telefone,
-                    Endereco = dto.Endereco,
-                    Cep = dto.Cep,
-                    Numero = dto.Numero,
-                    Bairro = dto.Bairro,
-                    Complemento = dto.Complemento,
-                    Cidade = dto.Cidade,
-                    Estado = dto.Estado,
-                    InscricaoEstadual = dto.InscricaoEstadual,
-                    Cpf = dto.Cpf,
-                    Rg = dto.Rg,
-                    DataNascimento = dto.DataNascimento,
-                    UsuarioId = userId,
-                };
-
-                context.Pessoas.Add(pessoa);
-                await context.SaveChangesAsync();
+                var pessoa = await pessoaService.CreatePessoaAsync(dto, userId);
 
                 return new { id = pessoa.Id };
             }
@@ -134,34 +112,14 @@ namespace FinanceiroApp.Controllers
                 return BadRequest(ModelState);
 
             var userId = GetUserId();
-            var pessoaDb = await context.Pessoas.FirstOrDefaultAsync(p =>
-                p.Id == id && p.UsuarioId == userId
-            );
-
-            if (pessoaDb == null)
-                return NotFound(new { success = false, message = "Pessoa não encontrada." });
-
-            pessoaDb.Nome = dto.Nome;
-            pessoaDb.RazaoSocial = dto.RazaoSocial;
-            pessoaDb.Email = dto.Email;
-            pessoaDb.Telefone = dto.Telefone;
-            pessoaDb.Endereco = dto.Endereco;
-            pessoaDb.Cep = dto.Cep;
-            pessoaDb.Numero = dto.Numero;
-            pessoaDb.Bairro = dto.Bairro;
-            pessoaDb.Complemento = dto.Complemento;
-            pessoaDb.Cidade = dto.Cidade;
-            pessoaDb.Estado = dto.Estado;
-            pessoaDb.NomeFantasia = dto.NomeFantasia;
-            pessoaDb.InscricaoEstadual = dto.InscricaoEstadual;
-            pessoaDb.Cpf = dto.Cpf;
-            pessoaDb.Cnpj = dto.Cnpj;
-            pessoaDb.Rg = dto.Rg;
-            pessoaDb.DataNascimento = dto.DataNascimento;
 
             try
             {
-                await context.SaveChangesAsync();
+                var pessoaAtualizada = await pessoaService.UpdatePessoaAsync(id, dto, userId);
+                if (pessoaAtualizada == null)
+                {
+                    return NotFound(new { success = false, message = "Pessoa não encontrada." });
+                }
                 return NoContent();
             }
             catch (DbUpdateException ex)
@@ -201,32 +159,24 @@ namespace FinanceiroApp.Controllers
         public async Task<IActionResult> DeletePessoa(int id)
         {
             var userId = GetUserId();
-            var pessoa = await context.Pessoas.FirstOrDefaultAsync(p =>
-                p.Id == id && p.UsuarioId == userId
-            );
-
-            if (pessoa == null)
-            {
-                return NotFound(new { success = false, message = "Pessoa não encontrada." });
-            }
-
-            bool temLancamentos = await context.Lancamentos.AnyAsync(l => l.PessoaId == id);
-            if (temLancamentos)
-            {
-                return BadRequest(
-                    new
-                    {
-                        success = false,
-                        message = "Não é possível excluir pessoa com lançamentos vinculados.",
-                    }
-                );
-            }
 
             try
             {
-                context.Pessoas.Remove(pessoa);
-                await context.SaveChangesAsync();
+                var sucesso = await pessoaService.DeletePessoaAsync(id, userId);
+                if (!sucesso)
+                {
+                    // Este caso não deveria acontecer se o serviço lança exceção
+                    return NotFound(new { success = false, message = "Pessoa não encontrada." });
+                }
                 return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
             }
             catch (Exception ex)
             {

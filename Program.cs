@@ -30,6 +30,8 @@ namespace FinanceiroApp
             builder.Services.AddHttpClient("GeminiClient");
             builder.Services.AddScoped<IGeminiService, GeminiService>();
 
+            builder.Services.AddScoped<IAgentActionService, AgentActionService>();
+
             // Configuração do banco de dados PostgreSQL
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -39,6 +41,8 @@ namespace FinanceiroApp
 
             builder.Services.AddScoped<IMovimentacaoBancariaService, MovimentacaoBancariaService>();
             builder.Services.AddScoped<IImportacaoService, ImportacaoService>();
+            builder.Services.AddScoped<ILancamentoService, LancamentoService>();
+            builder.Services.AddScoped<IPessoaService, PessoaService>();
 
             builder.Services.Configure<SmtpSettings>(
                 builder.Configuration.GetSection("SmtpSettings")
