@@ -28,7 +28,6 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import LogoutIcon from '@mui/icons-material/Logout'
 import SchoolIcon from '@mui/icons-material/School'
-import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined'
 import { ThemeSwitcher } from './ThemeSwitcher'
 
 const drawerWidth = 240
@@ -40,7 +39,13 @@ function decodeHtml(html) {
   return txt.value
 }
 
-const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
+const Sidebar = ({
+  isToggled,
+  handleToggle,
+  userName,
+  handleLogout,
+  handleStartTour,
+}) => {
   const theme = useTheme()
   const [anchorEl, setAnchorEl] = useState(null)
   const isMenuOpen = Boolean(anchorEl)
@@ -133,7 +138,10 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
         <ListItem disablePadding>
           <NavLink to="/home" style={navLinkStyle}>
             {({ isActive }) => (
-              <ListItemButton sx={isActive ? activeLinkStyle : {}}>
+              <ListItemButton
+                id="tour-sidebar-dashboard"
+                sx={isActive ? activeLinkStyle : {}}
+              >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
@@ -157,6 +165,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
         subheader={
           <ListSubheader
             component="div"
+            id="tour-sidebar-cadastros"
             sx={{
               backgroundColor: 'transparent',
               color: 'text.secondary',
@@ -179,7 +188,12 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
           <ListItem key={item.text} disablePadding>
             <NavLink to={item.to} style={navLinkStyle}>
               {({ isActive }) => (
-                <ListItemButton sx={isActive ? activeLinkStyle : {}}>
+                <ListItemButton
+                  id={
+                    item.text === 'Pessoas' ? 'tour-sidebar-pessoas' : undefined
+                  }
+                  sx={isActive ? activeLinkStyle : {}}
+                >
                   <ListItemIcon
                     sx={{
                       color: 'inherit',
@@ -204,6 +218,7 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
         subheader={
           <ListSubheader
             component="div"
+            id="tour-sidebar-operacoes"
             sx={{
               backgroundColor: 'transparent',
               color: 'text.secondary',
@@ -217,7 +232,10 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
         <ListItem disablePadding>
           <NavLink to="/Lancamentos" style={navLinkStyle}>
             {({ isActive }) => (
-              <ListItemButton sx={isActive ? activeLinkStyle : {}}>
+              <ListItemButton
+                id="tour-sidebar-lancamentos"
+                sx={isActive ? activeLinkStyle : {}}
+              >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
@@ -339,6 +357,17 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
             horizontal: 'left',
           }}
         >
+          <MenuItem
+            onClick={() => {
+              handleMenuClose()
+              // handleStartTour()
+            }}
+          >
+            <ListItemIcon>
+              <SchoolIcon fontSize="small" />
+            </ListItemIcon>
+            Fazer Tour - Em desenvolvimento
+          </MenuItem>
           <MenuItem
             onClick={() => {
               handleMenuClose()

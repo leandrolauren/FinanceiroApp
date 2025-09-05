@@ -45,21 +45,6 @@ namespace FinanceiroApp.Dtos
 
     public class LancamentoEditDto : BaseLancamentoDto { }
 
-    public class ListaLancamentoDto
-    {
-        public int Id { get; set; }
-        public required string Descricao { get; set; }
-        public required string Tipo { get; set; }
-        public decimal Valor { get; set; }
-        public DateTime DataVencimento { get; set; }
-        public DateTime? DataPagamento { get; set; }
-        public bool Pago { get; set; }
-        public string? PessoaNome { get; set; }
-        public PessoaSimplificadaDto? Pessoa { get; set; }
-        public PlanoContasSimplificadoDto? PlanoContas { get; set; }
-        public ContaBancariaSimplificadaDto? ContaBancaria { get; set; }
-    }
-
     public class DetalhesLancamentoDto
     {
         public int Id { get; set; }

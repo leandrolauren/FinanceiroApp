@@ -671,6 +671,7 @@ export default function Lancamentos() {
           color="primary"
           endContent={<PlusIcon />}
           onPress={() => navigate('/lancamentos/create')}
+          id="tour-novo-lancamento"
         >
           Novo Lançamento
         </Button>
@@ -690,6 +691,7 @@ export default function Lancamentos() {
       ) : (
         <Table
           aria-label="Tabela de Lançamentos Financeiros"
+          id="tour-lancamentos-grid"
           isHeaderSticky
           bottomContent={bottomContent}
           bottomContentPlacement="outside"

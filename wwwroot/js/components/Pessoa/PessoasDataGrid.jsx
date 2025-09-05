@@ -488,6 +488,7 @@ export default function PessoasDataGrid() {
       <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"
+          id="tour-nova-pessoa"
           endContent={<PlusIcon />}
           onPress={() => navigate('/Pessoas/Create')}
         >
@@ -502,6 +503,7 @@ export default function PessoasDataGrid() {
       ) : (
         <Table
           aria-label="Tabela de Pessoas"
+          id="tour-pessoas-grid"
           isHeaderSticky
           bottomContent={bottomContent}
           bottomContentPlacement="outside"

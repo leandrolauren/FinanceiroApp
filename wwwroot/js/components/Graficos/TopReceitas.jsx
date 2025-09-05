@@ -65,7 +65,7 @@ export default function TopReceitas({ filtros }) {
           slotProps={{
             legend: {
               direction: 'vertical',
-              position: { vertical: 'middle', horizontal: 'right' },
+              position: { vertical: 'middle', horizontal: 'end' },
             },
           }}
         />

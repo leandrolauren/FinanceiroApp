@@ -61,6 +61,7 @@ export default function Dashboard() {
         <Button
           variant="outlined"
           startIcon={<FilterAlt />}
+          id="tour-dashboard-filtros"
           onClick={() => setMostrarFiltros(!mostrarFiltros)}
         >
           Filtros
@@ -118,14 +119,18 @@ export default function Dashboard() {
       </Collapse>
 
       <Grid container spacing={3} mb={3}>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={4} id="tour-dashboard-kpis">
           <IndicadoresKPIs filtros={filtrosAtivos} />
         </Grid>
-        <Grid item xs={12} md={4}>
-          <TopDespesas filtros={filtrosAtivos} />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <TopReceitas filtros={filtrosAtivos} />
+        <Grid item xs={12} md={8}>
+          <Grid container spacing={3} id="tour-dashboard-graficos-pizza">
+            <Grid item xs={12} md={6}>
+              <TopDespesas filtros={filtrosAtivos} />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TopReceitas filtros={filtrosAtivos} />
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
 
@@ -133,7 +138,7 @@ export default function Dashboard() {
         <Grid item xs={12} md={6}>
           <SaldosContasBancarias />
         </Grid>
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} id="tour-dashboard-contas-proximas">
           <ContasProximas filtros={filtrosAtivos} />
         </Grid>
       </Grid>

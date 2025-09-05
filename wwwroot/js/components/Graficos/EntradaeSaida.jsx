@@ -222,8 +222,8 @@ export default function EntradaeSaida() {
           slotProps={{
             bar: { rx: 4 },
             legend: {
-              direction: 'row',
-              position: { vertical: 'top', horizontal: 'right' },
+              direction: 'vertical',
+              position: { vertical: 'top', horizontal: 'end' },
             },
           }}
         />

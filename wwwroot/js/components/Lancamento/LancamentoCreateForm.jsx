@@ -227,6 +227,7 @@ const LancamentoCreateForm = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
           <Input
+            id="tour-descricao"
             className="md:col-span-4"
             label="Descrição"
             value={formData.descricao}
@@ -236,6 +237,7 @@ const LancamentoCreateForm = () => {
             errorMessage={errors.Descricao?.[0]}
           />
           <NumericFormat
+            id="tour-valor"
             className="md:col-span-2"
             name="valor"
             label="Valor (R$)"
@@ -257,6 +259,7 @@ const LancamentoCreateForm = () => {
 
           <div className="md:col-span-2">
             <Autocomplete
+              id="tour-pessoa"
               options={pessoas}
               getOptionLabel={(option) => option.nome || ''}
               value={pessoas.find((p) => p.id === formData.pessoaId) || null}
@@ -278,6 +281,7 @@ const LancamentoCreateForm = () => {
 
           <div className="md:col-span-2">
             <Autocomplete
+              id="tour-plano-contas"
               options={planosDeContaFilhos}
               getOptionLabel={(option) => option.descricao || ''}
               value={
@@ -365,6 +369,7 @@ const LancamentoCreateForm = () => {
 
           <Select
             className="md:col-span-1"
+            id="tour-situacao"
             label="Situação"
             selectedKeys={[String(formData.pago)]}
             onSelectionChange={(keys) =>
@@ -406,6 +411,7 @@ const LancamentoCreateForm = () => {
 
         <div className="flex gap-2 pt-4">
           <Button
+            id="tour-salvar-lancamento"
             type="submit"
             color="primary"
             isDisabled={loading}
