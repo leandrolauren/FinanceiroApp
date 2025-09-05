@@ -26,6 +26,10 @@ namespace FinanceiroApp
 
             builder.Services.AddHttpContextAccessor();
 
+            // Gemini
+            builder.Services.AddHttpClient("GeminiClient");
+            builder.Services.AddScoped<IGeminiService, GeminiService>();
+
             // Configuração do banco de dados PostgreSQL
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))

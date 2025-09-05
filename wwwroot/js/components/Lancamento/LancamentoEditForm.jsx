@@ -299,6 +299,7 @@ const LancamentoEditForm = ({ lancamentoId }) => {
                   label="Pessoa (Cliente/Fornecedor)"
                   error={!!errors.PessoaId}
                   helperText={errors.PessoaId?.[0]}
+                  required
                 />
               )}
               disabled={isPago}

@@ -267,9 +267,10 @@ const LancamentoCreateForm = () => {
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Pessoa (Cliente/Fornecedor)"
+                  label="Pessoa (Cliente/Fornecedor)*"
                   error={!!errors.PessoaId}
                   helperText={errors.PessoaId?.[0]}
+                  isRequired
                 />
               )}
             />

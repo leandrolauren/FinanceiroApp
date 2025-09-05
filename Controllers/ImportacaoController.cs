@@ -20,24 +20,20 @@ namespace FinanceiroApp.Controllers
 
         [HttpPost("parse")]
         public async Task<IActionResult> ParseFile(
-            [FromForm] IFormFile file,
-            [FromForm] string fileType,
-            [FromForm] int contaBancariaId,
-            [FromForm] DateTime dataInicio,
-            [FromForm] DateTime dataFim
+            [FromForm] ParseFileRequestDto request
         )
         {
-            if (file == null || file.Length == 0)
+            if (request.File == null || request.File.Length == 0)
                 return BadRequest("Nenhum arquivo enviado.");
 
             try
             {
                 var transactions = await _importacaoService.ParseFile(
-                    file,
-                    fileType,
-                    contaBancariaId,
-                    dataInicio,
-                    dataFim
+                    request.File,
+                    request.FileType,
+                    request.ContaBancariaId,
+                    request.DataInicio,
+                    request.DataFim
                 );
                 return Ok(transactions);
             }

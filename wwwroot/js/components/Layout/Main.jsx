@@ -62,6 +62,9 @@ const EditPlanoContaPage = () => {
   return <PlanoContaEditForm planoContaId={id} />
 }
 
+const TutorialPage = lazy(() => import('../Orientacoes/Tutorial'))
+const AIChatPage = lazy(() => import('../Orientacoes/AIChat'))
+
 const drawerWidth = 240
 
 const App = () => {
@@ -123,6 +126,7 @@ const App = () => {
           ml: (theme) => (isToggled ? `${drawerWidth}px` : theme.spacing(7)),
         }}
       >
+        {/* O conteúdo principal da página é renderizado aqui */}
         <Suspense
           fallback={
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -161,10 +165,12 @@ const App = () => {
               path="/lancamentos/importar/ofx"
               element={<ImportacaoOfx />}
             />
+            <Route path="/orientacoes/tutorial" element={<TutorialPage />} />
             <Route path="*" element={<h1>Página Não Encontrada</h1>} />
           </Routes>
         </Suspense>
       </Box>
+      <AIChatPage />
     </Router>
   )
 }

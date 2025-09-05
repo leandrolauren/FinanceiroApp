@@ -27,6 +27,8 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import LogoutIcon from '@mui/icons-material/Logout'
+import SchoolIcon from '@mui/icons-material/School'
+import SmartToyOutlinedIcon from '@mui/icons-material/SmartToyOutlined'
 import { ThemeSwitcher } from './ThemeSwitcher'
 
 const drawerWidth = 240
@@ -233,6 +235,51 @@ const Sidebar = ({ isToggled, handleToggle, userName, handleLogout }) => {
             )}
           </NavLink>
         </ListItem>
+      </List>
+      <Divider />
+      <List
+        subheader={
+          <ListSubheader
+            component="div"
+            sx={{
+              backgroundColor: 'transparent',
+              color: 'text.secondary',
+              display: isToggled ? 'block' : 'none',
+            }}
+          >
+            Orientações
+          </ListSubheader>
+        }
+      >
+        {[
+          {
+            text: 'Tutorial',
+            to: '/orientacoes/tutorial',
+            icon: <SchoolIcon />,
+          },
+        ].map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <NavLink to={item.to} style={navLinkStyle}>
+              {({ isActive }) => (
+                <ListItemButton sx={isActive ? activeLinkStyle : {}}>
+                  <ListItemIcon
+                    sx={{
+                      color: 'inherit',
+                      minWidth: 'auto',
+                      mr: isToggled ? 3 : 'auto',
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.text}
+                    sx={{ opacity: isToggled ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              )}
+            </NavLink>
+          </ListItem>
+        ))}
       </List>
       <Box
         sx={{
