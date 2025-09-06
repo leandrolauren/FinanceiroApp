@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Reflection;
 using AspNetCoreRateLimit;
 using DotNetEnv;
 using FinanceiroApp.Data;
@@ -105,9 +106,31 @@ namespace FinanceiroApp
             builder.Services.AddInMemoryRateLimiting();
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(c =>
+            builder.Services.AddSwaggerGen(options =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "FinanceiroApp API", Version = "v1" });
+                // Adiciona informações gerais sobre a API
+                options.SwaggerDoc(
+                    "v1",
+                    new OpenApiInfo
+                    {
+                        Version = "v1",
+                        Title = "FinanceiroApp API",
+                        Description = "API para gerenciamento financeiro.",
+                        Contact = new OpenApiContact
+                        {
+                            Name = "Leandro Laurenzette",
+                            Email = "leadrolaurenzette@gmail.com",
+                        },
+                        License = new OpenApiLicense
+                        {
+                            Name = "Licença MIT",
+                            Url = new Uri("https://opensource.org/licenses/MIT"),
+                        },
+                    }
+                );
+
+                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
             var app = builder.Build();
@@ -131,6 +154,13 @@ namespace FinanceiroApp
                     c.RoutePrefix = "swagger";
                 });
             }
+
+            app.UseReDoc(options =>
+            {
+                options.DocumentTitle = "FinanceiroApp API - Documentação";
+                options.SpecUrl = "/swagger/v1/swagger.json";
+                options.RoutePrefix = "docs";
+            });
 
             // Cultura brasileira (pt-BR)
             var supportedCultures = new[] { new CultureInfo("pt-BR") };

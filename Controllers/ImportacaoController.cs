@@ -19,12 +19,16 @@ namespace FinanceiroApp.Controllers
         }
 
         [HttpPost("parse")]
-        public async Task<IActionResult> ParseFile(
-            [FromForm] ParseFileRequestDto request
-        )
+        public async Task<IActionResult> ParseFile([FromForm] ParseFileRequestDto request)
         {
             if (request.File == null || request.File.Length == 0)
                 return BadRequest("Nenhum arquivo enviado.");
+
+            var fileExtension = Path.GetExtension(request.File.FileName);
+            if (!string.Equals(fileExtension, ".ofx", StringComparison.OrdinalIgnoreCase))
+                return BadRequest(
+                    "Formato de arquivo inválido. Por favor, envie somente arquivos com a extensão .ofx."
+                );
 
             try
             {

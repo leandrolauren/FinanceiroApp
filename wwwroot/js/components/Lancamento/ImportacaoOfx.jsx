@@ -132,7 +132,7 @@ export default function ImportacaoOfx() {
       setActiveStep(1)
     } catch (err) {
       setError(
-        err.response?.data?.message || 'Erro ao processar o arquivo OFX.',
+        err.response.data || 'Erro ao processar o arquivo OFX.',
       )
     } finally {
       setLoading(false)
