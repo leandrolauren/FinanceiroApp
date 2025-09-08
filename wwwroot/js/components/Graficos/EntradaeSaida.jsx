@@ -13,6 +13,7 @@ import {
   Typography,
 } from '@mui/material'
 import { DatePicker } from '@heroui/react'
+import { I18nProvider } from '@react-aria/i18n'
 import { parseDate, getLocalTimeZone } from '@internationalized/date'
 import { FilterAlt } from '@mui/icons-material'
 import axios from 'axios'
@@ -118,135 +119,139 @@ export default function EntradaeSaida() {
     receitasPositivas.length > 0 ? Math.max(...receitasPositivas) * 1.1 : 1000
 
   return (
-    <Box
-      sx={{
-        width: '100%',
-        p: 2,
-        bgcolor: 'background.paper',
-        borderRadius: 2,
-        boxShadow: 1,
-      }}
-    >
-      <Typography variant="h6">
-        Fluxo de Caixa (Receitas vs. Despesas)
-      </Typography>
+    <I18nProvider locale="pt-BR">
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
+        sx={{
+          width: '100%',
+          p: 2,
+          bgcolor: 'background.paper',
+          borderRadius: 2,
+          boxShadow: 1,
+        }}
       >
-        <Button
-          variant="outlined"
-          startIcon={<FilterAlt />}
-          onClick={() => setMostrarFiltros(!mostrarFiltros)}
-        >
-          Filtros
-        </Button>
-      </Box>
-
-      <Collapse in={mostrarFiltros}>
-        <Box sx={{ p: 2, mb: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={3}>
-              <DatePicker
-                label="Data Início"
-                value={
-                  filtrosEditando.dataInicio
-                    ? parseDate(
-                        filtrosEditando.dataInicio.toISOString().split('T')[0],
-                      )
-                    : null
-                }
-                onChange={(d) =>
-                  handleFiltroChange(
-                    'dataInicio',
-                    d ? d.toDate(getLocalTimeZone()) : null,
-                  )
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <DatePicker
-                label="Data Fim"
-                value={
-                  filtrosEditando.dataFim
-                    ? parseDate(
-                        filtrosEditando.dataFim.toISOString().split('T')[0],
-                      )
-                    : null
-                }
-                onChange={(d) =>
-                  handleFiltroChange(
-                    'dataFim',
-                    d ? d.toDate(getLocalTimeZone()) : null,
-                  )
-                }
-              />
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <TextField
-                select
-                fullWidth
-                label="Situação"
-                value={filtrosEditando.status}
-                onChange={(e) => handleFiltroChange('status', e.target.value)}
-              >
-                <MenuItem value="Todos">Todos - Competência</MenuItem>
-                <MenuItem value="Pago">Pagos - Pagamento</MenuItem>
-                <MenuItem value="Aberto">Em Aberto - Vencimento</MenuItem>
-              </TextField>
-            </Grid>
-            <Grid item xs={12} sm={3}>
-              <Box display="flex" justifyContent="flex-end">
-                <Button variant="contained" onClick={aplicarFiltro}>
-                  Aplicar
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-      </Collapse>
-
-      {chartData && chartData.meses.length > 0 ? (
-        <BarChart
-          sx={{ height: { xs: 300, md: 500 } }}
-          series={[
-            {
-              data: chartData.receitas,
-              label: 'Receitas',
-              color: '#4CAF50',
-              id: 'receitasId',
-            },
-            {
-              data: chartData.despesas,
-              label: 'Despesas',
-              color: '#F44336',
-              id: 'despesasId',
-            },
-          ]}
-          xAxis={[{ data: chartData.meses, scaleType: 'band', label: 'Mês' }]}
-          yAxis={[{ label: 'Valor (R$)', max: yAxisMax }]}
-          slotProps={{
-            bar: { rx: 4 },
-            legend: {
-              direction: 'vertical',
-              position: { vertical: 'top', horizontal: 'end' },
-            },
-          }}
-        />
-      ) : (
+        <Typography variant="h6">
+          Fluxo de Caixa (Receitas vs. Despesas)
+        </Typography>
         <Box
           display="flex"
-          justifyContent="center"
+          justifyContent="space-between"
           alignItems="center"
-          sx={{ height: { xs: 300, md: 500 } }}
+          mb={2}
         >
-          <Typography>
-            Nenhum dado encontrado para o período selecionado.
-          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<FilterAlt />}
+            onClick={() => setMostrarFiltros(!mostrarFiltros)}
+          >
+            Filtros
+          </Button>
         </Box>
-      )}
-    </Box>
+
+        <Collapse in={mostrarFiltros}>
+          <Box sx={{ p: 2, mb: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item xs={12} sm={3}>
+                <DatePicker
+                  label="Data Início"
+                  value={
+                    filtrosEditando.dataInicio
+                      ? parseDate(
+                          filtrosEditando.dataInicio
+                            .toISOString()
+                            .split('T')[0],
+                        )
+                      : null
+                  }
+                  onChange={(d) =>
+                    handleFiltroChange(
+                      'dataInicio',
+                      d ? d.toDate(getLocalTimeZone()) : null,
+                    )
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <DatePicker
+                  label="Data Fim"
+                  value={
+                    filtrosEditando.dataFim
+                      ? parseDate(
+                          filtrosEditando.dataFim.toISOString().split('T')[0],
+                        )
+                      : null
+                  }
+                  onChange={(d) =>
+                    handleFiltroChange(
+                      'dataFim',
+                      d ? d.toDate(getLocalTimeZone()) : null,
+                    )
+                  }
+                />
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <TextField
+                  select
+                  fullWidth
+                  label="Situação"
+                  value={filtrosEditando.status}
+                  onChange={(e) => handleFiltroChange('status', e.target.value)}
+                >
+                  <MenuItem value="Todos">Todos - Competência</MenuItem>
+                  <MenuItem value="Pago">Pagos - Pagamento</MenuItem>
+                  <MenuItem value="Aberto">Em Aberto - Vencimento</MenuItem>
+                </TextField>
+              </Grid>
+              <Grid item xs={12} sm={3}>
+                <Box display="flex" justifyContent="flex-end">
+                  <Button variant="contained" onClick={aplicarFiltro}>
+                    Aplicar
+                  </Button>
+                </Box>
+              </Grid>
+            </Grid>
+          </Box>
+        </Collapse>
+
+        {chartData && chartData.meses.length > 0 ? (
+          <BarChart
+            sx={{ height: { xs: 300, md: 500 } }}
+            series={[
+              {
+                data: chartData.receitas,
+                label: 'Receitas',
+                color: '#4CAF50',
+                id: 'receitasId',
+              },
+              {
+                data: chartData.despesas,
+                label: 'Despesas',
+                color: '#F44336',
+                id: 'despesasId',
+              },
+            ]}
+            xAxis={[{ data: chartData.meses, scaleType: 'band', label: 'Mês' }]}
+            yAxis={[{ label: 'Valor (R$)', max: yAxisMax }]}
+            slotProps={{
+              bar: { rx: 4 },
+              legend: {
+                direction: 'vertical',
+                position: { vertical: 'top', horizontal: 'end' },
+              },
+            }}
+          />
+        ) : (
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            sx={{ height: { xs: 300, md: 500 } }}
+          >
+            <Typography>
+              Nenhum dado encontrado para o período selecionado.
+            </Typography>
+          </Box>
+        )}
+      </Box>
+    </I18nProvider>
   )
 }
