@@ -1,4 +1,30 @@
-﻿@{
+﻿<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FinanceiroApp</title>
+    
+    <meta name="description" content="Sistema para gestão financeira pessoal, desenvolvido com ASP.NET Core MVC e React. Controle seus lançamentos, contas e analise seus dados com dashboards interativos." />
+    <meta name="author" content="Leandro Laurenzette" />
+    <meta name="keywords" content="gestão financeira, finanças pessoais, controle de gastos, orçamento, despesas, receitas, financeiroapp" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://financeiroapp-7e5a.onrender.com" />
+    <meta property="og:title" content="FinanceiroApp - Sua Gestão Financeira Simplificada" />
+    <meta property="og:description" content="Controle suas finanças de forma fácil e visual. Cadastre lançamentos, analise gráficos e tome decisões mais inteligentes com o FinanceiroApp." />
+    <meta property="og:image" content="https://financeiroapp-7e5a.onrender.com/img/porquinho.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://financeiroapp-7e5a.onrender.com" />
+    <meta property="twitter:title" content="FinanceiroApp - Sua Gestão Financeira Simplificada" />
+    <meta property="twitter:description" content="Controle suas finanças de forma fácil e visual. Cadastre lançamentos, analise gráficos e tome decisões mais inteligentes com o FinanceiroApp." />
+    <meta property="twitter:image" content="https://financeiroapp-7e5a.onrender.com/img/porquinho.png" />
+    
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/FinanceiroApp.styles.css" asp-append-version="true" />
+</head>
+@{
     var isLoginPage = Context.Request.Path.StartsWithSegments("/Login", StringComparison.OrdinalIgnoreCase);
     var isUserCreate = Context.Request.Path.StartsWithSegments("/Usuario/create", StringComparison.OrdinalIgnoreCase);
     var csrfToken = Antiforgery.GetAndStoreTokens(Context).RequestToken;
