@@ -6,6 +6,11 @@ namespace FinanceiroApp.Services
 {
     public class OfxParser : IFileParser
     {
+        static OfxParser()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
         public Task<IEnumerable<OfxTransactionDto>> Parse(IFormFile file)
         {
             var ofxTransactions = new List<OfxTransactionDto>();

@@ -22,6 +22,7 @@ import {
   TablePagination,
   Chip,
 } from '@mui/material'
+import SmartToyIcon from '@mui/icons-material/SmartToy'
 import { I18nProvider } from '@react-aria/i18n'
 import { useNavigate } from 'react-router-dom'
 import { DatePicker } from '@heroui/react'
@@ -56,6 +57,7 @@ export default function ImportacaoOfx() {
 
   const [activeStep, setActiveStep] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState('')
   const [error, setError] = useState('')
   const [contasBancarias, setContasBancarias] = useState([])
   const [selectedConta, setSelectedConta] = useState('')
@@ -113,6 +115,7 @@ export default function ImportacaoOfx() {
       return
     }
     setLoading(true)
+    setLoadingMessage('Analisando arquivo OFX...')
     setError('')
     const formData = new FormData()
     formData.append('file', file)
@@ -134,8 +137,17 @@ export default function ImportacaoOfx() {
       setError(err.response.data || 'Erro ao processar o arquivo OFX.')
     } finally {
       setLoading(false)
+      setLoadingMessage('')
     }
   }, [file, selectedConta, dataInicio, dataFim])
+
+  const handlePlanoContasChange = (fitId, planoContasId) => {
+    setTransactions((prev) =>
+      prev.map((t) =>
+        t.id === fitId ? { ...t, planoContasId: planoContasId } : t,
+      ),
+    )
+  }
 
   const handleImport = useCallback(async () => {
     const selectedTransactions = transactions.filter((t) =>
@@ -145,57 +157,103 @@ export default function ImportacaoOfx() {
       setError('Nenhuma transação selecionada.')
       return
     }
-    const hasReceitas = selectedTransactions.some((t) => t.amount >= 0)
-    const hasDespesas = selectedTransactions.some((t) => t.amount < 0)
-    if (hasReceitas && !selectedPlanoContasReceita) {
-      setError('Selecione um Plano de Contas para as receitas.')
+
+    const hasUncategorizedReceita = selectedTransactions.some(
+      (t) => t.amount >= 0 && !t.planoContasId,
+    )
+    const hasUncategorizedDespesa = selectedTransactions.some(
+      (t) => t.amount < 0 && !t.planoContasId,
+    )
+
+    if (hasUncategorizedReceita && !selectedPlanoContasReceita) {
+      setError(
+        'Existem receitas selecionadas sem categoria. Por favor, selecione um Plano de Contas padrão para receitas.',
+      )
       return
     }
-    if (hasDespesas && !selectedPlanoContasDespesa) {
-      setError('Selecione um Plano de Contas para as despesas.')
+    if (hasUncategorizedDespesa && !selectedPlanoContasDespesa) {
+      setError(
+        'Existem despesas selecionadas sem categoria. Por favor, selecione um Plano de Contas padrão para despesas.',
+      )
       return
     }
+
     if (!selectedPessoa) {
       setError('O campo Pessoa é obrigatório.')
       return
     }
 
     setLoading(true)
+    setLoadingMessage('Importando transações...')
     setError('')
 
     const payload = {
       contaBancariaId: selectedConta,
-      planoContasReceitaId: hasReceitas ? selectedPlanoContasReceita : null,
-      planoContasDespesaId: hasDespesas ? selectedPlanoContasDespesa : null,
       pessoaId: selectedPessoa,
       dataVencimento: format(dataVencimento, 'yyyy-MM-dd'),
       dataCompetencia: format(dataCompetencia, 'yyyy-MM-dd'),
       transactions: selectedTransactions,
+      planoContasReceitaId: selectedPlanoContasReceita || null,
+      planoContasDespesaId: selectedPlanoContasDespesa || null,
     }
     try {
       const response = await axios.post('/api/importacao/import', payload)
       showNotification(response.data.message, 'success')
+      setSelectedPessoa('')
       setSelectedPlanoContasReceita('')
       setSelectedPlanoContasDespesa('')
-      setSelectedPessoa('')
 
       await handleParseFile()
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao importar transações.')
     } finally {
       setLoading(false)
+      setLoadingMessage('')
     }
   }, [
     transactions,
     selectionModel,
     selectedConta,
-    selectedPlanoContasReceita,
-    selectedPlanoContasDespesa,
     selectedPessoa,
     dataVencimento,
     dataCompetencia,
     handleParseFile,
+    selectedPlanoContasReceita,
+    selectedPlanoContasDespesa,
   ])
+
+  const handleAiCategorize = async () => {
+    const selectedTransactions = transactions.filter((t) =>
+      selectionModel.includes(t.id),
+    )
+    if (selectedTransactions.length === 0) {
+      setError('Selecione ao menos uma transação para analisar.')
+      return
+    }
+    setLoading(true)
+    setLoadingMessage('Analisando com a IA... Isso pode levar alguns segundos.')
+    setError('')
+    try {
+      const response = await axios.post('/api/ai/categorize', {
+        transactions: selectedTransactions,
+      })
+      const categorizedData = response.data
+      setTransactions((prev) =>
+        prev.map((t) => {
+          const categorized = categorizedData.find((c) => c.fitId === t.id)
+          return categorized
+            ? { ...t, planoContasId: categorized.planoContasId }
+            : t
+        }),
+      )
+      showNotification('Análise da IA concluída!', 'success')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao analisar com a IA.')
+    } finally {
+      setLoading(false)
+      setLoadingMessage('')
+    }
+  }
 
   const isSelected = (id) => selectionModel.includes(id)
 
@@ -243,8 +301,17 @@ export default function ImportacaoOfx() {
         </Paper>
 
         {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-            <CircularProgress />
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              my: 2,
+              gap: 2,
+            }}
+          >
+            <CircularProgress size={24} />
+            {loadingMessage && <Typography>{loadingMessage}</Typography>}
           </Box>
         )}
         {error && (
@@ -364,6 +431,7 @@ export default function ImportacaoOfx() {
                         <TableCell>Data PG.</TableCell>
                         <TableCell>Descrição</TableCell>
                         <TableCell align="right">Valor</TableCell>
+                        <TableCell>Plano de Contas</TableCell>
                         <TableCell align="center">Status</TableCell>
                       </TableRow>
                     </TableHead>
@@ -404,6 +472,33 @@ export default function ImportacaoOfx() {
                                   currency: 'BRL',
                                 }).format(row.amount || 0)}
                               </Typography>
+                            </TableCell>
+                            <TableCell sx={{ minWidth: 220 }}>
+                              <TextField
+                                select
+                                fullWidth
+                                variant="standard"
+                                value={row.planoContasId || ''}
+                                onChange={(e) =>
+                                  handlePlanoContasChange(
+                                    row.id,
+                                    e.target.value,
+                                  )
+                                }
+                                disabled={row.isImported}
+                              >
+                                <MenuItem value="">
+                                  <em>Selecione...</em>
+                                </MenuItem>
+                                {(row.amount >= 0
+                                  ? planosReceita
+                                  : planosDespesa
+                                ).map((plano) => (
+                                  <MenuItem key={plano.id} value={plano.id}>
+                                    {plano.descricao}
+                                  </MenuItem>
+                                ))}
+                              </TextField>
                             </TableCell>
                             <TableCell align="center">
                               <Typography
@@ -469,18 +564,19 @@ export default function ImportacaoOfx() {
                   <Grid item xs={12} md={4}>
                     <TextField
                       select
-                      label="Plano de Contas (Receitas)"
+                      label="Plano de Contas Padrão (Receitas)"
                       value={selectedPlanoContasReceita}
                       onChange={(e) =>
                         setSelectedPlanoContasReceita(e.target.value)
                       }
-                      sx={{ width: 230 }}
+                      sx={{ width: 250 }}
                       disabled={
                         !selectionModel.some(
                           (id) =>
                             transactions.find((t) => t.id === id)?.amount >= 0,
                         )
                       }
+                      helperText="Aplica às receitas selecionadas sem categoria."
                     >
                       {planosReceita.map((plano) => (
                         <MenuItem key={plano.id} value={plano.id}>
@@ -492,18 +588,19 @@ export default function ImportacaoOfx() {
                   <Grid item xs={12} md={4}>
                     <TextField
                       select
-                      label="Plano de Contas (Despesas)"
+                      label="Plano de Contas Padrão (Despesas)"
                       value={selectedPlanoContasDespesa}
                       onChange={(e) =>
                         setSelectedPlanoContasDespesa(e.target.value)
                       }
-                      sx={{ width: 230 }}
+                      sx={{ width: 250 }}
                       disabled={
                         !selectionModel.some(
                           (id) =>
                             transactions.find((t) => t.id === id)?.amount < 0,
                         )
                       }
+                      helperText="Aplica às despesas selecionadas sem categoria."
                     >
                       {planosDespesa.map((plano) => (
                         <MenuItem key={plano.id} value={plano.id}>
@@ -570,6 +667,14 @@ export default function ImportacaoOfx() {
                   }}
                 >
                   <Button onClick={() => setActiveStep(0)}>Voltar</Button>
+                  <Button
+                    variant="outlined"
+                    onClick={handleAiCategorize}
+                    disabled={loading || selectionModel.length === 0}
+                    startIcon={<SmartToyIcon />}
+                  >
+                    Analisar com Galo Jhon
+                  </Button>
                   <Button
                     variant="contained"
                     onClick={handleImport}

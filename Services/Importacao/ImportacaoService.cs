@@ -89,17 +89,22 @@ namespace FinanceiroApp.Services
                 if (transactionsToImport.Count == 0)
                     return 0;
 
-                bool hasReceitas = transactionsToImport.Any(t => t.Amount >= 0);
-                bool hasDespesas = transactionsToImport.Any(t => t.Amount < 0);
-
-                if (hasReceitas && !request.PlanoContasReceitaId.HasValue)
+                bool needsBulkReceita = transactionsToImport.Any(t =>
+                    t.Amount >= 0 && !t.PlanoContasId.HasValue
+                );
+                if (needsBulkReceita && !request.PlanoContasReceitaId.HasValue)
+                {
                     throw new InvalidOperationException(
-                        "Um Plano de Contas para Receita é obrigatório pois há receitas selecionadas."
+                        "Um Plano de Contas para Receita é obrigatório pois há receitas selecionadas sem categoria individual."
                     );
+                }
 
-                if (hasDespesas && !request.PlanoContasDespesaId.HasValue)
+                bool needsBulkDespesa = transactionsToImport.Any(t =>
+                    t.Amount < 0 && !t.PlanoContasId.HasValue
+                );
+                if (needsBulkDespesa && !request.PlanoContasDespesaId.HasValue)
                     throw new InvalidOperationException(
-                        "Um Plano de Contas para Despesa é obrigatório pois há despesas selecionadas."
+                        "Um Plano de Contas para Despesa é obrigatório pois há despesas selecionadas sem categoria individual."
                     );
 
                 var fitIdsToImport = transactionsToImport.Select(t => t.FitId).ToList();
@@ -109,31 +114,40 @@ namespace FinanceiroApp.Services
                     .Select(l => l.OfxFitId!)
                     .ToHashSetAsync();
 
-                var newLaunchesCount = 0;
+                var contaBancaria =
+                    await _context.ContasBancarias.FindAsync(request.ContaBancariaId)
+                    ?? throw new KeyNotFoundException("Conta bancária não encontrada.");
+
+                var novosLancamentos = new List<LancamentoModel>();
+                var novasMovimentacoes = new List<MovimentacaoBancaria>();
+
                 foreach (var trx in transactionsToImport)
                 {
                     if (existingFitIds.Contains(trx.FitId))
                         continue;
 
-                    int planoContasId;
-                    TipoLancamento tipoLancamento;
+                    int? planoContasId = trx.PlanoContasId;
+                    if (!planoContasId.HasValue)
+                    {
+                        planoContasId =
+                            trx.Amount >= 0
+                                ? request.PlanoContasReceitaId
+                                : request.PlanoContasDespesaId;
+                    }
 
-                    if (trx.Amount >= 0)
-                    {
-                        planoContasId = request.PlanoContasReceitaId!.Value;
-                        tipoLancamento = TipoLancamento.Receita;
-                    }
-                    else
-                    {
-                        planoContasId = request.PlanoContasDespesaId!.Value;
-                        tipoLancamento = TipoLancamento.Despesa;
-                    }
+                    if (!planoContasId.HasValue)
+                        throw new InvalidOperationException(
+                            $"A transação '{trx.Description}' não possui um plano de contas associado."
+                        );
+
+                    TipoLancamento tipoLancamento =
+                        trx.Amount >= 0 ? TipoLancamento.Receita : TipoLancamento.Despesa;
 
                     var launch = new LancamentoModel
                     {
                         UsuarioId = userId,
                         ContaBancariaId = request.ContaBancariaId,
-                        PlanoContaId = planoContasId,
+                        PlanoContaId = planoContasId.Value,
                         PessoaId = request.PessoaId,
                         Descricao = trx.Description,
                         Valor = Math.Abs(trx.Amount),
@@ -146,24 +160,45 @@ namespace FinanceiroApp.Services
                         DataLancamento = DateTime.Now,
                     };
 
-                    await _context.Lancamentos.AddAsync(launch);
-                    await _movimentacaoBancariaService.RegistrarMovimentacaoDePagamento(launch);
+                    novosLancamentos.Add(launch);
 
-                    newLaunchesCount++;
+                    var movimentacao = new MovimentacaoBancaria
+                    {
+                        DataMovimentacao = launch.DataPagamento!.Value,
+                        Valor = launch.Valor,
+                        Historico = $"PGTO: {launch.Descricao}",
+                        ContaBancariaId = launch.ContaBancariaId!.Value,
+                        UsuarioId = userId,
+                        Lancamento = launch,
+                        TipoMovimentacao =
+                            launch.Tipo == TipoLancamento.Receita
+                                ? TipoMovimentacao.Entrada
+                                : TipoMovimentacao.Saida,
+                    };
+                    novasMovimentacoes.Add(movimentacao);
                 }
 
-                if (newLaunchesCount == 0)
+                if (novosLancamentos.Count == 0)
                 {
                     await transaction.RollbackAsync();
                     return 0;
                 }
 
+                var saldoChange = novasMovimentacoes.Sum(m =>
+                    m.TipoMovimentacao == TipoMovimentacao.Entrada ? m.Valor : -m.Valor
+                );
+                contaBancaria.Saldo += saldoChange;
+                _context.ContasBancarias.Update(contaBancaria);
+
+                await _context.Lancamentos.AddRangeAsync(novosLancamentos);
+                await _context.MovimentacoesBancarias.AddRangeAsync(novasMovimentacoes);
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
-                return newLaunchesCount;
+                return novosLancamentos.Count;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 await transaction.RollbackAsync();
                 throw;

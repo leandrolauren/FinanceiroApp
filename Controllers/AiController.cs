@@ -37,4 +37,27 @@ public class AiController(IGeminiService geminiService, ILogger<AiController> lo
             );
         }
     }
+
+    [HttpPost("categorize")]
+    public async Task<IActionResult> CategorizeTransactions(
+        [FromBody] AiCategorizeRequestDto request
+    )
+    {
+        if (request.Transactions == null || request.Transactions.Count == 0)
+            return BadRequest(new { message = "Nenhuma transação enviada para categorização." });
+
+        try
+        {
+            var result = await geminiService.CategorizeTransactionsAsync(request.Transactions);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Erro ao categorizar transações com a IA.");
+            return StatusCode(
+                500,
+                new { message = "Desculpe, não consegui categorizar as transações no momento." }
+            );
+        }
+    }
 }
