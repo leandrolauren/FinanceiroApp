@@ -22,11 +22,11 @@ import {
   TablePagination,
   Chip,
 } from '@mui/material'
+import { I18nProvider } from '@react-aria/i18n'
 import { useNavigate } from 'react-router-dom'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { DatePicker } from '@heroui/react'
+import { parseDate, getLocalTimeZone } from '@internationalized/date'
 import { format } from 'date-fns'
-import ptBRLocale from 'date-fns/locale/pt-BR'
 import axios from 'axios'
 
 const showNotification = (message, variant) => {
@@ -131,9 +131,7 @@ export default function ImportacaoOfx() {
       setPage(0)
       setActiveStep(1)
     } catch (err) {
-      setError(
-        err.response.data || 'Erro ao processar o arquivo OFX.',
-      )
+      setError(err.response.data || 'Erro ao processar o arquivo OFX.')
     } finally {
       setLoading(false)
     }
@@ -229,37 +227,34 @@ export default function ImportacaoOfx() {
   }, [selectionModel, transactions])
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
-          Importar Transações de Arquivo OFX
-        </Typography>
-        <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
-      </Paper>
+    <I18nProvider locale="pt-BR">
+      <Box sx={{ p: 3 }}>
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h5" component="h1" sx={{ mb: 2 }}>
+            Importar Transações de Arquivo OFX
+          </Typography>
+          <Stepper activeStep={activeStep} sx={{ mb: 3 }}>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel>{label}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Paper>
 
-      {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-          <CircularProgress />
-        </Box>
-      )}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
+        {loading && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+            <CircularProgress />
+          </Box>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+            {error}
+          </Alert>
+        )}
 
-      {activeStep === 0 && (
-        <Paper sx={{ p: 3 }}>
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={ptBRLocale}
-          >
+        {activeStep === 0 && (
+          <Paper sx={{ p: 3 }}>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -301,17 +296,27 @@ export default function ImportacaoOfx() {
               <Grid item xs={12} md={6}>
                 <DatePicker
                   label="Data de Início *"
-                  value={dataInicio}
-                  onChange={setDataInicio}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+                  value={
+                    dataInicio
+                      ? parseDate(dataInicio.toISOString().split('T')[0])
+                      : null
+                  }
+                  onChange={(d) =>
+                    setDataInicio(d ? d.toDate(getLocalTimeZone()) : null)
+                  }
                 />
               </Grid>
               <Grid item xs={12} md={6}>
                 <DatePicker
                   label="Data de Fim *"
-                  value={dataFim}
-                  onChange={setDataFim}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+                  value={
+                    dataFim
+                      ? parseDate(dataFim.toISOString().split('T')[0])
+                      : null
+                  }
+                  onChange={(d) =>
+                    setDataFim(d ? d.toDate(getLocalTimeZone()) : null)
+                  }
                 />
               </Grid>
             </Grid>
@@ -329,110 +334,107 @@ export default function ImportacaoOfx() {
                 Analisar Arquivo
               </Button>
             </Box>
-          </LocalizationProvider>
-        </Paper>
-      )}
+          </Paper>
+        )}
 
-      {activeStep === 1 && (
-        <Paper sx={{ p: 3 }}>
-          {transactions.length > 0 ? (
-            <>
-              <TableContainer sx={{ maxHeight: 520 }}>
-                <Table stickyHeader>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          color="primary"
-                          indeterminate={
-                            numSelected > 0 && numSelected < numSelectable
-                          }
-                          checked={
-                            numSelectable > 0 && numSelected === numSelectable
-                          }
-                          onChange={handleToggleAll}
-                          disabled={numSelectable === 0}
-                          inputProps={{
-                            'aria-label': 'select all transactions',
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>Data PG.</TableCell>
-                      <TableCell>Descrição</TableCell>
-                      <TableCell align="right">Valor</TableCell>
-                      <TableCell align="center">Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {transactions
-                      .slice(
-                        page * rowsPerPage,
-                        page * rowsPerPage + rowsPerPage,
-                      )
-                      .map((row) => (
-                        <TableRow
-                          hover
-                          key={row.id}
-                          selected={isSelected(row.id)}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              color="primary"
-                              checked={isSelected(row.id)}
-                              disabled={row.isImported}
-                              onChange={() => handleToggleRow(row.id)}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            {row.date
-                              ? format(new Date(row.date), 'dd/MM/yyyy')
-                              : '---'}
-                          </TableCell>
-                          <TableCell>{row.description}</TableCell>
-                          <TableCell align="right">
-                            <Typography
-                              color={row.amount < 0 ? 'error' : 'success.main'}
-                            >
-                              {new Intl.NumberFormat('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              }).format(row.amount || 0)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Typography
-                              variant="body2"
-                              color={
-                                row.isImported
-                                  ? 'text.secondary'
-                                  : 'primary.main'
-                              }
-                            >
-                              {row.isImported ? 'Já Importado' : 'Pronto'}
-                            </Typography>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[25, 50, 75]}
-                component="div"
-                count={transactions.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => {
-                  setRowsPerPage(parseInt(e.target.value, 25))
-                  setPage(0)
-                }}
-                labelRowsPerPage="Linhas por pág."
-              />
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={ptBRLocale}
-              >
+        {activeStep === 1 && (
+          <Paper sx={{ p: 3 }}>
+            {transactions.length > 0 ? (
+              <>
+                <TableContainer sx={{ maxHeight: 520 }}>
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            color="primary"
+                            indeterminate={
+                              numSelected > 0 && numSelected < numSelectable
+                            }
+                            checked={
+                              numSelectable > 0 && numSelected === numSelectable
+                            }
+                            onChange={handleToggleAll}
+                            disabled={numSelectable === 0}
+                            inputProps={{
+                              'aria-label': 'select all transactions',
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>Data PG.</TableCell>
+                        <TableCell>Descrição</TableCell>
+                        <TableCell align="right">Valor</TableCell>
+                        <TableCell align="center">Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {transactions
+                        .slice(
+                          page * rowsPerPage,
+                          page * rowsPerPage + rowsPerPage,
+                        )
+                        .map((row) => (
+                          <TableRow
+                            hover
+                            key={row.id}
+                            selected={isSelected(row.id)}
+                          >
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                color="primary"
+                                checked={isSelected(row.id)}
+                                disabled={row.isImported}
+                                onChange={() => handleToggleRow(row.id)}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {row.date
+                                ? format(new Date(row.date), 'dd/MM/yyyy')
+                                : '---'}
+                            </TableCell>
+                            <TableCell>{row.description}</TableCell>
+                            <TableCell align="right">
+                              <Typography
+                                color={
+                                  row.amount < 0 ? 'error' : 'success.main'
+                                }
+                              >
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(row.amount || 0)}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="center">
+                              <Typography
+                                variant="body2"
+                                color={
+                                  row.isImported
+                                    ? 'text.secondary'
+                                    : 'primary.main'
+                                }
+                              >
+                                {row.isImported ? 'Já Importado' : 'Pronto'}
+                              </Typography>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[25, 50, 75]}
+                  component="div"
+                  count={transactions.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={(e, newPage) => setPage(newPage)}
+                  onRowsPerPageChange={(e) => {
+                    setRowsPerPage(parseInt(e.target.value, 25))
+                    setPage(0)
+                  }}
+                  labelRowsPerPage="Linhas por pág."
+                />
                 <Box
                   sx={{
                     display: 'flex',
@@ -528,21 +530,35 @@ export default function ImportacaoOfx() {
                   <Grid item xs={12} md={6}>
                     <DatePicker
                       label="Data de Vencimento *"
-                      value={dataVencimento}
-                      onChange={setDataVencimento}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
+                      value={
+                        dataVencimento
+                          ? parseDate(
+                              dataVencimento.toISOString().split('T')[0],
+                            )
+                          : null
+                      }
+                      onChange={(d) =>
+                        setDataVencimento(
+                          d ? d.toDate(getLocalTimeZone()) : null,
+                        )
+                      }
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
                     <DatePicker
                       label="Data de Competência *"
-                      value={dataCompetencia}
-                      onChange={setDataCompetencia}
-                      renderInput={(params) => (
-                        <TextField {...params} fullWidth />
-                      )}
+                      value={
+                        dataCompetencia
+                          ? parseDate(
+                              dataCompetencia.toISOString().split('T')[0],
+                            )
+                          : null
+                      }
+                      onChange={(d) =>
+                        setDataCompetencia(
+                          d ? d.toDate(getLocalTimeZone()) : null,
+                        )
+                      }
                     />
                   </Grid>
                 </Grid>
@@ -562,25 +578,27 @@ export default function ImportacaoOfx() {
                     Importar {selectionModel.length} Transações
                   </Button>
                 </Box>
-              </LocalizationProvider>
-            </>
-          ) : (
-            <Box sx={{ textAlign: 'center', p: 4 }}>
-              <Typography variant="h6">Nenhuma transação encontrada</Typography>
-              <Typography color="text.secondary">
-                Verifique o período ou o arquivo e tente novamente.
-              </Typography>
-              <Button
-                onClick={() => setActiveStep(0)}
-                sx={{ mt: 2 }}
-                variant="outlined"
-              >
-                Voltar
-              </Button>
-            </Box>
-          )}
-        </Paper>
-      )}
-    </Box>
+              </>
+            ) : (
+              <Box sx={{ textAlign: 'center', p: 4 }}>
+                <Typography variant="h6">
+                  Nenhuma transação encontrada
+                </Typography>
+                <Typography color="text.secondary">
+                  Verifique o período ou o arquivo e tente novamente.
+                </Typography>
+                <Button
+                  onClick={() => setActiveStep(0)}
+                  sx={{ mt: 2 }}
+                  variant="outlined"
+                >
+                  Voltar
+                </Button>
+              </Box>
+            )}
+          </Paper>
+        )}
+      </Box>
+    </I18nProvider>
   )
 }

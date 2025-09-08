@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Button, Input, Tabs, Tab, Spinner } from '@heroui/react'
+import { Button, Input, Tabs, Tab, Spinner, DatePicker } from '@heroui/react'
+import { I18nProvider } from '@react-aria/i18n'
+import { parseDate, getLocalTimeZone } from '@internationalized/date'
 import axios from 'axios'
 import {
   buscarDadosPorCnpj,
@@ -216,180 +218,191 @@ const PessoaCreateForm = () => {
   }
 
   return (
-    <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
-      <h1 className="text-2xl font-semibold mb-6">Nova Pessoa</h1>
+    <I18nProvider locale="pt-BR">
+      <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl font-semibold mb-6">Nova Pessoa</h1>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <Tabs
-          aria-label="Tipo de Pessoa"
-          selectedKey={tipoPessoa}
-          onSelectionChange={(key) => setTipoPessoa(key)}
-          color="primary"
-          radius="md"
-        >
-          <Tab key="1" title="Pessoa Física" />
-          <Tab key="2" title="Pessoa Jurídica" />
-        </Tabs>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tipoPessoa === '1' && (
-            <>
-              <Input
-                name="nome"
-                label="Nome Completo"
-                value={formData.nome}
-                onValueChange={(v) => handleChange('nome', v)}
-                isRequired
-                isInvalid={!!errors.Nome}
-                errorMessage={errors.Nome?.[0]}
-              />
-              <Input
-                name="cpf"
-                label="CPF"
-                value={formData.cpf}
-                onValueChange={(v) => handleChange('cpf', v)}
-                isRequired
-                isInvalid={!!errors.Cpf}
-                errorMessage={errors.Cpf?.[0]}
-              />
-              <Input
-                name="rg"
-                label="RG"
-                value={formData.rg}
-                onValueChange={(v) => handleChange('rg', v)}
-              />
-              <Input
-                name="dataNascimento"
-                label="Data de Nascimento"
-                type="date"
-                value={formData.dataNascimento}
-                onValueChange={(v) => handleChange('dataNascimento', v)}
-              />
-            </>
-          )}
-
-          {tipoPessoa === '2' && (
-            <>
-              <Input
-                name="razaoSocial"
-                label="Razão Social"
-                value={formData.razaoSocial}
-                onValueChange={(v) => handleChange('razaoSocial', v)}
-                isRequired
-                isInvalid={!!errors.RazaoSocial}
-                errorMessage={errors.RazaoSocial?.[0]}
-              />
-              <Input
-                name="nomeFantasia"
-                label="Nome Fantasia"
-                value={formData.nomeFantasia}
-                onValueChange={(v) => handleChange('nomeFantasia', v)}
-              />
-              <Input
-                name="cnpj"
-                label="CNPJ"
-                value={formData.cnpj}
-                onValueChange={(v) => handleChange('cnpj', v)}
-                onBlur={handleCnpjBlur}
-                isRequired
-                isInvalid={!!errors.Cnpj}
-                errorMessage={errors.Cnpj?.[0]}
-                endContent={
-                  cnpjLoading && <Spinner size="sm" color="primary" />
-                }
-              />
-              <Input
-                name="inscricaoEstadual"
-                label="Inscrição Estadual"
-                value={formData.inscricaoEstadual}
-                onValueChange={(v) => handleChange('inscricaoEstadual', v)}
-              />
-            </>
-          )}
-
-          <Input
-            name="telefone"
-            label="Telefone"
-            value={formData.telefone}
-            onValueChange={(v) => handleChange('telefone', v)}
-          />
-          <Input
-            name="email"
-            label="E-mail"
-            type="email"
-            value={formData.email}
-            onValueChange={(v) => handleChange('email', v)}
-            isInvalid={!!errors.Email}
-            errorMessage={errors.Email?.[0]}
-          />
-          <Input
-            name="cep"
-            label="CEP"
-            value={formData.cep}
-            onValueChange={(v) => handleChange('cep', v)}
-            onBlur={handleCepBlur}
-            endContent={cepLoading && <Spinner size="sm" color="primary" />}
-          />
-          <Input
-            name="endereco"
-            label="Endereço"
-            value={formData.endereco}
-            onValueChange={(v) => handleChange('endereco', v)}
-          />
-          <Input
-            name="numero"
-            label="Número"
-            value={formData.numero}
-            onValueChange={(v) => handleChange('numero', v)}
-          />
-          <Input
-            name="bairro"
-            label="Bairro"
-            value={formData.bairro}
-            onValueChange={(v) => handleChange('bairro', v)}
-          />
-          <Input
-            name="cidade"
-            label="Cidade"
-            value={formData.cidade}
-            onValueChange={(v) => handleChange('cidade', v)}
-          />
-          <Input
-            name="estado"
-            label="Estado"
-            value={formData.estado}
-            onValueChange={(v) => handleChange('estado', v)}
-          />
-          <Input
-            name="complemento"
-            label="Complemento"
-            value={formData.complemento}
-            onValueChange={(v) => handleChange('complemento', v)}
-            className="md:col-span-2"
-          />
-        </div>
-
-        <div className="flex gap-2 pt-4">
-          <Button
-            type="submit"
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <Tabs
+            aria-label="Tipo de Pessoa"
+            selectedKey={tipoPessoa}
+            onSelectionChange={(key) => setTipoPessoa(key)}
             color="primary"
-            isDisabled={loading}
-            startIcon={
-              loading ? <Spinner color="current" size="sm" /> : <SaveIcon />
-            }
+            radius="md"
           >
-            {loading ? 'Salvando...' : 'Salvar'}
-          </Button>
-          <Button
-            variant="bordered"
-            onClick={() => navigate('/pessoas')}
-            startIcon={<ArrowBackIcon />}
-          >
-            Voltar
-          </Button>
-        </div>
-      </form>
-    </div>
+            <Tab key="1" title="Pessoa Física" />
+            <Tab key="2" title="Pessoa Jurídica" />
+          </Tabs>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {tipoPessoa === '1' && (
+              <>
+                <Input
+                  name="nome"
+                  label="Nome Completo"
+                  value={formData.nome}
+                  onValueChange={(v) => handleChange('nome', v)}
+                  isRequired
+                  isInvalid={!!errors.Nome}
+                  errorMessage={errors.Nome?.[0]}
+                />
+                <Input
+                  name="cpf"
+                  label="CPF"
+                  value={formData.cpf}
+                  onValueChange={(v) => handleChange('cpf', v)}
+                  isRequired
+                  isInvalid={!!errors.Cpf}
+                  errorMessage={errors.Cpf?.[0]}
+                />
+                <Input
+                  name="rg"
+                  label="RG"
+                  value={formData.rg}
+                  onValueChange={(v) => handleChange('rg', v)}
+                />
+                <DatePicker
+                  label="Data de Nascimento"
+                  value={
+                    formData.dataNascimento
+                      ? parseDate(
+                          formData.dataNascimento.toISOString().split('T')[0],
+                        )
+                      : null
+                  }
+                  onChange={(d) =>
+                    handleChange(
+                      'dataNascimento',
+                      d ? d.toDate(getLocalTimeZone()) : null,
+                    )
+                  }
+                />
+              </>
+            )}
+
+            {tipoPessoa === '2' && (
+              <>
+                <Input
+                  name="razaoSocial"
+                  label="Razão Social"
+                  value={formData.razaoSocial}
+                  onValueChange={(v) => handleChange('razaoSocial', v)}
+                  isRequired
+                  isInvalid={!!errors.RazaoSocial}
+                  errorMessage={errors.RazaoSocial?.[0]}
+                />
+                <Input
+                  name="nomeFantasia"
+                  label="Nome Fantasia"
+                  value={formData.nomeFantasia}
+                  onValueChange={(v) => handleChange('nomeFantasia', v)}
+                />
+                <Input
+                  name="cnpj"
+                  label="CNPJ"
+                  value={formData.cnpj}
+                  onValueChange={(v) => handleChange('cnpj', v)}
+                  onBlur={handleCnpjBlur}
+                  isRequired
+                  isInvalid={!!errors.Cnpj}
+                  errorMessage={errors.Cnpj?.[0]}
+                  endContent={
+                    cnpjLoading && <Spinner size="sm" color="primary" />
+                  }
+                />
+                <Input
+                  name="inscricaoEstadual"
+                  label="Inscrição Estadual"
+                  value={formData.inscricaoEstadual}
+                  onValueChange={(v) => handleChange('inscricaoEstadual', v)}
+                />
+              </>
+            )}
+
+            <Input
+              name="telefone"
+              label="Telefone"
+              value={formData.telefone}
+              onValueChange={(v) => handleChange('telefone', v)}
+            />
+            <Input
+              name="email"
+              label="E-mail"
+              type="email"
+              value={formData.email}
+              onValueChange={(v) => handleChange('email', v)}
+              isInvalid={!!errors.Email}
+              errorMessage={errors.Email?.[0]}
+            />
+            <Input
+              name="cep"
+              label="CEP"
+              value={formData.cep}
+              onValueChange={(v) => handleChange('cep', v)}
+              onBlur={handleCepBlur}
+              endContent={cepLoading && <Spinner size="sm" color="primary" />}
+            />
+            <Input
+              name="endereco"
+              label="Endereço"
+              value={formData.endereco}
+              onValueChange={(v) => handleChange('endereco', v)}
+            />
+            <Input
+              name="numero"
+              label="Número"
+              value={formData.numero}
+              onValueChange={(v) => handleChange('numero', v)}
+            />
+            <Input
+              name="bairro"
+              label="Bairro"
+              value={formData.bairro}
+              onValueChange={(v) => handleChange('bairro', v)}
+            />
+            <Input
+              name="cidade"
+              label="Cidade"
+              value={formData.cidade}
+              onValueChange={(v) => handleChange('cidade', v)}
+            />
+            <Input
+              name="estado"
+              label="Estado"
+              value={formData.estado}
+              onValueChange={(v) => handleChange('estado', v)}
+            />
+            <Input
+              name="complemento"
+              label="Complemento"
+              value={formData.complemento}
+              onValueChange={(v) => handleChange('complemento', v)}
+              className="md:col-span-2"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="submit"
+              color="primary"
+              isDisabled={loading}
+              startIcon={
+                loading ? <Spinner color="current" size="sm" /> : <SaveIcon />
+              }
+            >
+              {loading ? 'Salvando...' : 'Salvar'}
+            </Button>
+            <Button
+              variant="bordered"
+              onClick={() => navigate('/pessoas')}
+              startIcon={<ArrowBackIcon />}
+            >
+              Voltar
+            </Button>
+          </div>
+        </form>
+      </div>
+    </I18nProvider>
   )
 }
 

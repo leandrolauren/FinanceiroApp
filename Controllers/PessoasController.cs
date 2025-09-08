@@ -117,9 +117,8 @@ namespace FinanceiroApp.Controllers
             {
                 var pessoaAtualizada = await pessoaService.UpdatePessoaAsync(id, dto, userId);
                 if (pessoaAtualizada == null)
-                {
                     return NotFound(new { success = false, message = "Pessoa não encontrada." });
-                }
+
                 return NoContent();
             }
             catch (DbUpdateException ex)
@@ -164,10 +163,8 @@ namespace FinanceiroApp.Controllers
             {
                 var sucesso = await pessoaService.DeletePessoaAsync(id, userId);
                 if (!sucesso)
-                {
-                    // Este caso não deveria acontecer se o serviço lança exceção
                     return NotFound(new { success = false, message = "Pessoa não encontrada." });
-                }
+
                 return NoContent();
             }
             catch (InvalidOperationException ex)

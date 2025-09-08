@@ -134,7 +134,7 @@ namespace FinanceiroApp.Services
                     {
                         Success = true,
                         Message =
-                            $"Tem certeza que deseja excluir a pessoa '{nomePessoa}'? Esta ação não pode ser desfeita.",
+                            $"Tem certeza que deseja excluir a pessoa '{nomePessoa}' Documento '{pessoa.Cnpj ?? pessoa.Cpf}'? Esta ação não pode ser desfeita.",
                         RequiresConfirmation = true,
                     };
                 }

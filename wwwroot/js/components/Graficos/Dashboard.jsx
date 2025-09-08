@@ -8,10 +8,8 @@ import {
   MenuItem,
   Paper,
 } from '@mui/material'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
-import ptBR from 'date-fns/locale/pt-BR'
+import { DatePicker } from '@heroui/react'
+import { parseDate, getLocalTimeZone } from '@internationalized/date'
 import { FilterAlt } from '@mui/icons-material'
 import { startOfYear, endOfYear } from 'date-fns'
 
@@ -71,28 +69,40 @@ export default function Dashboard() {
         <Paper sx={{ p: 2, mb: 3, border: '1px solid #ddd' }}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={3}>
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={ptBR}
-              >
-                <DatePicker
-                  label="Data Início"
-                  value={filtrosEditando.dataInicio}
-                  onChange={(date) => handleFiltroChange('dataInicio', date)}
-                />
-              </LocalizationProvider>
+              <DatePicker
+                label="Data Início"
+                value={
+                  filtrosEditando.dataInicio
+                    ? parseDate(
+                        filtrosEditando.dataInicio.toISOString().split('T')[0],
+                      )
+                    : null
+                }
+                onChange={(d) =>
+                  handleFiltroChange(
+                    'dataInicio',
+                    d ? d.toDate(getLocalTimeZone()) : null,
+                  )
+                }
+              />
             </Grid>
             <Grid item xs={12} sm={3}>
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={ptBR}
-              >
-                <DatePicker
-                  label="Data Fim"
-                  value={filtrosEditando.dataFim}
-                  onChange={(date) => handleFiltroChange('dataFim', date)}
-                />
-              </LocalizationProvider>
+              <DatePicker
+                label="Data Fim"
+                value={
+                  filtrosEditando.dataFim
+                    ? parseDate(
+                        filtrosEditando.dataFim.toISOString().split('T')[0],
+                      )
+                    : null
+                }
+                onChange={(d) =>
+                  handleFiltroChange(
+                    'dataFim',
+                    d ? d.toDate(getLocalTimeZone()) : null,
+                  )
+                }
+              />
             </Grid>
             <Grid item xs={12} sm={3}>
               <TextField

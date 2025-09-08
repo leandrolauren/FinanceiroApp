@@ -54,7 +54,7 @@ export const AppThemeProvider = ({ children }) => {
               }
             : {
                 background: {
-                  default: '#f4f6f8',
+                  default: '#dfefffff',
                 },
               }),
         },

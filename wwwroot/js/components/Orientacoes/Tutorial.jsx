@@ -48,14 +48,14 @@ const tutorialData = [
     title: 'Primeiros Passos: Visão Geral',
     description:
       'Bem-vindo ao nosso sistema Financeiro! Este vídeo inicial mostra todas as funcionalidades disponiveis e como navegar entre elas.',
-    videoId: '2Poc0zytaSo',
+    videoId: 'HJwykelCBOA',
   },
   {
     id: 'cadastrando-pessoas',
     title: 'Cadastrando Pessoas e Empresas',
     description:
       'Aprenda a cadastrar clientes, fornecedores e outras entidades com as quais você transaciona. Manter esses dados organizados facilita muito na hora de fazer os lançamentos.',
-    videoId: '2Poc0zytaSo',
+    videoId: '5EymsUveeus',
   },
   {
     id: 'cadastrando-planos-de-contas',

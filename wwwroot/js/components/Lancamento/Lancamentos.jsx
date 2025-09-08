@@ -14,7 +14,9 @@ import {
   DropdownMenu,
   DropdownItem,
   Chip,
+  useDisclosure,
   Pagination,
+  Spinner,
 } from '@heroui/react'
 import {
   Box,
@@ -26,6 +28,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import LancamentoDeleteModal from './LancamentoDeleteModal'
+import FilterModal from './FilterModal'
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined'
 
 const PlusIcon = ({ size = 24, width, height, ...props }) => (
@@ -158,6 +161,44 @@ const UploadIcon = ({ size = 24, width, height, ...props }) => (
   </svg>
 )
 
+const FilterIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    {...props}
+  >
+    <path
+      d="M3 4.5h18"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M6 9.5h12"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M10 14.5h4"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    <path
+      d="M13 19.5h-2"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
 function capitalize(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : ''
 }
@@ -185,8 +226,8 @@ const columns = [
   { name: 'PAGAMENTO', uid: 'dataPagamento', sortable: true },
   { name: 'PLANOCONTAS', uid: 'planoContasDescricao', sortable: true },
   { name: 'CONTA BANCÁRIA', uid: 'contaBancariaDescricao', sortable: true },
-  { name: 'TIPO', uid: 'tipo', sortable: true },
-  { name: 'STATUS', uid: 'pagoTexto', sortable: true },
+  { name: 'TIPO', uid: 'tipo', sortable: false },
+  { name: 'STATUS', uid: 'pagoTexto', sortable: false },
   { name: 'AÇÕES', uid: 'acoes' },
 ]
 
@@ -224,12 +265,16 @@ const showNotification = (message, variant) => {
 export default function Lancamentos() {
   const navigate = useNavigate()
   const [lancamentos, setLancamentos] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
-  // State para o modal de exclusão
+  // Modals
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedLancamentoId, setSelectedLancamentoId] = useState(null)
-
+  const {
+    isOpen: isFilterModalOpen,
+    onOpen: onOpenFilterModal,
+    onClose: onCloseFilterModal,
+  } = useDisclosure()
   // States da tabela (filtro, paginação, etc.)
   const [filterValue, setFilterValue] = useState('')
   const [selectedKeys, setSelectedKeys] = useState(new Set([]))
@@ -244,12 +289,28 @@ export default function Lancamentos() {
     }
     return 'all'
   })
-  const [rowsPerPage, setRowsPerPage] = useState(25)
+
+  const [advancedFilters, setAdvancedFilters] = useState({
+    tipo: null,
+    pessoaId: null,
+    planoContasId: null,
+    contaBancariaId: null,
+    dataInicio: null,
+    dataFim: null,
+    tipoData: 'vencimento',
+  })
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 50,
+    totalItems: 0,
+    totalPages: 1,
+  })
+
   const [sortDescriptor, setSortDescriptor] = useState({
     column: 'dataVencimento',
     direction: 'descending',
   })
-  const [page, setPage] = useState(1)
 
   useEffect(() => {
     localStorage.setItem(
@@ -271,30 +332,87 @@ export default function Lancamentos() {
 
   const hasSearchFilter = Boolean(filterValue)
 
+  const handleApplyFilters = (newFilters) => {
+    setAdvancedFilters(newFilters)
+    setPagination((p) => ({ ...p, page: 1 }))
+    onCloseFilterModal()
+  }
+
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/Lancamentos')
-      const { data, success } = await response.json()
+      const params = new URLSearchParams()
+      params.append('pageNumber', pagination.page)
+      params.append('pageSize', pagination.pageSize)
+
+      if (filterValue) params.append('descricao', filterValue)
+
+      if (statusFilter !== 'all' && statusFilter.size === 1) {
+        const status = Array.from(statusFilter)[0]
+        params.append('pago', status === 'Pago')
+      }
+
+      if (advancedFilters.tipo) params.append('tipo', advancedFilters.tipo)
+      if (advancedFilters.pessoaId)
+        params.append('pessoaId', advancedFilters.pessoaId)
+      if (advancedFilters.planoContasId)
+        params.append('planoContasId', advancedFilters.planoContasId)
+      if (advancedFilters.contaBancariaId)
+        params.append('contaBancariaId', advancedFilters.contaBancariaId)
+      if (advancedFilters.dataInicio)
+        params.append('dataInicio', advancedFilters.dataInicio.toISOString())
+      if (advancedFilters.dataFim)
+        params.append('dataFim', advancedFilters.dataFim.toISOString())
+      if (advancedFilters.dataInicio && advancedFilters.dataFim)
+        params.append('tipoData', advancedFilters.tipoData)
+
+      if (sortDescriptor.column) {
+        params.append('sortColumn', sortDescriptor.column)
+        params.append('sortDirection', sortDescriptor.direction)
+      }
+
+      const response = await axios.get('/api/lancamentos', { params })
+      const { data, success } = response.data
 
       if (success) {
         const rowsAdaptadas = data.map((item) => ({
           ...item,
           pessoaNome: item?.pessoa?.nome ?? '--',
           planoContasDescricao: item?.planoContas?.descricao ?? '--',
-          pagoTexto: item.pago ? 'Pago' : 'Não Pago',
+          pagoTexto: item.pago
+            ? item.tipo === 'Receita'
+              ? 'Recebido'
+              : 'Pago'
+            : 'Em Aberto',
           contaBancariaDescricao: item?.contaBancaria?.nome ?? '--',
         }))
         setLancamentos(rowsAdaptadas)
+
+        const paginationHeader = JSON.parse(response.headers['x-pagination'])
+        setPagination((p) => ({
+          ...p,
+          totalItems: paginationHeader.totalItems,
+          totalPages: paginationHeader.totalPages,
+        }))
       } else {
         showNotification('Erro ao carregar os lançamentos.', 'error')
       }
     } catch (error) {
-      showNotification('Erro ao carregar os lançamentos.', 'error')
+      showNotification(
+        error.response?.data?.message || 'Erro ao carregar os lançamentos.',
+        'error',
+      )
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [
+    pagination.page,
+    pagination.pageSize,
+    filterValue,
+    statusFilter,
+    advancedFilters,
+    sortDescriptor,
+  ])
 
   const handleEstornar = async (id) => {
     if (
@@ -337,43 +455,6 @@ export default function Lancamentos() {
     )
   }, [visibleColumns])
 
-  const filteredItems = useMemo(() => {
-    let filteredLancamentos = [...lancamentos]
-
-    if (hasSearchFilter) {
-      filteredLancamentos = filteredLancamentos.filter((lancamento) =>
-        lancamento.descricao.toLowerCase().includes(filterValue.toLowerCase()),
-      )
-    }
-    if (
-      statusFilter !== 'all' &&
-      Array.from(statusFilter).length !== statusOptions.length
-    ) {
-      filteredLancamentos = filteredLancamentos.filter((lancamento) =>
-        Array.from(statusFilter).includes(lancamento.pagoTexto),
-      )
-    }
-
-    return filteredLancamentos
-  }, [lancamentos, filterValue, statusFilter])
-
-  const pages = Math.ceil(filteredItems.length / rowsPerPage) || 1
-
-  const items = useMemo(() => {
-    const start = (page - 1) * rowsPerPage
-    const end = start + rowsPerPage
-    return filteredItems.slice(start, end)
-  }, [page, filteredItems, rowsPerPage])
-
-  const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
-      const first = a[sortDescriptor.column]
-      const second = b[sortDescriptor.column]
-      const cmp = first < second ? -1 : first > second ? 1 : 0
-      return sortDescriptor.direction === 'descending' ? -cmp : cmp
-    })
-  }, [sortDescriptor, items])
-
   const renderCell = useCallback(
     (lancamento, columnKey) => {
       const cellValue = lancamento[columnKey]
@@ -398,7 +479,7 @@ export default function Lancamentos() {
           return (
             <Chip
               className="capitalize"
-              color={statusColorMap[lancamento.pagoTexto]}
+              color={lancamento.pago ? 'success' : 'danger'}
               size="sm"
               variant="flat"
             >
@@ -468,23 +549,17 @@ export default function Lancamentos() {
     [handleEstornar, handleOpenDeleteModal, navigate],
   )
 
-  const onNextPage = useCallback(() => {
-    if (page < pages) setPage(page + 1)
-  }, [page, pages])
-
-  const onPreviousPage = useCallback(() => {
-    if (page > 1) setPage(page - 1)
-  }, [page])
+  const onPageChange = (newPage) =>
+    setPagination((p) => ({ ...p, page: newPage }))
 
   const onRowsPerPageChange = useCallback((e) => {
-    setRowsPerPage(Number(e.target.value))
-    setPage(1)
+    setPagination((p) => ({ ...p, pageSize: Number(e.target.value), page: 1 }))
   }, [])
 
   const onSearchChange = useCallback((value) => {
     if (value) {
       setFilterValue(value)
-      setPage(1)
+      setPagination((p) => ({ ...p, page: 1 }))
     } else {
       setFilterValue('')
     }
@@ -492,7 +567,7 @@ export default function Lancamentos() {
 
   const onClear = useCallback(() => {
     setFilterValue('')
-    setPage(1)
+    setPagination((p) => ({ ...p, page: 1 }))
   }, [])
 
   useEffect(() => {
@@ -540,8 +615,11 @@ export default function Lancamentos() {
                 aria-label="Filtrar por Status"
                 closeOnSelect={false}
                 selectedKeys={statusFilter}
-                selectionMode="multiple"
-                onSelectionChange={setStatusFilter}
+                selectionMode="single"
+                onSelectionChange={(keys) => {
+                  setStatusFilter(keys)
+                  setPagination((p) => ({ ...p, page: 1 }))
+                }}
               >
                 {statusOptions.map((status) => (
                   <DropdownItem key={status.uid} className="capitalize">
@@ -574,19 +652,26 @@ export default function Lancamentos() {
                 ))}
               </DropdownMenu>
             </Dropdown>
+            <Button
+              variant="flat"
+              onPress={onOpenFilterModal}
+              startContent={<FilterIcon />}
+            >
+              Filtros
+            </Button>
           </div>
         </div>
       </div>
     )
   }, [
     filterValue,
-    statusFilter,
-    visibleColumns,
-    onRowsPerPageChange,
-    lancamentos.length,
     onSearchChange,
     onClear,
-    rowsPerPage,
+    statusFilter,
+    visibleColumns,
+    onOpenFilterModal,
+    setStatusFilter,
+    setVisibleColumns,
   ])
 
   const bottomContent = useMemo(() => {
@@ -595,59 +680,42 @@ export default function Lancamentos() {
         <span className="w-[30%] text-small text-default-400">
           {selectedKeys === 'all'
             ? 'Todos os itens selecionados'
-            : `${selectedKeys.size} de ${filteredItems.length} selecionados`}
+            : `${selectedKeys.size} de ${pagination.totalItems} selecionados`}
         </span>
         <Pagination
           isCompact
           showControls
           showShadow
           color="primary"
-          page={page}
-          total={pages}
-          onChange={setPage}
+          page={pagination.page}
+          total={pagination.totalPages}
+          onChange={onPageChange}
         />
-        <div className="flex justify-between items-center">
+        <div className="hidden sm:flex w-[30%] justify-end gap-2">
           <label className="flex items-center text-default-400 text-small">
             Linhas por página:
-            <select
-              className="bg-transparent outline-none text-default-400 text-small"
-              onChange={onRowsPerPageChange}
-              defaultValue={rowsPerPage}
-            >
-              <option value="25">25</option>
-              <option value="50">50</option>
-              <option value="75">75</option>
-              <option value="100">100</option>
-            </select>
           </label>
-        </div>
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
+          <select
+            className="bg-transparent outline-none text-default-400 text-small"
+            onChange={onRowsPerPageChange}
+            defaultValue={pagination.pageSize}
           >
-            Anterior
-          </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
-            Próximo
-          </Button>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="75">75</option>
+            <option value="100">100</option>
+          </select>
         </div>
       </div>
     )
   }, [
     selectedKeys,
-    page,
-    pages,
-    filteredItems.length,
-    onPreviousPage,
-    onNextPage,
+    pagination.page,
+    pagination.totalPages,
+    pagination.totalItems,
+    pagination.pageSize,
+    onRowsPerPageChange,
+    onPageChange,
   ])
 
   return (
@@ -684,7 +752,7 @@ export default function Lancamentos() {
           Importar OFX
         </Button>
       </Box>
-      {loading ? (
+      {loading && lancamentos.length === 0 ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
@@ -695,7 +763,7 @@ export default function Lancamentos() {
           isHeaderSticky
           bottomContent={bottomContent}
           bottomContentPlacement="outside"
-          classNames={{ wrapper: 'max-h-[70vh]' }}
+          classNames={{ wrapper: 'max-h-[calc(100vh-340px)]' }}
           selectedKeys={selectedKeys}
           selectionMode="multiple"
           sortDescriptor={sortDescriptor}
@@ -717,7 +785,9 @@ export default function Lancamentos() {
           </TableHeader>
           <TableBody
             emptyContent={'Nenhum lançamento encontrado'}
-            items={sortedItems}
+            items={lancamentos}
+            isLoading={loading}
+            loadingContent={<Spinner label="Carregando..." />}
           >
             {(item) => (
               <TableRow key={item.id}>
@@ -736,6 +806,12 @@ export default function Lancamentos() {
           onClose={handleCloseDeleteModal}
         />
       )}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={onCloseFilterModal}
+        onApply={handleApplyFilters}
+        initialFilters={advancedFilters}
+      />
     </Box>
   )
 }

@@ -2,6 +2,7 @@ using System.Data;
 using System.Security.Claims;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
+using FinanceiroApp.Helpers;
 using FinanceiroApp.Models;
 using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -34,22 +35,100 @@ public class LancamentosApiController(
 ) : ControllerBase
 {
     [HttpGet("lancamentos")]
-    public async Task<ResponseModel<List<DetalhesLancamentoDto>>> GetLancamentos()
+    public async Task<IActionResult> GetLancamentos([FromQuery] LancamentoQueryParams queryParams)
     {
-        ResponseModel<List<DetalhesLancamentoDto>> resposta = new();
         try
         {
             var userId = ObterUsuarioId();
-            var lancamentos = await context
+            var query = context
                 .Lancamentos.Include(l => l.ContaBancaria)
                 .Include(l => l.PlanoContas)
                 .Include(l => l.Pessoa)
                 .Where(l => l.UsuarioId == userId)
-                .OrderByDescending(l => l.DataVencimento)
                 .AsNoTracking()
-                .ToListAsync();
+                .AsQueryable();
 
-            resposta.Data = lancamentos
+            if (queryParams.Tipo == "R")
+                query = query.Where(l => l.Tipo == TipoLancamento.Receita);
+            else if (queryParams.Tipo == "D")
+                query = query.Where(l => l.Tipo == TipoLancamento.Despesa);
+
+            if (queryParams.Pago.HasValue)
+                query = query.Where(l => l.Pago == queryParams.Pago.Value);
+
+            if (queryParams.PessoaId.HasValue)
+                query = query.Where(l => l.PessoaId == queryParams.PessoaId.Value);
+
+            if (queryParams.PlanoContasId.HasValue)
+                query = query.Where(l => l.PlanoContaId == queryParams.PlanoContasId.Value);
+
+            if (queryParams.ContaBancariaId.HasValue)
+                query = query.Where(l => l.ContaBancariaId == queryParams.ContaBancariaId.Value);
+
+            if (queryParams.DataInicio.HasValue && queryParams.DataFim.HasValue)
+            {
+                var dataInicio = DateTime
+                    .SpecifyKind(queryParams.DataInicio.Value, DateTimeKind.Unspecified)
+                    .Date;
+                var dataFim = DateTime
+                    .SpecifyKind(queryParams.DataFim.Value, DateTimeKind.Unspecified)
+                    .Date.AddDays(1)
+                    .AddTicks(-1);
+
+                query = queryParams.TipoData?.ToLower() switch
+                {
+                    "pagamento" => query.Where(l =>
+                        l.DataPagamento.HasValue
+                        && l.DataPagamento.Value >= dataInicio
+                        && l.DataPagamento.Value <= dataFim
+                    ),
+                    "competencia" => query.Where(l =>
+                        l.DataCompetencia >= dataInicio && l.DataCompetencia <= dataFim
+                    ),
+                    "lancamento" => query.Where(l =>
+                        l.DataLancamento >= dataInicio && l.DataLancamento <= dataFim
+                    ),
+                    _ => query.Where(l =>
+                        l.DataVencimento >= dataInicio && l.DataVencimento <= dataFim
+                    ),
+                };
+            }
+
+            // Ordenação
+            if (!string.IsNullOrEmpty(queryParams.SortColumn))
+            {
+                var isDescending = queryParams.SortDirection?.ToLower() == "descending";
+                query = (queryParams.SortColumn.ToLower(), isDescending) switch
+                {
+                    ("descricao", false) => query.OrderBy(l => l.Descricao),
+                    ("descricao", true) => query.OrderByDescending(l => l.Descricao),
+                    ("valor", false) => query.OrderBy(l => l.Valor),
+                    ("valor", true) => query.OrderByDescending(l => l.Valor),
+                    ("pessoanome", false) => query.OrderBy(l => l.Pessoa.Nome),
+                    ("pessoanome", true) => query.OrderByDescending(l => l.Pessoa.Nome),
+                    ("datavencimento", false) => query.OrderBy(l => l.DataVencimento),
+                    ("datavencimento", true) => query.OrderByDescending(l => l.DataVencimento),
+                    ("datacompentencia", false) => query.OrderBy(l => l.DataCompetencia),
+                    ("datacompentencia", true) => query.OrderByDescending(l => l.DataCompetencia),
+                    ("datapagamento", false) => query.OrderBy(l => l.DataPagamento),
+                    ("datapagamento", true) => query.OrderByDescending(l => l.DataPagamento),
+                    _ => query.OrderByDescending(l => l.DataVencimento),
+                };
+            }
+            else
+            {
+                query = query.OrderByDescending(l => l.DataVencimento);
+            }
+
+            var pagedLancamentos = await PagedList<LancamentoModel>.CreateAsync(
+                query,
+                queryParams.PageNumber,
+                queryParams.PageSize
+            );
+
+            Response.AddPaginationHeader(pagedLancamentos.GetPaginationHeader());
+
+            var lancamentosDto = pagedLancamentos
                 .Select(l => new DetalhesLancamentoDto
                 {
                     Id = l.Id,
@@ -84,16 +163,26 @@ public class LancamentosApiController(
                 })
                 .ToList();
 
-            resposta.Message = "Lançamentos listados com sucesso.";
+            return Ok(
+                new ResponseModel<List<DetalhesLancamentoDto>>
+                {
+                    Data = lancamentosDto,
+                    Message = "Lançamentos listados com sucesso.",
+                }
+            );
         }
         catch (Exception ex)
         {
-            resposta.Message = "Erro ao listar lançamentos.";
-            resposta.Success = false;
-            resposta.StatusCode = 500;
-            resposta.Errors.Add(ex.Message);
+            return StatusCode(
+                500,
+                new ResponseModel<List<DetalhesLancamentoDto>>
+                {
+                    Message = "Erro ao listar lançamentos.",
+                    Success = false,
+                    Errors = { ex.Message },
+                }
+            );
         }
-        return resposta;
     }
 
     [HttpGet("lancamentos/{id}")]
@@ -228,8 +317,7 @@ public class LancamentosApiController(
                 new
                 {
                     success = false,
-                    message =
-                        "Para marcar um lançamento como 'Pago', a Data de Pagamento é obrigatória.",
+                    message = "Para marcar um lançamento como 'Pago', a Data de Pagamento é obrigatória.",
                 }
             );
         }

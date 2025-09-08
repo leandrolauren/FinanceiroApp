@@ -96,10 +96,7 @@ public class GeminiService : IGeminiService
             var functionCall = firstPart["functionCall"];
 
             if (functionCall == null)
-            {
-                // Resposta final de texto, sem chamada de função.
                 return firstPart["text"]?.GetValue<string>() ?? "Ação concluída.";
-            }
 
             callCount++;
 

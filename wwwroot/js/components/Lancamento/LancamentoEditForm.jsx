@@ -9,8 +9,10 @@ import {
   Select,
   SelectItem,
 } from '@heroui/react'
+import { I18nProvider } from '@react-aria/i18n'
+import { DatePicker } from '@heroui/react'
+import { parseDate, getLocalTimeZone } from '@internationalized/date'
 import { Autocomplete, TextField, Alert } from '@mui/material'
-import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { NumericFormat } from 'react-number-format'
 import axios from 'axios'
 
@@ -227,243 +229,260 @@ const LancamentoEditForm = ({ lancamentoId }) => {
   }
 
   return (
-    <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
-      <h1 className="text-2xl font-semibold mb-6">Editar Lançamento</h1>
+    <I18nProvider locale="pt-BR">
+      <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl font-semibold mb-6">Editar Lançamento</h1>
 
-      {isPago && (
-        <Alert severity="warning" sx={{ mb: 4 }}>
-          Este lançamento está pago e não pode ser editado. Para fazer
-          alterações, você deve primeiro estornar o pagamento na tela de
-          listagem.
-        </Alert>
-      )}
+        {isPago && (
+          <Alert severity="warning" sx={{ mb: 4 }}>
+            Este lançamento está pago e não pode ser editado. Para fazer
+            alterações, você deve primeiro estornar o pagamento na tela de
+            listagem.
+          </Alert>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <Tabs
-          aria-label="Tipo de Lançamento"
-          selectedKey={formData.tipo}
-          onSelectionChange={(key) => handleValueChange('tipo', key)}
-          color="primary"
-          radius="md"
-          isDisabled={true} // Tipo desabilitado na edição
-        >
-          <Tab key="1" title="Receita" />
-          <Tab key="2" title="Despesa" />
-        </Tabs>
-
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
-          <Input
-            className="md:col-span-4"
-            name="descricao"
-            label="Descrição"
-            value={formData.descricao}
-            onValueChange={(v) => handleValueChange('descricao', v)}
-            required
-            error={!!errors.Descricao}
-            helperText={errors.Descricao?.[0]}
-            disabled={isPago}
-          />
-          <NumericFormat
-            className="md:col-span-2"
-            name="valor"
-            label="Valor (R$)"
-            value={formData.valor}
-            customInput={TextField}
-            fullWidth
-            onValueChange={(values) => {
-              handleValueChange('valor', values.floatValue || '')
-            }}
-            prefix={'R$ '}
-            thousandSeparator="."
-            decimalSeparator=","
-            decimalScale={2}
-            fixedDecimalScale
-            required
-            error={!!errors.Valor}
-            helperText={errors.Valor?.[0]}
-            disabled={isPago}
-          />
-
-          <div className="md:col-span-2">
-            <Autocomplete
-              options={pessoas}
-              getOptionLabel={(option) => option.nome || ''}
-              value={pessoas.find((p) => p.id === formData.pessoaId) || null}
-              onChange={(event, newValue) => {
-                handleValueChange('pessoaId', newValue ? newValue.id : '')
-              }}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Pessoa (Cliente/Fornecedor)"
-                  error={!!errors.PessoaId}
-                  helperText={errors.PessoaId?.[0]}
-                  required
-                />
-              )}
-              disabled={isPago}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <Autocomplete
-              options={planosDeContaFilhos}
-              getOptionLabel={(option) => option.descricao || ''}
-              value={
-                planosDeContaFilhos.find(
-                  (p) => p.id === formData.planoContasId,
-                ) || null
-              }
-              onChange={(event, newValue) => {
-                handleValueChange('planoContasId', newValue ? newValue.id : '')
-              }}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Plano de Contas"
-                  required
-                  error={!!errors.PlanoContasId}
-                  helperText={errors.PlanoContasId?.[0]}
-                />
-              )}
-              disabled={isPago}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <Autocomplete
-              options={contasBancarias}
-              getOptionLabel={(option) => option.descricao || ''}
-              value={
-                contasBancarias.find(
-                  (c) => c.id === formData.contaBancariaId,
-                ) || null
-              }
-              onChange={(event, newValue) => {
-                handleValueChange(
-                  'contaBancariaId',
-                  newValue ? newValue.id : '',
-                )
-              }}
-              isOptionEqualToValue={(option, value) => option.id === value.id}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={formData.pago ? 'Conta Bancária *' : 'Conta Bancária'}
-                  error={!!errors.ContaBancariaId}
-                  required={formData.pago}
-                  helperText={errors.ContaBancariaId?.[0]}
-                />
-              )}
-              disabled={isPago}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <DatePicker
-              label="Data de Competência"
-              value={formData.dataCompetencia}
-              onChange={(date) => handleValueChange('dataCompetencia', date)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  fullWidth
-                  required
-                  error={!!errors.DataCompetencia}
-                  helperText={errors.DataCompetencia?.[0] || ''}
-                />
-              )}
-              disabled={isPago}
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <DatePicker
-              label="Data de Vencimento"
-              value={formData.dataVencimento}
-              onChange={(date) => handleValueChange('dataVencimento', date)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  fullWidth
-                  required
-                  error={!!errors.DataVencimento}
-                  helperText={errors.DataVencimento?.[0] || ''}
-                />
-              )}
-              disabled={isPago}
-            />
-          </div>
-
-          <Select
-            className="md:col-span-1"
-            label="Situação"
-            selectedKeys={[String(formData.pago)]}
-            onSelectionChange={(keys) =>
-              handleValueChange('pago', Array.from(keys)[0] === 'true')
-            }
-            isDisabled={isPago}
-          >
-            <SelectItem key="false">Em Aberto</SelectItem>
-            <SelectItem key="true">Pago</SelectItem>
-          </Select>
-
-          <div className="md:col-span-1">
-            <DatePicker
-              label={
-                formData.pago ? 'Data de Pagamento *' : 'Data de Pagamento'
-              }
-              value={formData.dataPagamento}
-              onChange={(date) => handleValueChange('dataPagamento', date)}
-              disabled={!formData.pago || isPago}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  required={formData.pago}
-                  fullWidth
-                  error={
-                    !!errors.DataPagamento ||
-                    (formData.pago && !formData.dataPagamento)
-                  }
-                  helperText={
-                    errors.DataPagamento?.[0] ||
-                    (formData.pago && !formData.dataPagamento
-                      ? 'Campo obrigatório.'
-                      : '')
-                  }
-                />
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-2 pt-4">
-          <Button
-            type="submit"
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <Tabs
+            aria-label="Tipo de Lançamento"
+            selectedKey={formData.tipo}
+            onSelectionChange={(key) => handleValueChange('tipo', key)}
             color="primary"
-            isDisabled={formSubmitting || isPago}
-            startIcon={
-              formSubmitting ? (
-                <Spinner color="current" size="sm" />
-              ) : (
-                <SaveIcon />
-              )
-            }
+            radius="md"
+            isDisabled={true} // Tipo desabilitado na edição
           >
-            {formSubmitting ? 'Salvando...' : 'Salvar Alterações'}
-          </Button>
-          <Button
-            variant="bordered"
-            onClick={() => navigate('/lancamentos')}
-            startIcon={<ArrowBackIcon />}
-          >
-            Voltar
-          </Button>
-        </div>
-      </form>
-    </div>
+            <Tab key="1" title="Receita" />
+            <Tab key="2" title="Despesa" />
+          </Tabs>
+
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
+            <Input
+              className="md:col-span-4"
+              name="descricao"
+              label="Descrição"
+              value={formData.descricao}
+              onValueChange={(v) => handleValueChange('descricao', v)}
+              required
+              error={!!errors.Descricao}
+              helperText={errors.Descricao?.[0]}
+              disabled={isPago}
+            />
+            <NumericFormat
+              className="md:col-span-2"
+              name="valor"
+              label="Valor (R$)"
+              value={formData.valor}
+              customInput={TextField}
+              fullWidth
+              onValueChange={(values) => {
+                handleValueChange('valor', values.floatValue || '')
+              }}
+              prefix={'R$ '}
+              thousandSeparator="."
+              decimalSeparator=","
+              decimalScale={2}
+              fixedDecimalScale
+              required
+              error={!!errors.Valor}
+              helperText={errors.Valor?.[0]}
+              disabled={isPago}
+            />
+
+            <div className="md:col-span-2">
+              <Autocomplete
+                options={pessoas}
+                getOptionLabel={(option) => option.nome || ''}
+                value={pessoas.find((p) => p.id === formData.pessoaId) || null}
+                onChange={(event, newValue) => {
+                  handleValueChange('pessoaId', newValue ? newValue.id : '')
+                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Pessoa (Cliente/Fornecedor)"
+                    error={!!errors.PessoaId}
+                    helperText={errors.PessoaId?.[0]}
+                    required
+                  />
+                )}
+                disabled={isPago}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Autocomplete
+                options={planosDeContaFilhos}
+                getOptionLabel={(option) => option.descricao || ''}
+                value={
+                  planosDeContaFilhos.find(
+                    (p) => p.id === formData.planoContasId,
+                  ) || null
+                }
+                onChange={(event, newValue) => {
+                  handleValueChange(
+                    'planoContasId',
+                    newValue ? newValue.id : '',
+                  )
+                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Plano de Contas"
+                    required
+                    error={!!errors.PlanoContasId}
+                    helperText={errors.PlanoContasId?.[0]}
+                  />
+                )}
+                disabled={isPago}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <Autocomplete
+                options={contasBancarias}
+                getOptionLabel={(option) => option.descricao || ''}
+                value={
+                  contasBancarias.find(
+                    (c) => c.id === formData.contaBancariaId,
+                  ) || null
+                }
+                onChange={(event, newValue) => {
+                  handleValueChange(
+                    'contaBancariaId',
+                    newValue ? newValue.id : '',
+                  )
+                }}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={
+                      formData.pago ? 'Conta Bancária *' : 'Conta Bancária'
+                    }
+                    error={!!errors.ContaBancariaId}
+                    required={formData.pago}
+                    helperText={errors.ContaBancariaId?.[0]}
+                  />
+                )}
+                disabled={isPago}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <DatePicker
+                label="Data de Competência"
+                value={
+                  formData.dataCompetencia
+                    ? parseDate(
+                        formData.dataCompetencia.toISOString().split('T')[0],
+                      )
+                    : null
+                }
+                onChange={(d) =>
+                  handleValueChange(
+                    'dataCompetencia',
+                    d ? d.toDate(getLocalTimeZone()) : null,
+                  )
+                }
+                isRequired
+                isInvalid={!!errors.DataCompetencia}
+                errorMessage={errors.DataCompetencia?.[0]}
+                disabled={isPago}
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <DatePicker
+                label="Data de Vencimento"
+                value={
+                  formData.dataVencimento
+                    ? parseDate(
+                        formData.dataVencimento.toISOString().split('T')[0],
+                      )
+                    : null
+                }
+                onChange={(d) =>
+                  handleValueChange(
+                    'dataVencimento',
+                    d ? d.toDate(getLocalTimeZone()) : null,
+                  )
+                }
+                isRequired
+                isInvalid={!!errors.DataVencimento}
+                errorMessage={errors.DataVencimento?.[0]}
+                disabled={isPago}
+              />
+            </div>
+
+            <Select
+              className="md:col-span-1"
+              label="Situação"
+              selectedKeys={[String(formData.pago)]}
+              onSelectionChange={(keys) =>
+                handleValueChange('pago', Array.from(keys)[0] === 'true')
+              }
+              isDisabled={isPago}
+            >
+              <SelectItem key="false">Em Aberto</SelectItem>
+              <SelectItem key="true">Pago</SelectItem>
+            </Select>
+
+            <div className="md:col-span-1">
+              <DatePicker
+                label={
+                  formData.pago ? 'Data de Pagamento *' : 'Data de Pagamento'
+                }
+                value={
+                  formData.dataPagamento
+                    ? parseDate(
+                        formData.dataPagamento.toISOString().split('T')[0],
+                      )
+                    : null
+                }
+                onChange={(d) =>
+                  handleValueChange(
+                    'dataPagamento',
+                    d ? d.toDate(getLocalTimeZone()) : null,
+                  )
+                }
+                isDisabled={!formData.pago || isPago}
+                isRequired={formData.pago}
+                isInvalid={
+                  !!errors.DataPagamento ||
+                  (formData.pago && !formData.dataPagamento)
+                }
+                errorMessage={errors.DataPagamento?.[0]}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2 pt-4">
+            <Button
+              type="submit"
+              color="primary"
+              isDisabled={formSubmitting || isPago}
+              startIcon={
+                formSubmitting ? (
+                  <Spinner color="current" size="sm" />
+                ) : (
+                  <SaveIcon />
+                )
+              }
+            >
+              {formSubmitting ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+            <Button
+              variant="bordered"
+              onClick={() => navigate('/lancamentos')}
+              startIcon={<ArrowBackIcon />}
+            >
+              Voltar
+            </Button>
+          </div>
+        </form>
+      </div>
+    </I18nProvider>
   )
 }
 

@@ -6,18 +6,17 @@ import {
   Route,
   useParams,
 } from 'react-router-dom'
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+import { HelmetProvider } from 'react-helmet-async'
 import { SnackbarProvider } from 'notistack'
 import Notifcacao from '../Shared/Notificacao'
 import { Box, CircularProgress, CssBaseline } from '@mui/material'
-import { ptBR } from 'date-fns/locale/pt-BR'
 import '../../../css/tailwind.css'
-import { AppThemeProvider, useTheme } from '../../contexts/ThemeContext'
-import { ThemeSwitcher } from './ThemeSwitcher'
+import { AppThemeProvider } from '../../contexts/ThemeContext'
+import { I18nProvider } from '@react-aria/i18n'
 import { HeroUIProvider } from '@heroui/system'
 
 import Sidebar from './Sidebar'
+import Seo from '../Shared/Seo'
 
 const HomePage = lazy(() => import('./HomePage'))
 
@@ -103,6 +102,7 @@ const App = () => {
 
   return (
     <Router>
+      <Seo />
       <CssBaseline />
 
       <Sidebar
@@ -180,22 +180,21 @@ if (container) {
   const root = createRoot(container)
   root.render(
     <React.StrictMode>
-      <AppThemeProvider>
-        <HeroUIProvider>
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={ptBR}
-          >
-            <SnackbarProvider
-              maxSnack={3}
-              anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-            >
-              <Notifcacao />
-              <App />
-            </SnackbarProvider>
-          </LocalizationProvider>
-        </HeroUIProvider>
-      </AppThemeProvider>
+      <HelmetProvider>
+        <AppThemeProvider>
+          <I18nProvider locale="pt-BR">
+            <HeroUIProvider>
+              <SnackbarProvider
+                maxSnack={3}
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+              >
+                <Notifcacao />
+                <App />
+              </SnackbarProvider>
+            </HeroUIProvider>
+          </I18nProvider>
+        </AppThemeProvider>
+      </HelmetProvider>
     </React.StrictMode>,
   )
 } else {
