@@ -1,17 +1,8 @@
 import React, { useState } from 'react'
-import {
-  Box,
-  Button,
-  Collapse,
-  Grid,
-  TextField,
-  MenuItem,
-  Paper,
-} from '@mui/material'
-import { DatePicker } from '@heroui/react'
+import { Box, Button, Collapse, Grid, Paper } from '@mui/material'
+import { DatePicker, Select, SelectItem } from '@heroui/react'
 import { I18nProvider } from '@react-aria/i18n'
 import { parseDate, getLocalTimeZone } from '@internationalized/date'
-import { FilterAlt } from '@mui/icons-material'
 import { startOfYear, endOfYear } from 'date-fns'
 
 import EntradaeSaida from './EntradaeSaida'
@@ -21,6 +12,27 @@ import TopReceitas from './TopReceitas'
 import ContasProximas from './ContasProximas'
 import EvolucaoSaldo from './EvolucaoSaldo'
 import SaldosContasBancarias from './SaldosContasBancarias'
+
+// --- Ícone de Filtro (copiado de PlanoConta.jsx) ---
+const FilterIcon = (props) => (
+  <svg
+    aria-hidden="true"
+    fill="none"
+    focusable="false"
+    height="1em"
+    role="presentation"
+    viewBox="0 0 24 24"
+    width="1em"
+    {...props}
+  >
+    <path
+      d="M3 7h18M6 12h12M10 17h4"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+)
 
 const getFiltrosSalvos = () => {
   const filtrosSalvos = localStorage.getItem('dashboardFiltros')
@@ -54,6 +66,16 @@ export default function Dashboard() {
     setMostrarFiltros(false)
   }
 
+  const resetarFiltro = () => {
+    const hoje = new Date()
+    const filtrosPadrao = {
+      dataInicio: startOfYear(hoje),
+      dataFim: endOfYear(hoje),
+      status: 'Todos',
+    }
+    setFiltrosEditando(filtrosPadrao)
+    setFiltrosAtivos(filtrosPadrao)
+  }
   return (
     <I18nProvider locale="pt-BR">
       <Box sx={{ p: 3 }}>
@@ -64,18 +86,35 @@ export default function Dashboard() {
           mb={2}
         >
           <Button
-            variant="outlined"
-            startIcon={<FilterAlt />}
+            variant="bordered"
+            startContent={<FilterIcon />}
             id="tour-dashboard-filtros"
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
           >
-            Filtros
+            Filtros {mostrarFiltros ? '▲' : '▼'}
           </Button>
         </Box>
         <Collapse in={mostrarFiltros}>
           <Paper sx={{ p: 2, mb: 3, border: '1px solid #ddd' }}>
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} md={5}>
+                <Select
+                  label="Situação"
+                  className="w-[190px]"
+                  selectedKeys={[filtrosEditando.status]}
+                  onSelectionChange={(keys) => {
+                    const value = Array.from(keys)[0]
+                    if (value) {
+                      handleFiltroChange('status', value)
+                    }
+                  }}
+                >
+                  <SelectItem key="Todos">Todos - Competência</SelectItem>
+                  <SelectItem key="Pago">Pagos - Pagamento</SelectItem>
+                  <SelectItem key="Aberto">Aberto - Vencimento</SelectItem>
+                </Select>
+              </Grid>
+              <Grid item xs={12} md={2}>
                 <DatePicker
                   label="Data Início"
                   value={
@@ -95,7 +134,7 @@ export default function Dashboard() {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={3}>
+              <Grid item xs={12} md={2}>
                 <DatePicker
                   label="Data Fim"
                   value={
@@ -113,25 +152,15 @@ export default function Dashboard() {
                   }
                 />
               </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  select
-                  fullWidth
-                  label="Situação"
-                  value={filtrosEditando.status}
-                  onChange={(e) => handleFiltroChange('status', e.target.value)}
-                >
-                  <MenuItem value="Todos">Todos - Competência</MenuItem>
-                  <MenuItem value="Pago">Pagos - Pagamento</MenuItem>
-                  <MenuItem value="Aberto">Em Aberto - Vencimento</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <Box display="flex" justifyContent="flex-end">
-                  <Button variant="contained" onClick={aplicarFiltro}>
-                    Aplicar Filtros
+              <Grid item xs={12} md={3}>
+                <div className="flex justify-end gap-2">
+                  <Button variant="bordered" onClick={resetarFiltro}>
+                    Redefinir
                   </Button>
-                </Box>
+                  <Button color="primary" onClick={aplicarFiltro}>
+                    Aplicar
+                  </Button>
+                </div>
               </Grid>
             </Grid>
           </Paper>

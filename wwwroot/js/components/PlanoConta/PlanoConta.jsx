@@ -20,9 +20,11 @@ import {
   CircularProgress,
   Alert,
   AlertTitle,
-  Typography,
   Tooltip,
   IconButton,
+  Collapse,
+  Grid,
+  Paper,
 } from '@mui/material'
 import { I18nProvider } from '@react-aria/i18n'
 import { getLocalTimeZone, parseDate } from '@internationalized/date'
@@ -343,11 +345,8 @@ export default function PlanoContaDataGrid() {
   }
 
   return (
-    <div className="p-4 rounded-lg shadow-sm">
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Typography variant="h5" component="h1">
-          Plano de Contas
-        </Typography>
+    <Box sx={{ p: 1 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Tooltip title="O Plano de Contas é a estrutura que organiza suas finanças. Crie categorias como 'Salário', 'Aluguel' ou 'Supermercado' para classificar suas receitas e despesas e entender para onde seu dinheiro está indo.">
           <IconButton size="small">
             <InfoOutlinedIcon
@@ -356,9 +355,6 @@ export default function PlanoContaDataGrid() {
             />
           </IconButton>
         </Tooltip>
-      </Box>
-
-      <div className="flex justify-between items-center mb-4">
         <Button color="primary" onPress={() => navigate('/PlanoContas/Create')}>
           Novo Plano de Contas
         </Button>
@@ -369,71 +365,80 @@ export default function PlanoContaDataGrid() {
         >
           Filtros {mostrarFiltros ? '▲' : '▼'}
         </Button>
-      </div>
-      {mostrarFiltros && (
-        <div className="p-4 mb-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-          <I18nProvider locale="pt-BR">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-              <Select
-                label="Tipo de Data"
-                name="tipoData"
-                selectedKeys={[filtrosEditando.tipoData]}
-                onSelectionChange={(keys) => {
-                  const value = Array.from(keys)[0]
-                  if (value) {
-                    setFiltrosEditando((prev) => ({ ...prev, tipoData: value }))
-                  }
-                }}
-              >
-                <SelectItem key="vencimento">Vencimento</SelectItem>
-                <SelectItem key="competencia">Competência</SelectItem>
-                <SelectItem key="lancamento">Lançamento</SelectItem>
-                <SelectItem key="pagamento">Pagamento</SelectItem>
-              </Select>
-              <DatePicker
-                label="Data Início"
-                value={
-                  filtrosEditando.dataInicio
-                    ? parseDate(
-                        filtrosEditando.dataInicio.toISOString().split('T')[0],
-                      )
-                    : null
-                }
-                onChange={(d) =>
-                  setFiltrosEditando((prev) => ({
-                    ...prev,
-                    dataInicio: d ? d.toDate(getLocalTimeZone()) : null,
-                  }))
-                }
-              />
-              <DatePicker
-                label="Data Fim"
-                value={
-                  filtrosEditando.dataFim
-                    ? parseDate(
-                        filtrosEditando.dataFim.toISOString().split('T')[0],
-                      )
-                    : null
-                }
-                onChange={(d) =>
-                  setFiltrosEditando((prev) => ({
-                    ...prev,
-                    dataFim: d ? d.toDate(getLocalTimeZone()) : null,
-                  }))
-                }
-              />
-              <div className="flex justify-end gap-2">
-                <Button variant="bordered" onClick={resetarFiltro}>
-                  Redefinir
-                </Button>
-                <Button color="primary" onClick={aplicarFiltro}>
-                  Aplicar
-                </Button>
-              </div>
-            </div>
-          </I18nProvider>
-        </div>
-      )}
+      </Box>
+      <Collapse in={mostrarFiltros}>
+        <Paper sx={{ p: 2, mb: 3, border: '1px solid #ddd' }}>
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={3}>
+              <I18nProvider locale="pt-BR">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                  <Select
+                    label="Tipo de Data"
+                    name="tipoData"
+                    selectedKeys={[filtrosEditando.tipoData]}
+                    onSelectionChange={(keys) => {
+                      const value = Array.from(keys)[0]
+                      if (value) {
+                        setFiltrosEditando((prev) => ({
+                          ...prev,
+                          tipoData: value,
+                        }))
+                      }
+                    }}
+                  >
+                    <SelectItem key="vencimento">Vencimento</SelectItem>
+                    <SelectItem key="competencia">Competência</SelectItem>
+                    <SelectItem key="lancamento">Lançamento</SelectItem>
+                    <SelectItem key="pagamento">Pagamento</SelectItem>
+                  </Select>
+                  <DatePicker
+                    label="Data Início"
+                    value={
+                      filtrosEditando.dataInicio
+                        ? parseDate(
+                            filtrosEditando.dataInicio
+                              .toISOString()
+                              .split('T')[0],
+                          )
+                        : null
+                    }
+                    onChange={(d) =>
+                      setFiltrosEditando((prev) => ({
+                        ...prev,
+                        dataInicio: d ? d.toDate(getLocalTimeZone()) : null,
+                      }))
+                    }
+                  />
+                  <DatePicker
+                    label="Data Fim"
+                    value={
+                      filtrosEditando.dataFim
+                        ? parseDate(
+                            filtrosEditando.dataFim.toISOString().split('T')[0],
+                          )
+                        : null
+                    }
+                    onChange={(d) =>
+                      setFiltrosEditando((prev) => ({
+                        ...prev,
+                        dataFim: d ? d.toDate(getLocalTimeZone()) : null,
+                      }))
+                    }
+                  />
+                  <div className="flex justify-end gap-2">
+                    <Button variant="bordered" onClick={resetarFiltro}>
+                      Redefinir
+                    </Button>
+                    <Button color="primary" onClick={aplicarFiltro}>
+                      Aplicar
+                    </Button>
+                  </div>
+                </div>
+              </I18nProvider>
+            </Grid>
+          </Grid>
+        </Paper>
+      </Collapse>
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
@@ -441,7 +446,6 @@ export default function PlanoContaDataGrid() {
           {error}
         </Alert>
       )}
-
       <Table aria-label="Tabela de Plano de Contas">
         <TableHeader columns={columns}>
           {(column) => (
@@ -472,7 +476,6 @@ export default function PlanoContaDataGrid() {
           )}
         </TableBody>
       </Table>
-
       {isDeleteModalOpen && (
         <PlanoContaDeleteModal
           open={isDeleteModalOpen}
@@ -480,7 +483,6 @@ export default function PlanoContaDataGrid() {
           onClose={handleCloseDeleteModal}
         />
       )}
-
       {isMigrateModalOpen && (
         <PlanoContaMigrateModal
           open={isMigrateModalOpen}
@@ -488,6 +490,6 @@ export default function PlanoContaDataGrid() {
           onClose={handleCloseMigrateModal}
         />
       )}
-    </div>
+    </Box>
   )
 }
