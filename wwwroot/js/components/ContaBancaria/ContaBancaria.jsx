@@ -536,10 +536,7 @@ export default function ContaBancaria() {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Typography variant="h5" component="h1">
-          Contas Bancárias
-        </Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Tooltip title="Cadastre aqui suas contas bancárias, carteiras ou cartões de crédito. Manter os saldos atualizados é fundamental para uma visão precisa da sua saúde financeira.">
           <IconButton size="small">
             <InfoOutlinedIcon
@@ -548,9 +545,6 @@ export default function ContaBancaria() {
             />
           </IconButton>
         </Tooltip>
-      </Box>
-
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"
           endContent={<PlusIcon />}

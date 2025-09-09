@@ -470,11 +470,8 @@ export default function PessoasDataGrid() {
   }, [fetchData])
 
   return (
-    <div className="p-4 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Typography variant="h5" component="h1">
-          Pessoas
-        </Typography>
+    <Box sx={{ p: 1 }}>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Tooltip title="Aqui você gerencia todas as pessoas e empresas (clientes, fornecedores, etc.) com quem você transaciona. Mantenha os cadastros atualizados para facilitar seus lançamentos.">
           <IconButton size="small">
             <InfoOutlinedIcon
@@ -483,9 +480,6 @@ export default function PessoasDataGrid() {
             />
           </IconButton>
         </Tooltip>
-      </Box>
-
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"
           id="tour-nova-pessoa"
@@ -548,6 +542,6 @@ export default function PessoasDataGrid() {
           onClose={handleCloseDeleteModal}
         />
       )}
-    </div>
+    </Box>
   )
 }

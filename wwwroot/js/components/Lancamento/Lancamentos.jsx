@@ -720,10 +720,7 @@ export default function Lancamentos() {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Typography variant="h5" component="h1">
-          Lançamentos Financeiros
-        </Typography>
+      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Tooltip title="Esta é a tela principal para registrar todas as suas movimentações: receitas (o que você ganha) e despesas (o que você gasta). Um registro detalhado ajuda a manter o controle.">
           <IconButton size="small">
             <InfoOutlinedIcon
@@ -732,9 +729,6 @@ export default function Lancamentos() {
             />
           </IconButton>
         </Tooltip>
-      </Box>
-
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
         <Button
           color="primary"
           endContent={<PlusIcon />}
