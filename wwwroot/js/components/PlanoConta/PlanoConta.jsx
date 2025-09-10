@@ -115,7 +115,6 @@ export default function PlanoContaDataGrid() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Converte a data do localStorage para um objeto Date
   const getFiltrosSalvos = () => {
     const filtrosSalvos = localStorage.getItem('planoContaFiltros')
     if (filtrosSalvos) {
@@ -147,6 +146,17 @@ export default function PlanoContaDataGrid() {
   const [selectedPlano, setSelectedPlano] = useState(null)
   const [migrationSource, setMigrationSource] = useState(null)
 
+  const removerContaDaHierarquia = (id, contas) => {
+    const contasFiltradas = contas.filter((c) => c.id !== id)
+
+    return contasFiltradas.map((c) => {
+      if (c.filhos && c.filhos.length > 0) {
+        return { ...c, filhos: removerContaDaHierarquia(id, c.filhos) }
+      }
+      return c
+    })
+  }
+
   const handleOpenDeleteModal = (plano) => {
     setSelectedPlano(plano)
     setIsDeleteModalOpen(true)
@@ -159,10 +169,12 @@ export default function PlanoContaDataGrid() {
 
   const handleCloseDeleteModal = (deleted) => {
     setIsDeleteModalOpen(false)
-    setSelectedPlano(null)
-    if (deleted) {
-      fetchData()
+    if (deleted && selectedPlano) {
+      setContas((prevContas) =>
+        removerContaDaHierarquia(selectedPlano.id, prevContas),
+      )
     }
+    setSelectedPlano(null)
   }
   const handleCloseMigrateModal = (migrated) => {
     setIsMigrateModalOpen(false)

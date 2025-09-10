@@ -249,10 +249,12 @@ export default function ContaBancaria() {
 
   const handleCloseDeleteModal = (deleted) => {
     setIsModalOpen(false)
-    setSelectedContaId(null)
     if (deleted) {
-      fetchData()
+      setContas((prevContas) =>
+        prevContas.filter((conta) => conta.id !== selectedContaId),
+      )
     }
+    setSelectedContaId(null)
   }
 
   const headerColumns = useMemo(() => {

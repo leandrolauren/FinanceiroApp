@@ -251,10 +251,12 @@ export default function PessoasDataGrid() {
 
   const handleCloseDeleteModal = (deleted) => {
     setIsModalOpen(false)
-    setSelectedPessoaId(null)
     if (deleted) {
-      fetchData()
+      setPessoas((prevPessoas) =>
+        prevPessoas.filter((pessoa) => pessoa.id !== selectedPessoaId),
+      )
     }
+    setSelectedPessoaId(null)
   }
 
   const headerColumns = useMemo(() => {

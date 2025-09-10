@@ -284,10 +284,15 @@ export default function Lancamentos() {
   })
   const [statusFilter, setStatusFilter] = useState(() => {
     const saved = localStorage.getItem('lancamentoStatusFilter')
-    if (saved) {
-      return saved === 'all' ? 'all' : new Set(JSON.parse(saved))
+    if (saved && saved !== 'all') {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) {
+          return new Set(parsed)
+        }
+      } catch (e) {}
     }
-    return 'all'
+    return new Set([])
   })
 
   const [advancedFilters, setAdvancedFilters] = useState({
@@ -320,14 +325,10 @@ export default function Lancamentos() {
   }, [visibleColumns])
 
   useEffect(() => {
-    if (statusFilter === 'all') {
-      localStorage.setItem('lancamentoStatusFilter', 'all')
-    } else {
-      localStorage.setItem(
-        'lancamentoStatusFilter',
-        JSON.stringify(Array.from(statusFilter)),
-      )
-    }
+    localStorage.setItem(
+      'lancamentoStatusFilter',
+      JSON.stringify(Array.from(statusFilter)),
+    )
   }, [statusFilter])
 
   const hasSearchFilter = Boolean(filterValue)
@@ -611,11 +612,10 @@ export default function Lancamentos() {
                 </Button>
               </DropdownTrigger>
               <DropdownMenu
-                disallowEmptySelection
                 aria-label="Filtrar por Status"
                 closeOnSelect={false}
                 selectedKeys={statusFilter}
-                selectionMode="single"
+                selectionMode="multiple"
                 onSelectionChange={(keys) => {
                   setStatusFilter(keys)
                   setPagination((p) => ({ ...p, page: 1 }))
