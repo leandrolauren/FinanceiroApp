@@ -1,12 +1,20 @@
 using FinanceiroApp.Models;
+using Newtonsoft.Json;
 
 namespace FinanceiroApp.Dtos
 {
     public abstract class PlanoContaResultadoBase
     {
+        [JsonProperty(Order = 1)]
         public int Id { get; set; }
-        public string Descricao { get; set; }
+
+        [JsonProperty(Order = 2)]
+        public required string Descricao { get; set; }
+
+        [JsonProperty(Order = 3)]
         public MovimentoTipo Tipo { get; set; }
+
+        [JsonProperty(Order = 4)]
         public int? PlanoContasPaiId { get; set; }
     }
 
@@ -27,22 +35,15 @@ namespace FinanceiroApp.Dtos
 
     public class PlanoContasDto : PlanoContaResultadoBase
     {
+        [JsonProperty(Order = 5)]
         public decimal Total { get; set; }
-        public List<PlanoContasDto> Filhos { get; set; } = new();
+
+        [JsonProperty(Order = 6)]
+        public List<PlanoContasDto> Filhos { get; set; } = [];
     }
 
     public class MigracaoPlanoContaDto
     {
         public int PlanoContaDestinoId { get; set; }
-    }
-
-    public class PlanoContaComTotalDto
-    {
-        public int Id { get; set; }
-        public string? Descricao { get; set; }
-        public MovimentoTipo Tipo { get; set; }
-        public bool Padrao { get; set; }
-        public decimal TotalReceitas { get; set; }
-        public decimal TotalDespesas { get; set; }
     }
 }
