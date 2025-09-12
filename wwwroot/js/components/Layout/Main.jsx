@@ -64,6 +64,8 @@ const EditPlanoContaPage = () => {
 const TutorialPage = lazy(() => import('../Orientacoes/Tutorial'))
 const AIChatPage = lazy(() => import('../Orientacoes/AIChat'))
 
+const RelatoriosPage = lazy(() => import('../Relatorios/RelatoriosPage'))
+
 const drawerWidth = 240
 
 const App = () => {
@@ -166,6 +168,7 @@ const App = () => {
               element={<ImportacaoOfx />}
             />
             <Route path="/orientacoes/tutorial" element={<TutorialPage />} />
+            <Route path="/relatorios" element={<RelatoriosPage />} />
             <Route path="*" element={<h1>Página Não Encontrada</h1>} />
           </Routes>
         </Suspense>

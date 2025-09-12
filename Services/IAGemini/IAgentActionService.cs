@@ -10,14 +10,16 @@ namespace FinanceiroApp.Services
 
     public interface IAgentActionService
     {
-        Task<AgentActionResult> CriarLancamentoDespesa(
+        Task<AgentActionResult> CriarLancamento(
             string descricao,
             decimal valor,
+            string tipo,
             DateTime dataVencimento,
             string nomePessoa,
             string nomePlanoContas,
             DateTime? dataPagamento,
-            string? nomeContaBancaria
+            string? nomeContaBancaria,
+            bool confirmado = false
         );
 
         Task<AgentActionResult> CriarPessoa(
@@ -31,5 +33,11 @@ namespace FinanceiroApp.Services
         Task<AgentActionResult> ExcluirPessoa(string nomePessoa, bool confirmado = false);
 
         Task<AgentActionResult> ConsultarSaldoContaBancaria(string nomeContaBancaria);
+
+        Task<AgentActionResult> ObterResumoFinanceiro(
+            DateTime dataInicio,
+            DateTime dataFim,
+            string? status
+        );
     }
 }

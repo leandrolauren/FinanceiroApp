@@ -3,11 +3,13 @@ using System.Reflection;
 using AspNetCoreRateLimit;
 using DotNetEnv;
 using FinanceiroApp.Data;
+using FinanceiroApp.Hubs;
 using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using QuestPDF.Infrastructure;
 
 namespace FinanceiroApp
 {
@@ -18,6 +20,8 @@ namespace FinanceiroApp
             // Carrega variáveis de ambiente do .env
             Env.Load();
 
+            QuestPDF.Settings.License = LicenseType.Community;
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Configurações adicionais
@@ -25,53 +29,14 @@ namespace FinanceiroApp
                 .Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
+            // --- Service Registration ---
+
             builder.Services.AddHttpContextAccessor();
 
-            // Gemini
-            builder.Services.AddHttpClient("GeminiClient");
-            builder.Services.AddScoped<IGeminiService, GeminiService>();
-
-            builder.Services.AddScoped<IAgentActionService, AgentActionService>();
-
-            // Configuração do banco de dados PostgreSQL
+            // Infrastructure
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
             );
-            builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
-            builder.Services.AddSingleton<IEmailWorker, EmailWorker>();
-
-            builder.Services.AddScoped<IMovimentacaoBancariaService, MovimentacaoBancariaService>();
-            builder.Services.AddScoped<IImportacaoService, ImportacaoService>();
-            builder.Services.AddScoped<ILancamentoService, LancamentoService>();
-            builder.Services.AddScoped<IPessoaService, PessoaService>();
-
-            builder.Services.Configure<SmtpSettings>(
-                builder.Configuration.GetSection("SmtpSettings")
-            );
-
-            // Configuração de autenticação via Cookie
-            builder
-                .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/Login";
-                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                    options.AccessDeniedPath = "/Login";
-                });
-            builder
-                .Services.AddControllers()
-                .AddNewtonsoftJson(options =>
-                {
-                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft
-                        .Json
-                        .ReferenceLoopHandling
-                        .Ignore;
-                });
-
-            builder.Services.AddAuthorization();
-
-            // Habilita Controllers e Views (MVC)
-            builder.Services.AddControllersWithViews();
 
             var rateLimitPeriod = Environment.GetEnvironmentVariable("RATE_LIMIT_PERIOD") ?? "1m";
             var rateLimitLimit = int.TryParse(
@@ -82,9 +47,6 @@ namespace FinanceiroApp
                 : 15;
 
             builder.Services.AddMemoryCache();
-            builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-            builder.Services.AddInMemoryRateLimiting();
-
             builder.Services.Configure<IpRateLimitOptions>(options =>
             {
                 options.EnableEndpointRateLimiting = true;
@@ -105,6 +67,54 @@ namespace FinanceiroApp
             builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
             builder.Services.AddInMemoryRateLimiting();
 
+            // Application Services
+            builder.Services.AddScoped<IMovimentacaoBancariaService, MovimentacaoBancariaService>();
+            builder.Services.AddScoped<IImportacaoService, ImportacaoService>();
+            builder.Services.AddScoped<ILancamentoService, LancamentoService>();
+            builder.Services.AddScoped<IPessoaService, PessoaService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IRelatorioFinanceiroService, RelatorioFinanceiroService>();
+            builder.Services.AddScoped<IRelatorioAppService, RelatorioAppService>();
+
+            // AI Services
+            builder.Services.AddHttpClient("GeminiClient");
+            builder.Services.AddScoped<IGeminiService, GeminiService>();
+            builder.Services.AddScoped<IAgentActionService, AgentActionService>();
+
+            // Messaging & Background Workers
+            builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
+            builder.Services.AddHostedService<EmailWorker>();
+            builder.Services.AddHostedService<RelatorioFinanceiroWorker>();
+            builder.Services.AddHostedService<RelatorioInterativoWorker>();
+            builder.Services.AddHostedService<ExtratoCategoriaWorker>();
+
+            // Settings
+            builder.Services.Configure<SmtpSettings>(
+                builder.Configuration.GetSection("SmtpSettings")
+            );
+
+            // Authentication & Authorization
+            builder
+                .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Login";
+                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                    options.AccessDeniedPath = "/Login";
+                });
+            builder.Services.AddAuthorization();
+
+            // MVC, API & Documentation
+            builder.Services.AddControllersWithViews();
+            builder
+                .Services.AddControllers()
+                .AddNewtonsoftJson(options =>
+                {
+                    options.SerializerSettings.ReferenceLoopHandling = Newtonsoft
+                        .Json
+                        .ReferenceLoopHandling
+                        .Ignore;
+                });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -133,10 +143,10 @@ namespace FinanceiroApp
                 options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
             });
 
-            var app = builder.Build();
+            // SignalR
+            builder.Services.AddSignalR();
 
-            var emailWorker = app.Services.GetRequiredService<IEmailWorker>();
-            Task.Run(() => emailWorker.Start());
+            var app = builder.Build();
 
             // Middlewares
             if (!app.Environment.IsDevelopment())
@@ -190,6 +200,7 @@ namespace FinanceiroApp
 
             app.MapFallbackToController("Index", "Home");
             app.MapControllers();
+            app.MapHub<RelatorioHub>("/relatorioHub");
 
             app.Run();
         }

@@ -377,10 +377,11 @@ Retorne APENAS o array JSON. Não inclua a palavra 'json' ou os marcadores ``` n
         {
             switch (name)
             {
-                case "criar_lancamento_despesa":
-                    return await _actionService.CriarLancamentoDespesa(
+                case "criar_lancamento":
+                    return await _actionService.CriarLancamento(
                         descricao: args["descricao"]!.GetValue<string>(),
                         valor: args["valor"]!.GetValue<decimal>(),
+                        tipo: args["tipo"]!.GetValue<string>(),
                         dataVencimento: args["dataVencimento"]!.GetValue<DateTime>(),
                         nomePessoa: args["nomePessoa"]!.GetValue<string>(),
                         nomePlanoContas: args["nomePlanoContas"]!.GetValue<string>(),
@@ -392,7 +393,9 @@ Retorne APENAS o array JSON. Não inclua a palavra 'json' ou os marcadores ``` n
                             out var ncb
                         )
                             ? ncb?.GetValue<string>()
-                            : null
+                            : null,
+                        confirmado: args.TryGetPropertyValue("confirmado", out var c)
+                            && c!.GetValue<bool>()
                     );
 
                 case "criar_pessoa":
@@ -407,8 +410,8 @@ Retorne APENAS o array JSON. Não inclua a palavra 'json' ou os marcadores ``` n
                         cnpj: args.TryGetPropertyValue("cnpj", out var cnpj)
                             ? cnpj?.GetValue<string>()
                             : null,
-                        confirmado: args.TryGetPropertyValue("confirmado", out var c)
-                            && c!.GetValue<bool>()
+                        confirmado: args.TryGetPropertyValue("confirmado", out var cf)
+                            && cf!.GetValue<bool>()
                     );
 
                 case "excluir_pessoa":
@@ -421,6 +424,15 @@ Retorne APENAS o array JSON. Não inclua a palavra 'json' ou os marcadores ``` n
                 case "consultar_saldo_conta_bancaria":
                     return await _actionService.ConsultarSaldoContaBancaria(
                         nomeContaBancaria: args["nomeContaBancaria"]!.GetValue<string>()
+                    );
+
+                case "obter_resumo_financeiro":
+                    return await _actionService.ObterResumoFinanceiro(
+                        dataInicio: args["dataInicio"]!.GetValue<DateTime>(),
+                        dataFim: args["dataFim"]!.GetValue<DateTime>(),
+                        status: args.TryGetPropertyValue("status", out var st)
+                            ? st?.GetValue<string>()
+                            : "Todos"
                     );
 
                 default:

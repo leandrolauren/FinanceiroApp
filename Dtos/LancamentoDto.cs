@@ -62,6 +62,20 @@ namespace FinanceiroApp.Dtos
         public ContaBancariaSimplificadaDto? ContaBancaria { get; set; }
     }
 
+    public class LancamentoRelatorioDto
+    {
+        public int Id { get; set; }
+        public string Descricao { get; set; }
+        public string Tipo { get; set; }
+        public decimal Valor { get; set; }
+        public DateTime DataVencimento { get; set; }
+        public bool Pago { get; set; }
+
+        public PessoaSimplificadaDto? Pessoa { get; set; }
+        public PlanoContasSimplificadoDto? PlanoContas { get; set; }
+        public ContaBancariaSimplificadaDto? ContaBancaria { get; set; }
+    }
+
     public class PessoaSimplificadaDto
     {
         public int Id { get; set; }

@@ -1,4 +1,4 @@
-using FinanceiroApp.Models;
+using FinanceiroApp.Models; // Certifique-se que este using já existe ou adicione-o
 using Newtonsoft.Json;
 
 namespace FinanceiroApp.Dtos
@@ -12,7 +12,7 @@ namespace FinanceiroApp.Dtos
         public required string Descricao { get; set; }
 
         [JsonProperty(Order = 3)]
-        public MovimentoTipo Tipo { get; set; }
+        public TipoLancamento Tipo { get; set; }
 
         [JsonProperty(Order = 4)]
         public int? PlanoContasPaiId { get; set; }
@@ -26,7 +26,7 @@ namespace FinanceiroApp.Dtos
 
     public class CriarPlanoContaDto : PlanoContaManipulacaoBase
     {
-        public MovimentoTipo Tipo { get; set; }
+        public TipoLancamento Tipo { get; set; }
     }
 
     public class EditPlanoContaDto : PlanoContaManipulacaoBase { }

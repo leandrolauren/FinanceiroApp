@@ -36,6 +36,12 @@ namespace FinanceiroApp.Data.Mappings
                 .WithMany()
                 .HasForeignKey(c => c.UsuarioId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Índices
+            builder.HasIndex(
+                c => new { c.UsuarioId, c.Descricao },
+                "IX_ContaBancaria_Usuario_Descricao"
+            );
         }
     }
 }

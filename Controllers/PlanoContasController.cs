@@ -85,7 +85,7 @@ namespace FinanceiroApp.Controllers
                     {
                         Id = c.Id,
                         Descricao = c.Descricao,
-                        Tipo = c.Tipo,
+                        Tipo = (TipoLancamento)c.Tipo,
                         PlanoContasPaiId = c.PlanoContasPaiId,
                         Total = totaisPorConta.GetValueOrDefault(c.Id, 0),
                     }
@@ -154,7 +154,7 @@ namespace FinanceiroApp.Controllers
                 {
                     Id = p.Id,
                     Descricao = p.Descricao,
-                    Tipo = p.Tipo,
+                    Tipo = (TipoLancamento)p.Tipo,
                     PlanoContasPaiId = p.PlanoContasPaiId,
                 })
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -200,7 +200,7 @@ namespace FinanceiroApp.Controllers
                 var plano = new PlanoContasModel
                 {
                     Descricao = dto.Descricao,
-                    Tipo = dto.Tipo,
+                    Tipo = (MovimentoTipo)dto.Tipo,
                     PlanoContasPaiId = dto.PlanoContasPaiId,
                     UsuarioId = userId,
                 };

@@ -3,7 +3,6 @@ using System.Text;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
 using FinanceiroApp.Models;
-using FinanceiroApp.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinanceiroApp.Services
@@ -15,13 +14,15 @@ namespace FinanceiroApp.Services
         private readonly IMovimentacaoBancariaService _movimentacaoService;
         private readonly ILancamentoService _lancamentoService;
         private readonly IPessoaService _pessoaService;
+        private readonly IRabbitMqService _rabbitMqService;
 
         public AgentActionService(
             ApplicationDbContext context,
             IHttpContextAccessor httpContextAccessor,
             IMovimentacaoBancariaService movimentacaoService,
             ILancamentoService lancamentoService,
-            IPessoaService pessoaService
+            IPessoaService pessoaService,
+            IRabbitMqService rabbitMqService
         )
         {
             _context = context;
@@ -29,6 +30,7 @@ namespace FinanceiroApp.Services
             _movimentacaoService = movimentacaoService;
             _lancamentoService = lancamentoService;
             _pessoaService = pessoaService;
+            _rabbitMqService = rabbitMqService;
         }
 
         private int GetUserId()
@@ -182,19 +184,60 @@ namespace FinanceiroApp.Services
             };
         }
 
-        public async Task<AgentActionResult> CriarLancamentoDespesa(
+        public async Task<AgentActionResult> CriarLancamento(
             string descricao,
             decimal valor,
+            string tipo,
             DateTime dataVencimento,
             string nomePessoa,
             string nomePlanoContas,
             DateTime? dataPagamento,
-            string? nomeContaBancaria
+            string? nomeContaBancaria,
+            bool confirmado = false
         )
         {
             try
             {
                 var userId = GetUserId();
+                string tipoLancamentoUpper = tipo.ToUpper();
+                if (tipoLancamentoUpper != "R" && tipoLancamentoUpper != "D")
+                {
+                    return new AgentActionResult
+                    {
+                        Success = false,
+                        Message =
+                            "O tipo de lançamento deve ser 'R' para Receita ou 'D' para Despesa.",
+                    };
+                }
+                string tipoLancamentoDesc = tipoLancamentoUpper == "R" ? "receita" : "despesa";
+                var tipoMovimento =
+                    tipoLancamentoUpper == "R" ? TipoLancamento.Receita : TipoLancamento.Despesa;
+
+                if (!confirmado)
+                {
+                    var summary = new StringBuilder();
+                    summary.Append(
+                        $"Você deseja criar um novo lançamento de {tipoLancamentoDesc} com os seguintes dados? Descrição: '{descricao}', Valor: {valor:C2}, Vencimento: {dataVencimento:dd/MM/yyyy}"
+                    );
+                    summary.Append($", Pessoa: '{nomePessoa}', Categoria: '{nomePlanoContas}'");
+
+                    if (dataPagamento.HasValue)
+                    {
+                        summary.Append($", Pago em: {dataPagamento.Value:dd/MM/yyyy}");
+                        if (!string.IsNullOrWhiteSpace(nomeContaBancaria))
+                        {
+                            summary.Append($" pela conta '{nomeContaBancaria}'");
+                        }
+                    }
+                    summary.Append(".");
+
+                    return new AgentActionResult
+                    {
+                        Success = true,
+                        Message = summary.ToString(),
+                        RequiresConfirmation = true,
+                    };
+                }
 
                 var pessoa = await _context.Pessoas.FirstOrDefaultAsync(p =>
                     p.Nome.ToLower() == nomePessoa.ToLower() && p.UsuarioId == userId
@@ -208,14 +251,16 @@ namespace FinanceiroApp.Services
                     };
 
                 var planoContas = await _context.PlanosContas.FirstOrDefaultAsync(pc =>
-                    pc.Descricao.ToLower() == nomePlanoContas.ToLower() && pc.UsuarioId == userId
+                    pc.Descricao.ToLower() == nomePlanoContas.ToLower()
+                    && pc.UsuarioId == userId
+                    && (int)pc.Tipo == (int)tipoMovimento
                 );
                 if (planoContas == null)
                     return new AgentActionResult
                     {
                         Success = false,
                         Message =
-                            $"Não encontrei um plano de contas com o nome '{nomePlanoContas}'.",
+                            $"Não encontrei um plano de contas de {tipoLancamentoDesc} com o nome '{nomePlanoContas}'.",
                     };
 
                 ContaBancaria? contaBancaria = null;
@@ -242,7 +287,7 @@ namespace FinanceiroApp.Services
                     DataCompetencia = dataVencimento,
                     PessoaId = pessoa.Id,
                     PlanoContasId = planoContas.Id,
-                    Tipo = "D",
+                    Tipo = tipoLancamentoUpper,
                     Pago = dataPagamento.HasValue,
                     DataPagamento = dataPagamento,
                     ContaBancariaId = contaBancaria?.Id,
@@ -253,7 +298,8 @@ namespace FinanceiroApp.Services
                 return new AgentActionResult
                 {
                     Success = true,
-                    Message = "Lançamento de despesa criado com sucesso!",
+                    Message =
+                        $"Lançamento de {tipoLancamentoDesc} '{descricao}' criado com sucesso!",
                     Data = new { id = lancamento.Id },
                 };
             }
@@ -267,6 +313,48 @@ namespace FinanceiroApp.Services
                 {
                     Success = false,
                     Message = $"Ocorreu um erro inesperado ao criar o lançamento: {ex.Message}",
+                };
+            }
+        }
+
+        public async Task<AgentActionResult> ObterResumoFinanceiro(
+            DateTime dataInicio,
+            DateTime dataFim,
+            string? status
+        )
+        {
+            try
+            {
+                var userId = GetUserId();
+
+                var usuario = await _context.Usuarios.FindAsync(userId);
+                if (usuario == null)
+                    throw new InvalidOperationException("Usuário não encontrado.");
+
+                var mensagem = new RelatorioFinanceiroMessage
+                {
+                    UsuarioId = userId,
+                    EmailDestino = usuario.Email,
+                    DataInicio = dataInicio,
+                    DataFim = dataFim,
+                    Status = status ?? "Todos",
+                };
+
+                _rabbitMqService.PublicarMensagem("relatorio_financeiro_queue", mensagem);
+
+                return new AgentActionResult
+                {
+                    Success = true,
+                    Message =
+                        "Cocoricó! Já estou preparando seu relatório. Ele será enviado para o seu e-mail em alguns instantes!",
+                };
+            }
+            catch (Exception ex)
+            {
+                return new AgentActionResult
+                {
+                    Success = false,
+                    Message = $"Ocorreu um erro ao solicitar seu resumo financeiro: {ex.Message}",
                 };
             }
         }

@@ -12,7 +12,9 @@ namespace FinanceiroApp.Data.Mappings
             builder.Property(u => u.Email).IsRequired().HasMaxLength(100).IsUnicode(false);
             builder.Property(u => u.Token).IsRequired().HasMaxLength(36).IsUnicode(false);
             builder.Property(u => u.DataCriacao).IsRequired().HasColumnType("TIMESTAMP");
-            ;
+
+            builder.HasIndex(u => u.Email).IsUnique();
+            builder.HasIndex(u => u.Token).IsUnique();
         }
     }
 }

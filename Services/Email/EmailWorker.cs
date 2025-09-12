@@ -1,48 +1,37 @@
-using System.Net;
-using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
 using FinanceiroApp.Models;
-using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace FinanceiroApp.Services
 {
-    public class EmailWorker : IEmailWorker
+    public class EmailWorker : IHostedService, IDisposable
     {
-        private readonly SmtpSettings _smtpSettings;
-        private readonly ConnectionFactory _factory;
+        private readonly IServiceProvider _serviceProvider;
+        private IConnection _connection;
+        private IModel _channel;
 
-        public EmailWorker(IOptions<SmtpSettings> smtpSettings)
+        public EmailWorker(IServiceProvider serviceProvider)
         {
-            _smtpSettings = smtpSettings.Value;
-
-            var rabbitMqUrl = Environment.GetEnvironmentVariable("RABBITMQ_URL");
-
-            if (string.IsNullOrEmpty(rabbitMqUrl))
-                throw new InvalidOperationException("RABBITMQ_URL não está configurada");
-
-            _factory = new ConnectionFactory
-            {
-                Uri = new Uri(rabbitMqUrl),
-                DispatchConsumersAsync = true,
-            };
+            _serviceProvider = serviceProvider;
         }
 
-        public void Start()
+        public Task StartAsync(CancellationToken cancellationToken)
         {
-            var connection = _factory.CreateConnection();
-            var channel = connection.CreateModel();
+            var rabbitMqUrl = Environment.GetEnvironmentVariable("RABBITMQ_URL") ?? throw new InvalidOperationException("RABBITMQ_URL não está configurada");
+            var factory = new ConnectionFactory { Uri = new Uri(rabbitMqUrl), DispatchConsumersAsync = true };
+            _connection = factory.CreateConnection();
+            _channel = _connection.CreateModel();
 
-            channel.QueueDeclare(
+            _channel.QueueDeclare(
                 queue: "email_confirmacao_queue",
                 durable: true,
                 exclusive: false,
                 autoDelete: false,
                 arguments: null
             );
-            channel.QueueDeclare(
+            _channel.QueueDeclare(
                 queue: "email_sucesso_queue",
                 durable: true,
                 exclusive: false,
@@ -50,9 +39,12 @@ namespace FinanceiroApp.Services
                 arguments: null
             );
 
-            var consumer = new AsyncEventingBasicConsumer(channel);
+            var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += async (model, ea) =>
             {
+                using var scope = _serviceProvider.CreateScope();
+                var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
+
                 try
                 {
                     var body = ea.Body.ToArray();
@@ -65,96 +57,48 @@ namespace FinanceiroApp.Services
                     {
                         if (!string.IsNullOrEmpty(mensagem.Token))
                         {
-                            await EnviarEmailConfirmacaoAsync(mensagem.Email, mensagem.Token);
+                            await emailService.EnviarEmailConfirmacaoAsync(
+                                mensagem.Email,
+                                mensagem.Token
+                            );
                         }
                         else
                         {
-                            await EnviarEmailSucessoAsync(mensagem.Email);
+                            await emailService.EnviarEmailSucessoAsync(mensagem.Email);
                         }
                     }
 
-                    channel.BasicAck(ea.DeliveryTag, false);
+                    _channel.BasicAck(ea.DeliveryTag, false);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"❌ Erro ao processar mensagem: {ex.Message}");
-                    channel.BasicNack(ea.DeliveryTag, false, false);
+                    _channel.BasicNack(ea.DeliveryTag, false, false);
                 }
             };
 
-            channel.BasicConsume(
+            _channel.BasicConsume(
                 queue: "email_confirmacao_queue",
                 autoAck: false,
                 consumer: consumer
             );
-            channel.BasicConsume(queue: "email_sucesso_queue", autoAck: false, consumer: consumer);
+            _channel.BasicConsume(queue: "email_sucesso_queue", autoAck: false, consumer: consumer);
 
             Console.WriteLine("🚀 EmailWorker iniciado e aguardando mensagens...");
+            return Task.CompletedTask;
         }
 
-        private async Task EnviarEmailConfirmacaoAsync(string to, string token)
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            var SERVER_HOST =
-                Environment.GetEnvironmentVariable("SERVER_HOST") ?? "http://localhost:5084";
-            var link = $"{SERVER_HOST}/usuario/confirmar?token={token}";
-            var subject = "Confirme seu cadastro - Financeiro App";
-            var body =
-                $@"
-            <h2>Bem-Vindo(a) ao <b>Financeiro App</b>!</h2><img src='https://i.imgur.com/42QmCee.png' alt='Logo' width='30'/>
-            <p>Obrigado por se cadastrar.</p>
-            <p><b>Clique no botão abaixo para confirmar seu e-mail:</b></p>
-            <p>
-                <a href='{link}' style='
-                    display:inline-block;
-                    padding:10px 20px;
-                    background:#1976d2;
-                    color:#fff;
-                    text-decoration:none;
-                    border-radius:5px;
-                    font-weight:bold;'>Confirmar Cadastro</a>
-            </p>
-            <p>Ou copie e cole este link no navegador:<br>
-                <a href='{link}'>{link}</a>
-            </p>
-            <hr>
-            ";
-
-            await EnviarEmailAsync(to, subject, body);
+            _channel?.Close();
+            _connection?.Close();
+            return Task.CompletedTask;
         }
 
-        private async Task EnviarEmailSucessoAsync(string to)
+        public void Dispose()
         {
-            var subject = "Cadastro confirmado - Financeiro App";
-            var body =
-                @"<h2>Obrigado por se cadastrar no FinanceiroApp!</h2>.
-                 Seu e-mail foi confirmado com sucesso!
-                 <p><img src='https://i.imgur.com/42QmCee.png' alt='Logo' width = '30' /></p>
-                 <p>Agora você pode acessar sua conta e começar a gerenciar suas finanças.</p>";
-
-            await EnviarEmailAsync(to, subject, body);
-        }
-
-        private async Task EnviarEmailAsync(string to, string subject, string body)
-        {
-            using var client = new SmtpClient(_smtpSettings.Host, _smtpSettings.Port)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(_smtpSettings.User, _smtpSettings.Password),
-            };
-
-            var message = new MailMessage
-            {
-                From = new MailAddress(_smtpSettings.User, _smtpSettings.FromName),
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true,
-            };
-
-            message.To.Add(to);
-
-            await client.SendMailAsync(message);
-
-            Console.WriteLine($"📧 E-mail enviado para {to}: {subject}");
+            _channel?.Dispose();
+            _connection?.Dispose();
         }
     }
 }

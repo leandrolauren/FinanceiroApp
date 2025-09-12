@@ -10,20 +10,22 @@ namespace FinanceiroApp.Services
             {
                 ["function_declarations"] = new JsonArray
                 {
-                    GetCriarLancamentoDespesaTool(),
+                    GetCriarLancamentoTool(),
                     GetCriarPessoaTool(),
                     GetExcluirPessoaTool(),
                     GetConsultarSaldoContaBancariaTool(),
+                    GetObterResumoFinanceiroTool(),
                 },
             };
         }
 
-        private static JsonObject GetCriarLancamentoDespesaTool()
+        private static JsonObject GetCriarLancamentoTool()
         {
             return new JsonObject
             {
-                ["name"] = "criar_lancamento_despesa",
-                ["description"] = "Cria um novo lançamento de despesa no sistema financeiro.",
+                ["name"] = "criar_lancamento",
+                ["description"] =
+                    "Cria um novo lançamento de receita ou despesa no sistema financeiro.",
                 ["parameters"] = new JsonObject
                 {
                     ["type"] = "OBJECT",
@@ -32,12 +34,19 @@ namespace FinanceiroApp.Services
                         ["descricao"] = new JsonObject
                         {
                             ["type"] = "STRING",
-                            ["description"] = "A descrição do lançamento. Ex: 'Compras do mês'",
+                            ["description"] =
+                                "A descrição do lançamento. Ex: 'Salário do mês' ou 'Compras do supermercado'",
                         },
                         ["valor"] = new JsonObject
                         {
                             ["type"] = "NUMBER",
-                            ["description"] = "O valor da despesa.",
+                            ["description"] = "O valor da receita ou despesa.",
+                        },
+                        ["tipo"] = new JsonObject
+                        {
+                            ["type"] = "STRING",
+                            ["description"] =
+                                "O tipo de lançamento. Use 'R' para receita (entrada de dinheiro) ou 'D' para despesa (saída de dinheiro).",
                         },
                         ["dataVencimento"] = new JsonObject
                         {
@@ -48,25 +57,25 @@ namespace FinanceiroApp.Services
                         {
                             ["type"] = "STRING",
                             ["description"] =
-                                "O nome da pessoa ou empresa para quem a despesa se destina. Ex: 'Supermercado XYZ'",
+                                "O nome da pessoa ou empresa relacionada ao lançamento. Ex: 'Empresa Contratante' ou 'Supermercado XYZ'",
                         },
                         ["nomePlanoContas"] = new JsonObject
                         {
                             ["type"] = "STRING",
                             ["description"] =
-                                "A categoria da despesa. Ex: 'Alimentação', 'Moradia'",
+                                "A categoria do lançamento. Ex: 'Salários' para receita, ou 'Alimentação' para despesa.",
                         },
                         ["dataPagamento"] = new JsonObject
                         {
                             ["type"] = "STRING",
                             ["description"] =
-                                "Opcional. A data de pagamento no formato AAAA-MM-DD. Se fornecida, o lançamento é criado como 'Pago'.",
+                                "Opcional. A data de pagamento/recebimento no formato AAAA-MM-DD. Se fornecida, o lançamento é criado como 'Pago'.",
                         },
                         ["nomeContaBancaria"] = new JsonObject
                         {
                             ["type"] = "STRING",
                             ["description"] =
-                                "Opcional. O nome da conta bancária usada para o pagamento. Obrigatório se a dataPagamento for fornecida.",
+                                "Opcional. O nome da conta bancária usada para o pagamento/recebimento. Obrigatório se a dataPagamento for fornecida.",
                         },
                         ["confirmado"] = new JsonObject
                         {
@@ -79,6 +88,7 @@ namespace FinanceiroApp.Services
                     {
                         "descricao",
                         "valor",
+                        "tipo",
                         "dataVencimento",
                         "nomePessoa",
                         "nomePlanoContas",
@@ -179,6 +189,42 @@ namespace FinanceiroApp.Services
                         },
                     },
                     ["required"] = new JsonArray { "nomeContaBancaria" },
+                },
+            };
+        }
+
+        private static JsonObject GetObterResumoFinanceiroTool()
+        {
+            return new JsonObject
+            {
+                ["name"] = "obter_resumo_financeiro",
+                ["description"] =
+                    "Obtém um resumo da saúde financeira do usuário para um período específico, incluindo totais de receitas, despesas, saldo e as principais categorias de gastos e ganhos. Não precisa de confirmação.",
+                ["parameters"] = new JsonObject
+                {
+                    ["type"] = "OBJECT",
+                    ["properties"] = new JsonObject
+                    {
+                        ["dataInicio"] = new JsonObject
+                        {
+                            ["type"] = "STRING",
+                            ["description"] =
+                                "A data de início do período para o resumo, no formato AAAA-MM-DD.",
+                        },
+                        ["dataFim"] = new JsonObject
+                        {
+                            ["type"] = "STRING",
+                            ["description"] =
+                                "A data de fim do período para o resumo, no formato AAAA-MM-DD.",
+                        },
+                        ["status"] = new JsonObject
+                        {
+                            ["type"] = "STRING",
+                            ["description"] =
+                                "Opcional. Filtra os lançamentos pelo status. Valores possíveis: 'Pago', 'Aberto', 'Todos'. O padrão é 'Todos'.",
+                        },
+                    },
+                    ["required"] = new JsonArray { "dataInicio", "dataFim" },
                 },
             };
         }

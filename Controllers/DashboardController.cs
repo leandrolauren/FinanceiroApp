@@ -42,10 +42,10 @@ namespace FinanceiroApp.Controllers
             var aggregatedData = await query
                 .GroupBy(l => new
                 {
-                    Ano = status == StatusLancamentoFiltro.Pago ? l.DataPagamento.Value.Year
+                    Ano = status == StatusLancamentoFiltro.Pago ? l.DataPagamento!.Value.Year
                     : status == StatusLancamentoFiltro.Aberto ? l.DataVencimento.Year
                     : l.DataCompetencia.Year,
-                    Mes = status == StatusLancamentoFiltro.Pago ? l.DataPagamento.Value.Month
+                    Mes = status == StatusLancamentoFiltro.Pago ? l.DataPagamento!.Value.Month
                     : status == StatusLancamentoFiltro.Aberto ? l.DataVencimento.Month
                     : l.DataCompetencia.Month,
                     l.Tipo,
@@ -71,7 +71,7 @@ namespace FinanceiroApp.Controllers
                         .FirstOrDefault(d =>
                             d.Ano == dt.Year
                             && d.Mes == dt.Month
-                            && (int)d.Tipo == (int)MovimentoTipo.Receita
+                            && d.Tipo == TipoLancamento.Receita
                         )
                         ?.Total ?? 0;
                 response.Receitas.Add(receitaDoMes);
@@ -81,7 +81,7 @@ namespace FinanceiroApp.Controllers
                         .FirstOrDefault(d =>
                             d.Ano == dt.Year
                             && d.Mes == dt.Month
-                            && (int)d.Tipo == (int)MovimentoTipo.Despesa
+                            && d.Tipo == TipoLancamento.Despesa
                         )
                         ?.Total ?? 0;
 
@@ -106,10 +106,10 @@ namespace FinanceiroApp.Controllers
             query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
             var receitas = await query
-                .Where(l => (int)l.Tipo == (int)MovimentoTipo.Receita)
+                .Where(l => l.Tipo == TipoLancamento.Receita)
                 .SumAsync(l => l.Valor);
             var despesas = await query
-                .Where(l => (int)l.Tipo == (int)MovimentoTipo.Despesa)
+                .Where(l => l.Tipo == TipoLancamento.Despesa)
                 .SumAsync(l => l.Valor);
 
             return Ok(
@@ -133,7 +133,7 @@ namespace FinanceiroApp.Controllers
 
             IQueryable<LancamentoModel> query = _context
                 .Lancamentos.AsNoTracking()
-                .Where(l => l.UsuarioId == userId && (int)l.Tipo == (int)MovimentoTipo.Despesa);
+                .Where(l => l.UsuarioId == userId && l.Tipo == TipoLancamento.Despesa);
 
             query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
@@ -163,7 +163,7 @@ namespace FinanceiroApp.Controllers
 
             IQueryable<LancamentoModel> query = _context
                 .Lancamentos.AsNoTracking()
-                .Where(l => l.UsuarioId == userId && (int)l.Tipo == (int)MovimentoTipo.Receita);
+                .Where(l => l.UsuarioId == userId && l.Tipo == TipoLancamento.Receita);
 
             query = FiltrarPorPeriodo(query, status, dataInicio, dataFim);
 
@@ -199,7 +199,7 @@ namespace FinanceiroApp.Controllers
                 );
 
             var aPagar = await query
-                .Where(l => (int)l.Tipo == (int)MovimentoTipo.Despesa)
+                .Where(l => l.Tipo == TipoLancamento.Despesa)
                 .OrderBy(l => l.DataVencimento)
                 .Take(5)
                 .Select(l => new LancamentoResumoDto
@@ -212,7 +212,7 @@ namespace FinanceiroApp.Controllers
                 .ToListAsync();
 
             var aReceber = await query
-                .Where(l => (int)l.Tipo == (int)MovimentoTipo.Receita)
+                .Where(l => l.Tipo == TipoLancamento.Receita)
                 .OrderBy(l => l.DataVencimento)
                 .Take(5)
                 .Select(l => new LancamentoResumoDto
@@ -238,7 +238,7 @@ namespace FinanceiroApp.Controllers
             var saldoInicial = await _context
                 .Lancamentos.AsNoTracking()
                 .Where(l => l.UsuarioId == userId && l.Pago && l.DataPagamento < dataInicio)
-                .SumAsync(l => (int)l.Tipo == (int)MovimentoTipo.Receita ? l.Valor : -l.Valor);
+                .SumAsync(l => l.Tipo == TipoLancamento.Receita ? l.Valor : -l.Valor);
 
             var lancamentosNoPeriodo = await _context
                 .Lancamentos.AsNoTracking()
@@ -262,7 +262,7 @@ namespace FinanceiroApp.Controllers
                     l.DataPagamento?.Date == dia.Date
                 );
                 saldoCorrente += lancamentosDoDia.Sum(l =>
-                    (int)l.Tipo == (int)MovimentoTipo.Receita ? l.Valor : -l.Valor
+                    l.Tipo == TipoLancamento.Receita ? l.Valor : -l.Valor
                 );
                 resultado.Saldos.Add(saldoCorrente);
             }
@@ -283,7 +283,7 @@ namespace FinanceiroApp.Controllers
                     NomeConta = cb.Descricao,
                     SaldoAtual = _context
                         .Lancamentos.Where(l => l.ContaBancariaId == cb.Id && l.Pago)
-                        .Sum(l => (int)l.Tipo == (int)MovimentoTipo.Receita ? l.Valor : -l.Valor),
+                        .Sum(l => l.Tipo == TipoLancamento.Receita ? l.Valor : -l.Valor),
                 })
                 .ToListAsync();
 

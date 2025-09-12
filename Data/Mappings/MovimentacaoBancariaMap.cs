@@ -41,7 +41,9 @@ public class MovimentacaoBancariaMap : IEntityTypeConfiguration<MovimentacaoBanc
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        builder.HasIndex(m => m.ContaBancariaId, "IX_Movimentacao_ContaId");
-        builder.HasIndex(m => m.DataMovimentacao, "IX_Movimentacao_Data");
+        builder.HasIndex(
+            m => new { m.ContaBancariaId, m.DataMovimentacao },
+            "IX_Movimentacao_Conta_Data"
+        );
     }
 }

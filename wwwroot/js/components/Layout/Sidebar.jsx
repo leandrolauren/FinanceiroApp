@@ -27,6 +27,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import LogoutIcon from '@mui/icons-material/Logout'
+import AssessmentIcon from '@mui/icons-material/Assessment'
 import SchoolIcon from '@mui/icons-material/School'
 import { ThemeSwitcher } from './ThemeSwitcher'
 
@@ -153,6 +154,30 @@ const Sidebar = ({
                 </ListItemIcon>
                 <ListItemText
                   primary="Dashboards"
+                  sx={{ opacity: isToggled ? 1 : 0 }}
+                />
+              </ListItemButton>
+            )}
+          </NavLink>
+        </ListItem>
+        <ListItem disablePadding>
+          <NavLink to="/relatorios" style={navLinkStyle}>
+            {({ isActive }) => (
+              <ListItemButton
+                id="tour-sidebar-relatorios"
+                sx={isActive ? activeLinkStyle : {}}
+              >
+                <ListItemIcon
+                  sx={{
+                    color: 'inherit',
+                    minWidth: 'auto',
+                    mr: isToggled ? 3 : 'auto',
+                  }}
+                >
+                  <AssessmentIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Relatórios"
                   sx={{ opacity: isToggled ? 1 : 0 }}
                 />
               </ListItemButton>

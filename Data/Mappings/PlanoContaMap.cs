@@ -18,7 +18,10 @@ namespace FinanceiroApp.Data.Mappings
             builder.Property(p => p.Tipo).IsRequired().HasConversion<int>();
 
             // Indices
-            builder.HasIndex(p => p.Descricao, "IX_PlanoConta_Descricao").IsUnique(false);
+            builder.HasIndex(
+                p => new { p.UsuarioId, p.Descricao },
+                "IX_PlanoConta_Usuario_Descricao"
+            );
 
             builder
                 .HasOne(p => p.PlanoContasPai)

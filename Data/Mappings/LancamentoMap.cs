@@ -66,6 +66,32 @@ namespace FinanceiroApp.Data.Mappings
                 .WithMany(p => p.Parcelas)
                 .HasForeignKey(l => l.LancamentoPaiId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasIndex(
+                l => new { l.UsuarioId, l.DataVencimento },
+                "IX_Lancamento_Usuario_Vencimento"
+            );
+            builder.HasIndex(
+                l => new { l.UsuarioId, l.DataCompetencia },
+                "IX_Lancamento_Usuario_Competencia"
+            );
+            builder.HasIndex(
+                l => new { l.UsuarioId, l.DataPagamento },
+                "IX_Lancamento_Usuario_Pagamento"
+            );
+            builder.HasIndex(
+                l => new
+                {
+                    l.UsuarioId,
+                    l.Tipo,
+                    l.Pago,
+                },
+                "IX_Lancamento_Usuario_Tipo_Pago"
+            );
+            builder
+                .HasIndex(l => new { l.UsuarioId, l.OfxFitId }, "IX_Lancamento_Usuario_FitId")
+                .IsUnique()
+                .HasFilter("\"OfxFitId\" IS NOT NULL");
         }
     }
 }
