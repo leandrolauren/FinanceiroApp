@@ -55,7 +55,7 @@ const tutorialData = [
     title: 'Cadastrando Pessoas e Empresas',
     description:
       'Aprenda a cadastrar clientes, fornecedores e outras entidades com as quais você transaciona. Manter esses dados organizados facilita muito na hora de fazer os lançamentos.',
-    videoId: '5EymsUveeus',
+    videoId: '9mErbgYxKUo',
   },
   {
     id: 'cadastrando-planos-de-contas',
