@@ -2,17 +2,17 @@ namespace FinanceiroApp.Dtos;
 
 public class ChatRequestDto
 {
-    public string Message { get; set; }
+    public required string Message { get; set; }
     public List<ChatMessageDto> History { get; set; } = new();
 }
 
 public class ChatResponseDto
 {
-    public string Response { get; set; }
+    public required string Response { get; set; }
 }
 
 public class ChatMessageDto
 {
-    public string Role { get; set; }
-    public string Text { get; set; }
+    public required string Role { get; set; }
+    public required string Text { get; set; }
 }

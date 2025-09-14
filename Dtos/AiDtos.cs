@@ -7,7 +7,7 @@ namespace FinanceiroApp.Dtos
 
     public class AiCategorizedTransactionDto
     {
-        public string FitId { get; set; }
+        public required string FitId { get; set; }
         public int? PlanoContasId { get; set; }
     }
 }
