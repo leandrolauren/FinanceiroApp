@@ -61,7 +61,7 @@ secrets.json
 *.sql
 *.pdb
 
-# OS generated files
+# OS files
 .DS_Store
 Thumbs.db
 ehthumbs.db
