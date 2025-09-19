@@ -138,7 +138,8 @@ Acesse: [http://localhost:5084](http://localhost:5084)
 
 ---
 
-## 
+##
+
 ---
 
 ## 📝 Observações
@@ -161,8 +162,7 @@ Pull requests, sugestões e melhorias são bem-vindas!
 ## 👨‍💻 Autor
 
 Desenvolvido por **Leandro Laurenzette**  
--LinkedIn
-+[!LinkedIn](https://www.linkedin.com/in/leandro-laurenzette-3b03a2167)
+-LinkedIn +[!LinkedIn](https://www.linkedin.com/in/leandro-laurenzette-3b03a2167)
 
 ## 📄 Licença
 

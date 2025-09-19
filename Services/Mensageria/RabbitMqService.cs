@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Exceptions;
 
@@ -12,8 +11,14 @@ namespace FinanceiroApp.Services
 
         public RabbitMqService()
         {
-            var host = (Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost").Trim('"', ' ');
-            var port = (Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672").Trim('"', ' ');
+            var host = (Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost").Trim(
+                '"',
+                ' '
+            );
+            var port = (Environment.GetEnvironmentVariable("RABBITMQ_PORT") ?? "5672").Trim(
+                '"',
+                ' '
+            );
             var user = Environment.GetEnvironmentVariable("RABBITMQ_USER");
             var pass = Environment.GetEnvironmentVariable("RABBITMQ_PASS");
 
@@ -29,7 +34,7 @@ namespace FinanceiroApp.Services
             {
                 Uri = new Uri(rabbitMqUrl),
                 DispatchConsumersAsync = true,
-                AutomaticRecoveryEnabled = true
+                AutomaticRecoveryEnabled = true,
             };
 
             const int maxRetries = 5;
@@ -54,7 +59,9 @@ namespace FinanceiroApp.Services
                     }
                     else
                     {
-                        Console.WriteLine("❌ Não foi possível conectar ao RabbitMQ após várias tentativas.");
+                        Console.WriteLine(
+                            "❌ Não foi possível conectar ao RabbitMQ após várias tentativas."
+                        );
                         throw;
                     }
                 }

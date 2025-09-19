@@ -6,7 +6,6 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.SignalR;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using RabbitMQ.Client.Exceptions;
 
 namespace FinanceiroApp.Services;
 
@@ -16,7 +15,10 @@ public class ExtratoCategoriaWorker : IHostedService, IDisposable
     private readonly IRabbitMqService _rabbitMqService;
     private IModel _channel;
 
-    public ExtratoCategoriaWorker(IServiceProvider serviceProvider, IRabbitMqService rabbitMqService)
+    public ExtratoCategoriaWorker(
+        IServiceProvider serviceProvider,
+        IRabbitMqService rabbitMqService
+    )
     {
         _serviceProvider = serviceProvider;
         _rabbitMqService = rabbitMqService;

@@ -27,7 +27,14 @@ public class UsuarioController(
                 .Values.SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .ToList();
-            return BadRequest(new { success = false, message = "Dados inválidos.", errors });
+            return BadRequest(
+                new
+                {
+                    success = false,
+                    message = "Dados inválidos.",
+                    errors,
+                }
+            );
         }
         try
         {
@@ -57,17 +64,32 @@ public class UsuarioController(
 
             rabbitMqService.PublicarMensagem(
                 "email_confirmacao_queue",
-                new EmailConfirmacaoMessage { Email = usuarioPendente.Email, Token = usuarioPendente.Token, }
+                new EmailConfirmacaoMessage
+                {
+                    Email = usuarioPendente.Email,
+                    Token = usuarioPendente.Token,
+                }
             );
 
             return Ok(
-                new { success = true, message = "Usuário criado com sucesso. Verifique seu e-mail para ativar a conta!" }
+                new
+                {
+                    success = true,
+                    message = "Usuário criado com sucesso. Verifique seu e-mail para ativar a conta!",
+                }
             );
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Erro ao criar usuário pendente para o email {Email}", model.Email);
-            return StatusCode(500, new { success = false, message = "Ocorreu um erro inesperado ao tentar criar o usuário." });
+            return StatusCode(
+                500,
+                new
+                {
+                    success = false,
+                    message = "Ocorreu um erro inesperado ao tentar criar o usuário.",
+                }
+            );
         }
     }
 

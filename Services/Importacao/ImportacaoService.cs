@@ -198,7 +198,7 @@ namespace FinanceiroApp.Services
 
                 return novosLancamentos.Count;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await transaction.RollbackAsync();
                 throw;
