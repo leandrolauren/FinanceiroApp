@@ -32,7 +32,7 @@ namespace FinanceiroApp.Controllers
     [Route("api/")]
     public class PessoasApiController(
         ApplicationDbContext context,
-        ILogger<PessoasController> logger,
+        ILogger<PessoasApiController> logger,
         IPessoaService pessoaService
     ) : ControllerBase
     {

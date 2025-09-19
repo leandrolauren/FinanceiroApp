@@ -48,7 +48,6 @@ public class RelatorioDocument : IDocument
             row.RelativeItem()
                 .Column(column =>
                 {
-                    // Este bloco de texto só será exibido na primeira página.
                     column
                         .Item()
                         .ShowOnce()
@@ -76,7 +75,7 @@ public class RelatorioDocument : IDocument
             {
                 column.Spacing(20);
 
-                // Seção de KPIs
+                // KPIs
                 column
                     .Item()
                     .Row(row =>
@@ -125,10 +124,10 @@ public class RelatorioDocument : IDocument
                             });
                     });
 
-                // Seção de Lançamentos
+                // Lançamentos
                 column.Item().Element(ComposeTable);
 
-                // Seção de Saldos
+                // Saldos
                 column.Item().Element(ComposeSaldos);
             });
     }

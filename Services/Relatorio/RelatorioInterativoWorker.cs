@@ -6,32 +6,25 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.SignalR;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace FinanceiroApp.Services;
 
 public class RelatorioInterativoWorker : IHostedService, IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
-    private IConnection _connection;
+    private readonly IRabbitMqService _rabbitMqService;
     private IModel _channel;
 
-    public RelatorioInterativoWorker(IServiceProvider serviceProvider)
+    public RelatorioInterativoWorker(IServiceProvider serviceProvider, IRabbitMqService rabbitMqService)
     {
         _serviceProvider = serviceProvider;
+        _rabbitMqService = rabbitMqService;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var rabbitMqUrl =
-            Environment.GetEnvironmentVariable("RABBITMQ_URL")
-            ?? throw new InvalidOperationException("RABBITMQ_URL não está configurada");
-        var factory = new ConnectionFactory
-        {
-            Uri = new Uri(rabbitMqUrl),
-            DispatchConsumersAsync = true,
-        };
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        _channel = _rabbitMqService.CreateModel();
 
         const string queueName = "relatorio_interativo_queue";
         _channel.QueueDeclare(
@@ -101,20 +94,18 @@ public class RelatorioInterativoWorker : IHostedService, IDisposable
         };
 
         _channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
-        Console.WriteLine("Interactive Report Worker iniciado.");
+        Console.WriteLine("📊 Relatório Interativo Worker iniciado.");
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _channel?.Close();
-        _connection?.Close();
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
         _channel?.Dispose();
-        _connection?.Dispose();
     }
 }

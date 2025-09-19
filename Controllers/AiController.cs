@@ -19,10 +19,7 @@ public class AiController(IGeminiService geminiService, ILogger<AiController> lo
 
         try
         {
-            var response = await geminiService.GenerateContentAsync(
-                request.Message,
-                request.History
-            );
+            var response = await geminiService.GenerateContentAsync(request.Message);
             return Ok(new ChatResponseDto { Response = response });
         }
         catch (Exception ex)

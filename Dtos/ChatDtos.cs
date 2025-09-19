@@ -1,18 +1,18 @@
-namespace FinanceiroApp.Dtos;
-
-public class ChatRequestDto
+namespace FinanceiroApp.Dtos
 {
-    public required string Message { get; set; }
-    public List<ChatMessageDto> History { get; set; } = new();
-}
+    public class ChatRequestDto
+    {
+        public required string Message { get; set; }
+    }
 
-public class ChatResponseDto
-{
-    public required string Response { get; set; }
-}
+    public class ChatResponseDto
+    {
+        public required string Response { get; set; }
+    }
 
-public class ChatMessageDto
-{
-    public required string Role { get; set; }
-    public required string Text { get; set; }
+    public class ChatMessageDto
+    {
+        public required string Role { get; set; } // "user" or "model"
+        public required string Text { get; set; }
+    }
 }

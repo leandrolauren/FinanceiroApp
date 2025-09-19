@@ -19,7 +19,7 @@ public interface IRelatorioFinanceiroService
         string status
     );
 
-    Task<byte[]> GerarRelatorioPdfAsync(
+    Task<(byte[] PdfBytes, RelatorioFinanceiroDados Dados)> GerarRelatorioPdfAsync(
         int usuarioId,
         DateTime dataInicio,
         DateTime dataFim,

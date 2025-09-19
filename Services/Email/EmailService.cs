@@ -13,8 +13,7 @@ public class EmailService : IEmailService
     public EmailService(IOptions<SmtpSettings> smtpSettings)
     {
         _smtpSettings = smtpSettings.Value;
-        _serverHost =
-            Environment.GetEnvironmentVariable("SERVER_HOST") ?? "http://localhost:5084";
+        _serverHost = Environment.GetEnvironmentVariable("SERVER_HOST");
     }
 
     private string GetEmailFooter()
@@ -32,7 +31,7 @@ public class EmailService : IEmailService
 
     public async Task EnviarEmailConfirmacaoAsync(string to, string token)
     {
-        var link = $"{_serverHost}/usuario/confirmar?token={token}";
+        var link = $"{_serverHost}/Usuario/Confirmar?token={token}";
         var subject = "Confirme seu cadastro - Financeiro App";
         var body =
             $@"<h2>Bem-Vindo(a) ao <b>Financeiro App</b>!</h2>

@@ -9,20 +9,18 @@ namespace FinanceiroApp.Services
     public class EmailWorker : IHostedService, IDisposable
     {
         private readonly IServiceProvider _serviceProvider;
-        private IConnection _connection;
         private IModel _channel;
+        private readonly RabbitMqService _rabbitMqService;
 
-        public EmailWorker(IServiceProvider serviceProvider)
+        public EmailWorker(IServiceProvider serviceProvider, RabbitMqService rabbitMqService)
         {
             _serviceProvider = serviceProvider;
+            _rabbitMqService = rabbitMqService;
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var rabbitMqUrl = Environment.GetEnvironmentVariable("RABBITMQ_URL") ?? throw new InvalidOperationException("RABBITMQ_URL não está configurada");
-            var factory = new ConnectionFactory { Uri = new Uri(rabbitMqUrl), DispatchConsumersAsync = true };
-            _connection = factory.CreateConnection();
-            _channel = _connection.CreateModel();
+            _channel = _rabbitMqService.CreateModel();
 
             _channel.QueueDeclare(
                 queue: "email_confirmacao_queue",
@@ -91,14 +89,12 @@ namespace FinanceiroApp.Services
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _channel?.Close();
-            _connection?.Close();
             return Task.CompletedTask;
         }
 
         public void Dispose()
         {
             _channel?.Dispose();
-            _connection?.Dispose();
         }
     }
 }

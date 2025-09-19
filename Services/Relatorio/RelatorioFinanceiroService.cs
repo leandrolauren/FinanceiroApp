@@ -24,7 +24,7 @@ public class RelatorioFinanceiroService : IRelatorioFinanceiroService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task<byte[]> GerarRelatorioPdfAsync(
+    public async Task<(byte[] PdfBytes, RelatorioFinanceiroDados Dados)> GerarRelatorioPdfAsync(
         int usuarioId,
         DateTime dataInicio,
         DateTime dataFim,
@@ -34,7 +34,7 @@ public class RelatorioFinanceiroService : IRelatorioFinanceiroService
         var dados = await GerarDadosRelatorioAsync(usuarioId, dataInicio, dataFim, status);
         var logoData = await GetLogoBytesAsync();
         var document = new RelatorioDocument(dados, logoData);
-        return document.GeneratePdf();
+        return (document.GeneratePdf(), dados);
     }
 
     public async Task<RelatorioFinanceiroDados> GerarDadosRelatorioAsync(

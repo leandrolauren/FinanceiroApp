@@ -8,7 +8,9 @@ using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.HttpOverrides;
 using QuestPDF.Infrastructure;
 
 namespace FinanceiroApp
@@ -29,13 +31,32 @@ namespace FinanceiroApp
                 .Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
+            // --- CONFIGURAÇÃO DE FORWARDED HEADERS (MUITO IMPORTANTE PARA PROXY REVERSO) ---
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | 
+                                         ForwardedHeaders.XForwardedProto | 
+                                         ForwardedHeaders.XForwardedHost;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+                options.RequireHeaderSymmetry = false;
+            });
+
             // --- Service Registration ---
 
             builder.Services.AddHttpContextAccessor();
 
             // Infrastructure
+            var connectionString = Environment.GetEnvironmentVariable("DefaultConnection") 
+                ?? builder.Configuration.GetConnectionString("DefaultConnection");
+            
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+            }
+            
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+                options.UseNpgsql(connectionString)
             );
 
             var rateLimitPeriod = Environment.GetEnvironmentVariable("RATE_LIMIT_PERIOD") ?? "1m";
@@ -67,6 +88,14 @@ namespace FinanceiroApp
             builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
             builder.Services.AddInMemoryRateLimiting();
 
+            // Redis Cache for AI conversation history
+            var redisConnectionString = Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING")
+                ?? throw new InvalidOperationException("A variável de ambiente REDIS_CONNECTION_STRING) não foi encontrada.");
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConnectionString;
+            });
+
             // Application Services
             builder.Services.AddScoped<IMovimentacaoBancariaService, MovimentacaoBancariaService>();
             builder.Services.AddScoped<IImportacaoService, ImportacaoService>();
@@ -82,7 +111,8 @@ namespace FinanceiroApp
             builder.Services.AddScoped<IAgentActionService, AgentActionService>();
 
             // Messaging & Background Workers
-            builder.Services.AddSingleton<IRabbitMqService, RabbitMqService>();
+            builder.Services.AddSingleton<RabbitMqService>();
+            builder.Services.AddSingleton<IRabbitMqService>(provider => provider.GetRequiredService<RabbitMqService>());
             builder.Services.AddHostedService<EmailWorker>();
             builder.Services.AddHostedService<RelatorioFinanceiroWorker>();
             builder.Services.AddHostedService<RelatorioInterativoWorker>();
@@ -101,6 +131,9 @@ namespace FinanceiroApp
                     options.LoginPath = "/Login";
                     options.ExpireTimeSpan = TimeSpan.FromDays(7);
                     options.AccessDeniedPath = "/Login";
+                    // IMPORTANTE: Configure cookies para funcionar com proxy reverso
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    options.Cookie.SameSite = SameSiteMode.Lax;
                 });
             builder.Services.AddAuthorization();
 
@@ -148,13 +181,48 @@ namespace FinanceiroApp
 
             var app = builder.Build();
 
-            // Middlewares
+            // --- CONFIGURAÇÃO DE MIDDLEWARES (ORDEM MUITO IMPORTANTE!) ---
+
+            // 1. PRIMEIRO: UseForwardedHeaders (deve ser o primeiro middleware)
+            app.UseForwardedHeaders();
+
+            // 2. Middleware personalizado para corrigir scheme e host
+            app.Use((context, next) =>
+            {
+                // Force HTTPS se vier do proxy
+                var forwardedProto = context.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(forwardedProto))
+                {
+                    context.Request.Scheme = forwardedProto;
+                }
+
+                // Corrige o host para incluir a porta correta
+                var forwardedHost = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
+                var forwardedPort = context.Request.Headers["X-Forwarded-Port"].FirstOrDefault();
+                
+                if (!string.IsNullOrEmpty(forwardedHost))
+                {
+                    if (!string.IsNullOrEmpty(forwardedPort) && forwardedPort != "443" && forwardedPort != "80")
+                    {
+                        context.Request.Host = new HostString($"{forwardedHost}:{forwardedPort}");
+                    }
+                    else
+                    {
+                        context.Request.Host = new HostString(forwardedHost);
+                    }
+                }
+
+                return next();
+            });
+
+            // 3. Exception handling
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 
+            // 4. Swagger (desenvolvimento)
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -172,7 +240,7 @@ namespace FinanceiroApp
                 options.RoutePrefix = "docs";
             });
 
-            // Cultura brasileira (pt-BR)
+            // 5. Cultura brasileira (pt-BR)
             var supportedCultures = new[] { new CultureInfo("pt-BR") };
             app.UseRequestLocalization(
                 new RequestLocalizationOptions
@@ -183,16 +251,23 @@ namespace FinanceiroApp
                 }
             );
 
-            app.UseHttpsRedirection();
+            // 6. REMOVA OU COMENTE UseHttpsRedirection quando usando proxy reverso
+            // app.UseHttpsRedirection(); // <-- COMENTADO PARA PROXY REVERSO
+            
+            // 7. Static files
             app.UseStaticFiles();
 
+            // 8. Rate limiting
             app.UseIpRateLimiting();
+            
+            // 9. Routing
             app.UseRouting();
 
+            // 10. Authentication & Authorization
             app.UseAuthentication();
             app.UseAuthorization();
 
-            // Rota padrão MVC
+            // 11. Routes
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"

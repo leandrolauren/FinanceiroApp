@@ -6,32 +6,25 @@ using FinanceiroApp.Models;
 using Microsoft.AspNetCore.SignalR;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace FinanceiroApp.Services;
 
 public class ExtratoCategoriaWorker : IHostedService, IDisposable
 {
     private readonly IServiceProvider _serviceProvider;
-    private IConnection _connection;
+    private readonly IRabbitMqService _rabbitMqService;
     private IModel _channel;
 
-    public ExtratoCategoriaWorker(IServiceProvider serviceProvider)
+    public ExtratoCategoriaWorker(IServiceProvider serviceProvider, IRabbitMqService rabbitMqService)
     {
         _serviceProvider = serviceProvider;
+        _rabbitMqService = rabbitMqService;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        var rabbitMqUrl =
-            Environment.GetEnvironmentVariable("RABBITMQ_URL")
-            ?? throw new InvalidOperationException("RABBITMQ_URL não está configurada");
-        var factory = new ConnectionFactory
-        {
-            Uri = new Uri(rabbitMqUrl),
-            DispatchConsumersAsync = true,
-        };
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        _channel = _rabbitMqService.CreateModel();
 
         const string queueName = "extrato_categoria_queue";
         _channel.QueueDeclare(
@@ -104,20 +97,18 @@ public class ExtratoCategoriaWorker : IHostedService, IDisposable
         };
 
         _channel.BasicConsume(queue: queueName, autoAck: false, consumer: consumer);
-        Console.WriteLine("Extrato por Categoria Worker iniciado.");
+        Console.WriteLine("📊 Extrato por Categoria Worker iniciado.");
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
         _channel?.Close();
-        _connection?.Close();
         return Task.CompletedTask;
     }
 
     public void Dispose()
     {
         _channel?.Dispose();
-        _connection?.Dispose();
     }
 }

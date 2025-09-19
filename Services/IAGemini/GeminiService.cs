@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using FinanceiroApp.Data;
 using FinanceiroApp.Dtos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 
 namespace FinanceiroApp.Services;
@@ -13,7 +14,7 @@ namespace FinanceiroApp.Services;
 public class GeminiService : IGeminiService
 {
     private const int MaxRecursiveCalls = 3;
-    private const int MaxHistoryMessages = 10; // Limita o histórico a 5 pares de pergunta/resposta
+    private const int MaxHistoryMessages = 20; 
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
     private readonly string _apiUrl;
@@ -21,13 +22,15 @@ public class GeminiService : IGeminiService
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<GeminiService> _logger;
     private readonly IAgentActionService _actionService;
+    private readonly IDistributedCache _cache;
 
     public GeminiService(
         IHttpClientFactory httpClientFactory,
         IAgentActionService actionService,
         ApplicationDbContext context,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<GeminiService> logger
+        ILogger<GeminiService> logger,
+        IDistributedCache cache
     )
     {
         _httpClient = httpClientFactory.CreateClient("GeminiClient");
@@ -36,16 +39,28 @@ public class GeminiService : IGeminiService
             ?? throw new InvalidOperationException(
                 "A chave da API do Gemini (GEMINI_API_KEY) não foi configurada no arquivo .env."
             );
+        var modelName =
+            Environment.GetEnvironmentVariable("GEMINI_MODEL_NAME") ?? "gemini-1.5-flash";
+
         _apiUrl =
-            $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={_apiKey}";
+            $"https://generativelanguage.googleapis.com/v1beta/models/{modelName}:generateContent?key={_apiKey}";
         _context = context;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
         _actionService = actionService;
+        _cache = cache;
     }
 
-    public async Task<string> GenerateContentAsync(string userMessage, List<ChatMessageDto> history)
+    public async Task<string> GenerateContentAsync(string userMessage)
     {
+        var userId = GetUserId();
+        var cacheKey = $"chat_history:{userId}";
+
+        var historyJson = await _cache.GetStringAsync(cacheKey);
+        var history = string.IsNullOrEmpty(historyJson)
+            ? new List<ChatMessageDto>()
+            : JsonSerializer.Deserialize<List<ChatMessageDto>>(historyJson);
+
         int callCount = 0;
 
         var systemInstruction = new
@@ -61,7 +76,6 @@ public class GeminiService : IGeminiService
 
         var contents = new List<object> { systemInstruction, modelGreeting };
 
-        // Pega apenas as últimas N mensagens para economizar tokens
         var recentHistory = history.TakeLast(MaxHistoryMessages);
         foreach (var message in recentHistory)
         {
@@ -71,6 +85,8 @@ public class GeminiService : IGeminiService
         }
 
         contents.Add(new { role = "user", parts = new[] { new { text = userMessage } } });
+
+        string finalResponseText = "Ocorreu um erro ao processar as ações solicitadas.";
 
         while (callCount < MaxRecursiveCalls)
         {
@@ -113,7 +129,10 @@ public class GeminiService : IGeminiService
             var functionCall = firstPart["functionCall"];
 
             if (functionCall == null)
-                return firstPart["text"]?.GetValue<string>() ?? "Ação concluída.";
+            {
+                finalResponseText = firstPart["text"]?.GetValue<string>() ?? "Ação concluída.";
+                break; // Sai do loop com a resposta final
+            }
 
             callCount++;
 
@@ -137,7 +156,19 @@ public class GeminiService : IGeminiService
             contents.Add(new { parts = new[] { functionResponsePart } });
         }
 
-        return "Ocorreu um erro ao processar as ações solicitadas.";
+        // Após o loop, salva o histórico atualizado no cache
+        history.Add(new ChatMessageDto { Role = "user", Text = userMessage });
+        history.Add(new ChatMessageDto { Role = "model", Text = finalResponseText });
+
+        var newHistoryToCache = history.TakeLast(MaxHistoryMessages).ToList();
+        var newHistoryJson = JsonSerializer.Serialize(newHistoryToCache);
+        var cacheOptions = new DistributedCacheEntryOptions
+        {
+            AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(48)
+        };
+        await _cache.SetStringAsync(cacheKey, newHistoryJson, cacheOptions);
+
+        return finalResponseText;
     }
 
     public async Task<List<AiCategorizedTransactionDto>> CategorizeTransactionsAsync(
@@ -287,7 +318,7 @@ Retorne APENAS o array JSON. Não inclua a palavra 'json' ou os marcadores ``` n
             ["generationConfig"] = new JsonObject
             {
                 ["response_mime_type"] = "application/json",
-                ["temperature"] = 0.2,
+                ["temperature"] = 0.7,
             },
         };
 

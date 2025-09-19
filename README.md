@@ -1,49 +1,46 @@
 # 💸 FinanceiroApp
 
-Sistema MVP para gestão financeira pessoal, desenvolvido com **ASP.NET Core MVC**, **React**, **PostgreSQL** e **RabbitMQ**.  
-Interface moderna, responsiva e com integração de componentes dinâmicos via React.
+Um sistema de gestão financeira pessoal completo, desenvolvido com **ASP.NET Core MVC**, **React**, **PostgreSQL** e **RabbitMQ**, tudo orquestrado com **Docker**.  
+Interface moderna e responsiva com componentes dinâmicos para uma experiência de usuário fluida.
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## 🚀 Tecnologias
 
 - **Backend**
   - ASP.NET Core MVC (.NET 9)
   - Entity Framework Core
   - PostgreSQL
   - RabbitMQ (mensageria)
+  - Redis (cache)
   - Autenticação Google (Google Client ID)
-  - SMTP (envio de e-mails)
+  - Gemini API (categorização de transações e assistente de IA)
 - **Frontend**
   - React (componentes integrados nas views Razor)
   - Material UI (MUI)
   - Notistack (notificações)
-- **Outros**
-  - Node.js (build dos bundles React)
-  - Webpack (empacotamento dos scripts)
-  - DotNetEnv (.env para variáveis de ambiente)
-  - Google Client ID (login social)
-  - TimeZoneConverter (datas no fuso brasileiro)
+- **DevOps**
+  - Docker & Docker Compose
 
 ---
 
 ## ⚙️ Pré-requisitos
 
-- [.NET SDK 9.0+](https://dotnet.microsoft.com/download)
-- [Node.js 18+](https://nodejs.org/)
-- [PostgreSQL](https://www.postgresql.org/download/)
-- [RabbitMQ](https://www.rabbitmq.com/download.html)
-- Google Client ID (para login social)
-- SMTP configurado para envio de e-mails
+Para executar este projeto, você precisará apenas de:
+
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/install/) (geralmente incluído no Docker Desktop)
 
 ---
 
-## 🛠️ Instalação e Execução
+## 🛠️ Executando Localmente com Docker
+
+Siga estes passos para ter o ambiente completo rodando na sua máquina.
 
 ### 1. Clone o repositório
 
 ```sh
-git clone https://github.com/seu-usuario/FinanceiroApp.git
+git clone https://github.com/leandrolauren/FinanceiroApp.git
 cd FinanceiroApp
 ```
 
@@ -141,26 +138,31 @@ Acesse: [http://localhost:5084](http://localhost:5084)
 
 ---
 
+## 
+---
+
 ## 📝 Observações
 
-- O projeto utiliza uma arquitetura híbrida: Razor tradicional + componentes React para interatividade avançada.
-- Mensageria com RabbitMQ garante escalabilidade e desacoplamento para envio de e-mails e outras tarefas assíncronas.
+-- O projeto utiliza uma arquitetura híbrida: Razor tradicional + componentes React para interatividade avançada.
+-- Mensageria com RabbitMQ garante escalabilidade e desacoplamento para envio de e-mails e outras tarefas assíncronas.
++- O ambiente de desenvolvimento é **totalmente containerizado**, simplificando o setup e garantindo consistência entre diferentes máquinas.
++- A arquitetura combina o melhor do **ASP.NET Core MVC** para a estrutura e o **React** para componentes ricos e interativos no frontend.
++- O uso de **RabbitMQ** para mensageria desacopla tarefas demoradas, como o envio de e-mails, melhorando a performance e a resiliência da aplicação.
 
 ---
 
 ## 🤝 Contribua
 
 Pull requests, sugestões e melhorias são bem-vindas!  
-Abra uma issue ou envie seu PR.
++Abra uma issue ou envie seu PR.
 
 ---
 
 ## 👨‍💻 Autor
 
 Desenvolvido por **Leandro Laurenzette**  
-[LinkedIn](https://www.linkedin.com/in/leandro-laurenzette-3b03a2167)
-
----
+-LinkedIn
++[!LinkedIn](https://www.linkedin.com/in/leandro-laurenzette-3b03a2167)
 
 ## 📄 Licença
 

@@ -169,10 +169,22 @@ namespace FinanceiroApp.Services
 
             if (conta == null)
             {
+                var contasDisponiveis = await _context
+                    .ContasBancarias.AsNoTracking()
+                    .Where(c => c.UsuarioId == userId && c.Ativa)
+                    .Select(c => c.Descricao)
+                    .ToListAsync();
+
+                var mensagemErro = $"Conta bancária com o nome '{nomeContaBancaria}' não encontrada.";
+                if (contasDisponiveis.Any())
+                {
+                    mensagemErro += $" As contas disponíveis são: {string.Join(", ", contasDisponiveis)}.";
+                }
+
                 return new AgentActionResult
                 {
                     Success = false,
-                    Message = $"Conta bancária com o nome '{nomeContaBancaria}' não encontrada.",
+                    Message = mensagemErro,
                 };
             }
 
