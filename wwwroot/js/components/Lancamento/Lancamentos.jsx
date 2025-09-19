@@ -677,11 +677,7 @@ export default function Lancamentos() {
   const bottomContent = useMemo(() => {
     return (
       <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
-          {selectedKeys === 'all'
-            ? 'Todos os itens selecionados'
-            : `${selectedKeys.size} de ${pagination.totalItems} selecionados`}
-        </span>
+        <div className="w-[30%]" />
         <Pagination
           isCompact
           showControls
@@ -709,10 +705,8 @@ export default function Lancamentos() {
       </div>
     )
   }, [
-    selectedKeys,
     pagination.page,
     pagination.totalPages,
-    pagination.totalItems,
     pagination.pageSize,
     onRowsPerPageChange,
     onPageChange,
@@ -757,7 +751,7 @@ export default function Lancamentos() {
           isHeaderSticky
           bottomContent={bottomContent}
           bottomContentPlacement="outside"
-          classNames={{ wrapper: 'max-h-[calc(100vh-340px)]' }}
+          classNames={{ wrapper: 'max-h-[calc(100vh-280px)]' }}
           selectedKeys={selectedKeys}
           selectionMode="multiple"
           sortDescriptor={sortDescriptor}

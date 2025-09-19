@@ -114,9 +114,13 @@ export default function EntradaeSaida() {
     )
   }
 
-  const receitasPositivas = chartData?.receitas.filter((v) => v > 0) || []
+  const todosValores = [
+    ...(chartData?.receitas || []),
+    ...(chartData?.despesas || []),
+  ].map((v) => Math.abs(v))
+
   const yAxisMax =
-    receitasPositivas.length > 0 ? Math.max(...receitasPositivas) * 1.1 : 1000
+    todosValores.length > 0 ? Math.max(...todosValores) * 1.1 : 1000
 
   return (
     <I18nProvider locale="pt-BR">
@@ -223,7 +227,8 @@ export default function EntradaeSaida() {
                 id: 'receitasId',
               },
               {
-                data: chartData.despesas,
+                // Usamos Math.abs para garantir que as barras de despesa sejam sempre positivas (para cima)
+                data: chartData.despesas.map((v) => Math.abs(v)),
                 label: 'Despesas',
                 color: '#F44336',
                 id: 'despesasId',

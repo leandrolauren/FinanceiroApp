@@ -31,7 +31,6 @@ namespace FinanceiroApp
                 .Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddEnvironmentVariables();
 
-            // --- CONFIGURAÇÃO DE FORWARDED HEADERS (MUITO IMPORTANTE PARA PROXY REVERSO) ---
             builder.Services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | 
@@ -128,10 +127,24 @@ namespace FinanceiroApp
                 .Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
+                    var serverHost = Environment.GetEnvironmentVariable("SERVER_HOST") ?? throw new InvalidOperationException("A variável de ambiente 'SERVER_HOST' não foi definida.");
+                    var loginUrl = $"{serverHost}/Login";
+
                     options.LoginPath = "/Login";
                     options.ExpireTimeSpan = TimeSpan.FromDays(7);
                     options.AccessDeniedPath = "/Login";
-                    // IMPORTANTE: Configure cookies para funcionar com proxy reverso
+
+                    options.Events.OnRedirectToLogin = context =>
+                    {
+                        context.Response.Redirect(loginUrl);
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToAccessDenied = context =>
+                    {
+                        context.Response.Redirect(loginUrl);
+                        return Task.CompletedTask;
+                    };
+
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                     options.Cookie.SameSite = SameSiteMode.Lax;
                 });
@@ -181,22 +194,16 @@ namespace FinanceiroApp
 
             var app = builder.Build();
 
-            // --- CONFIGURAÇÃO DE MIDDLEWARES (ORDEM MUITO IMPORTANTE!) ---
-
-            // 1. PRIMEIRO: UseForwardedHeaders (deve ser o primeiro middleware)
             app.UseForwardedHeaders();
 
-            // 2. Middleware personalizado para corrigir scheme e host
             app.Use((context, next) =>
             {
-                // Force HTTPS se vier do proxy
                 var forwardedProto = context.Request.Headers["X-Forwarded-Proto"].FirstOrDefault();
                 if (!string.IsNullOrEmpty(forwardedProto))
                 {
                     context.Request.Scheme = forwardedProto;
                 }
 
-                // Corrige o host para incluir a porta correta
                 var forwardedHost = context.Request.Headers["X-Forwarded-Host"].FirstOrDefault();
                 var forwardedPort = context.Request.Headers["X-Forwarded-Port"].FirstOrDefault();
                 
@@ -215,14 +222,12 @@ namespace FinanceiroApp
                 return next();
             });
 
-            // 3. Exception handling
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 
-            // 4. Swagger (desenvolvimento)
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -240,7 +245,6 @@ namespace FinanceiroApp
                 options.RoutePrefix = "docs";
             });
 
-            // 5. Cultura brasileira (pt-BR)
             var supportedCultures = new[] { new CultureInfo("pt-BR") };
             app.UseRequestLocalization(
                 new RequestLocalizationOptions
@@ -251,23 +255,15 @@ namespace FinanceiroApp
                 }
             );
 
-            // 6. REMOVA OU COMENTE UseHttpsRedirection quando usando proxy reverso
-            // app.UseHttpsRedirection(); // <-- COMENTADO PARA PROXY REVERSO
-            
-            // 7. Static files
             app.UseStaticFiles();
 
-            // 8. Rate limiting
             app.UseIpRateLimiting();
             
-            // 9. Routing
             app.UseRouting();
 
-            // 10. Authentication & Authorization
             app.UseAuthentication();
             app.UseAuthorization();
-
-            // 11. Routes
+            
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}"

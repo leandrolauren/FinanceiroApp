@@ -13,7 +13,8 @@ public class EmailService : IEmailService
     public EmailService(IOptions<SmtpSettings> smtpSettings)
     {
         _smtpSettings = smtpSettings.Value;
-        _serverHost = Environment.GetEnvironmentVariable("SERVER_HOST");
+        _serverHost = Environment.GetEnvironmentVariable("SERVER_HOST") 
+            ?? throw new InvalidOperationException("A variável de ambiente 'SERVER_HOST' não foi definida.");
     }
 
     private string GetEmailFooter()
