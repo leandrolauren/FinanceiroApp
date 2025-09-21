@@ -19,7 +19,6 @@ services:
   webapp:
     build: .
     image: financeiro-app:latest
-    container_name: financeiro-app
     env_file:
       - .env
     restart: always
