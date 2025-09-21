@@ -1,10 +1,25 @@
 services:
+  # --- 0. Load Balancer e Reverse Proxy ---
+  nginx:
+    image: nginx:latest
+    container_name: nginx-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "8366:8366"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - webapp
+    networks:
+      - app-network
+
+  # --- 1. Aplicação Web ---
   webapp:
     build: .
     image: financeiro-app:latest
     container_name: financeiro-app
-    ports:
-      - '8080:8080'
     env_file:
       - .env
     restart: always
