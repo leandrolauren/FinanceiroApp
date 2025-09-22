@@ -22,13 +22,11 @@ module.exports = (env, argv) => {
           use: 'babel-loader',
         },
         {
-          // Rule for your tailwind.css file which needs PostCSS
           test: /\.css$/i,
           include: path.resolve(__dirname, 'wwwroot/css'),
           use: ['style-loader', 'css-loader', 'postcss-loader'],
         },
         {
-          // Rule for other .css files (from libraries, etc.) that don't need PostCSS
           test: /\.css$/i,
           exclude: path.resolve(__dirname, 'wwwroot/css'),
           use: ['style-loader', 'css-loader'],
