@@ -6,6 +6,7 @@ using FinanceiroApp.Data;
 using FinanceiroApp.Hubs;
 using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -205,6 +206,15 @@ namespace FinanceiroApp
                 });
             builder.Services.AddAuthorization();
             logger.LogInformation("✅ Autenticação e autorização configuradas.");
+
+            logger.LogInformation(
+                "Configurando persistência de chaves de criptografia (Data Protection)..."
+            );
+            builder
+                .Services.AddDataProtection()
+                .PersistKeysToFileSystem(new DirectoryInfo("/app/keys"))
+                .SetApplicationName("FinanceiroApp");
+            logger.LogInformation("✅ Chaves de criptografia configuradas para persistência.");
 
             // MVC, API & Documentation
             logger.LogInformation("Configurando MVC, Controllers, API e documentação (Swagger)...");
