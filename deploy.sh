@@ -17,7 +17,7 @@ docker compose build
 
 # 3. Recriar os contêineres da aplicação e monitoramento
 echo "=> Etapa 3/4: Recriando e escalando os serviços..."
-docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d --scale webapp=3 --no-recreate
+docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d --no-recreate
 
 # 4. Limpar imagens Docker antigas e não utilizadas para economizar espaço
 echo "=> Etapa 4/4: Limpando imagens Docker antigas..."
