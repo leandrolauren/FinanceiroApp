@@ -9,6 +9,7 @@ wwwroot/js/dist
 *.dll
 *.exe
 *.pdb
+..
 
 # Ignorar arquivos do usuário / IDE
 *.user
