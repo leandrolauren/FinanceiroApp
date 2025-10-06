@@ -15,6 +15,7 @@ namespace FinanceiroApp.Services
         private readonly ILancamentoService _lancamentoService;
         private readonly IPessoaService _pessoaService;
         private readonly IRabbitMqService _rabbitMqService;
+        private readonly IRelatorioAppService _relatorioAppService;
 
         public AgentActionService(
             ApplicationDbContext context,
@@ -22,7 +23,8 @@ namespace FinanceiroApp.Services
             IMovimentacaoBancariaService movimentacaoService,
             ILancamentoService lancamentoService,
             IPessoaService pessoaService,
-            IRabbitMqService rabbitMqService
+            IRabbitMqService rabbitMqService,
+            IRelatorioAppService relatorioAppService
         )
         {
             _context = context;
@@ -31,6 +33,7 @@ namespace FinanceiroApp.Services
             _lancamentoService = lancamentoService;
             _pessoaService = pessoaService;
             _rabbitMqService = rabbitMqService;
+            _relatorioAppService = relatorioAppService;
         }
 
         private int GetUserId()
@@ -175,17 +178,15 @@ namespace FinanceiroApp.Services
                     .Select(c => c.Descricao)
                     .ToListAsync();
 
-                var mensagemErro = $"Conta bancária com o nome '{nomeContaBancaria}' não encontrada.";
+                var mensagemErro =
+                    $"Conta bancária com o nome '{nomeContaBancaria}' não encontrada.";
                 if (contasDisponiveis.Any())
                 {
-                    mensagemErro += $" As contas disponíveis são: {string.Join(", ", contasDisponiveis)}.";
+                    mensagemErro +=
+                        $" As contas disponíveis são: {string.Join(", ", contasDisponiveis)}.";
                 }
 
-                return new AgentActionResult
-                {
-                    Success = false,
-                    Message = mensagemErro,
-                };
+                return new AgentActionResult { Success = false, Message = mensagemErro };
             }
 
             return new AgentActionResult
@@ -338,27 +339,24 @@ namespace FinanceiroApp.Services
             try
             {
                 var userId = GetUserId();
-
-                var usuario = await _context.Usuarios.FindAsync(userId);
-                if (usuario == null)
-                    throw new InvalidOperationException("Usuário não encontrado.");
-
-                var mensagem = new RelatorioFinanceiroMessage
+                var requestDto = new GerarRelatorioRequestDto
                 {
-                    UsuarioId = userId,
-                    EmailDestino = usuario.Email,
                     DataInicio = dataInicio,
                     DataFim = dataFim,
                     Status = status ?? "Todos",
                 };
 
-                _rabbitMqService.PublicarMensagem("relatorio_financeiro_queue", mensagem);
+                var relatorio = await _relatorioAppService.SolicitarResumoFinanceiroAsync(
+                    requestDto,
+                    userId
+                );
 
                 return new AgentActionResult
                 {
                     Success = true,
                     Message =
-                        "Cocoricó! Já estou preparando seu relatório. Ele será enviado para o seu e-mail em alguns instantes!",
+                        $"Cocoricó! Sua solicitação de relatório foi registrada com sucesso. Ele está sendo processado e será enviado para o seu e-mail em breve.",
+                    Data = new { relatorioId = relatorio.Id },
                 };
             }
             catch (Exception ex)
