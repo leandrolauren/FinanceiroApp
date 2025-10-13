@@ -6,6 +6,7 @@ using FinanceiroApp.Helpers;
 using FinanceiroApp.Models;
 using FinanceiroApp.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,12 @@ public class LancamentosApiController(
                 .Where(l => l.UsuarioId == userId)
                 .AsNoTracking()
                 .AsQueryable();
+
+            if (!string.IsNullOrEmpty(queryParams.Descricao))
+            {
+                var descricaoLower = queryParams.Descricao.ToLower();
+                query = query.Where(l => l.Descricao.ToLower().Contains(descricaoLower));
+            }
 
             if (queryParams.Tipo == "R")
                 query = query.Where(l => l.Tipo == TipoLancamento.Receita);

@@ -277,6 +277,7 @@ export default function Lancamentos() {
   } = useDisclosure()
   // States da tabela (filtro, paginação, etc.)
   const [filterValue, setFilterValue] = useState('')
+  const [searchValue, setSearchValue] = useState('')
   const [selectedKeys, setSelectedKeys] = useState(new Set([]))
   const [visibleColumns, setVisibleColumns] = useState(() => {
     const saved = localStorage.getItem('lancamentoVisibleColumns')
@@ -316,6 +317,18 @@ export default function Lancamentos() {
     column: 'dataVencimento',
     direction: 'descending',
   })
+
+  // Efeito para debounce da busca por descrição
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setFilterValue(searchValue)
+      setPagination((p) => ({ ...p, page: 1 }))
+    }, 500)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [searchValue])
 
   useEffect(() => {
     localStorage.setItem(
@@ -558,17 +571,12 @@ export default function Lancamentos() {
   }, [])
 
   const onSearchChange = useCallback((value) => {
-    if (value) {
-      setFilterValue(value)
-      setPagination((p) => ({ ...p, page: 1 }))
-    } else {
-      setFilterValue('')
-    }
+    setSearchValue(value || '')
   }, [])
 
   const onClear = useCallback(() => {
+    setSearchValue('')
     setFilterValue('')
-    setPagination((p) => ({ ...p, page: 1 }))
   }, [])
 
   useEffect(() => {
@@ -597,7 +605,7 @@ export default function Lancamentos() {
             className="w-full sm:max-w-[44%]"
             placeholder="Buscar por descrição..."
             startContent={<SearchIcon />}
-            value={filterValue}
+            value={searchValue}
             onClear={onClear}
             onValueChange={onSearchChange}
           />
@@ -665,6 +673,7 @@ export default function Lancamentos() {
     )
   }, [
     filterValue,
+    searchValue,
     onSearchChange,
     onClear,
     statusFilter,
