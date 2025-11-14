@@ -18,6 +18,8 @@ appsettings.Development.json
 *.userosscache
 *.sln.docstates
 
+nginx/
+
 # Visual Studio Code
 .vscode/
 
