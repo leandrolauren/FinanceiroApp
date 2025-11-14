@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Button,
@@ -8,6 +8,9 @@ import {
   Spinner,
   Select,
   SelectItem,
+  Switch,
+  Accordion,
+  AccordionItem,
 } from '@heroui/react'
 import { I18nProvider } from '@react-aria/i18n'
 import { DatePicker } from '@heroui/react'
@@ -83,6 +86,36 @@ const formatDate = (date) => {
   return `${year}-${month}-${day}`
 }
 
+const addDays = (date, days) => {
+  if (!(date instanceof Date) || isNaN(date)) return null
+  const result = new Date(date.getTime())
+  result.setDate(result.getDate() + days)
+  return result
+}
+
+const formatCurrency = (value) => {
+  if (typeof value !== 'number' || isNaN(value)) return 'R$ 0,00'
+  return value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+  })
+}
+
+const calculateParcelValues = (total, quantidade) => {
+  const totalNumero = Number(total) || 0
+  const parcelas = Number(quantidade) || 0
+  if (parcelas <= 0) return []
+  const totalCentavos = Math.round(totalNumero * 100)
+  const valorBase = Math.floor(totalCentavos / parcelas)
+  const resto = totalCentavos % parcelas
+
+  return Array.from({ length: parcelas }, (_, index) => {
+    const valor = valorBase + (index < resto ? 1 : 0)
+    return valor / 100
+  })
+}
+
 const showNotification = (message, variant) => {
   const event = new CustomEvent('onNotificacao', {
     detail: {
@@ -116,12 +149,88 @@ const LancamentoCreateForm = () => {
   const [loading, setLoading] = useState(false)
   const [pageLoading, setPageLoading] = useState(true)
   const [errors, setErrors] = useState({})
+  const [parcelado, setParcelado] = useState(false)
+  const [parcelasConfig, setParcelasConfig] = useState({
+    quantidade: 2,
+    intervaloDias: 30,
+  })
+  const [parcelas, setParcelas] = useState([])
+  const [parcelasManuais, setParcelasManuais] = useState(false)
 
   const isReceita = formData.tipo === '1'
   const situacaoPagoLabel = isReceita ? 'Recebido' : 'Pago'
   const dataPagamentoLabel = isReceita
     ? 'Data do Recebimento'
     : 'Data de Pagamento'
+  const parcelasCount = parcelas.length
+  const totalParcelasValor = useMemo(() => {
+    if (!parcelado || parcelas.length === 0) return 0
+    return parcelas.reduce(
+      (acc, parcela) => acc + (typeof parcela.valor === 'number' ? parcela.valor : 0),
+      0,
+    )
+  }, [parcelado, parcelas])
+  const totalLancamento = Number(formData.valor) || 0
+  const diferencaParcelas = totalLancamento - totalParcelasValor
+  const parcelasBalanceadas = Math.abs(diferencaParcelas) < 0.01
+
+  const gerarParcelasAutomaticamente = useCallback(() => {
+    if (!parcelado) return
+
+    const quantidade = Math.max(Number(parcelasConfig.quantidade) || 2, 2)
+    const intervalo = Math.max(Number(parcelasConfig.intervaloDias) || 30, 1)
+    const baseCompetencia =
+      formData.dataCompetencia instanceof Date
+        ? formData.dataCompetencia
+        : new Date()
+    const baseVencimento =
+      formData.dataVencimento instanceof Date
+        ? formData.dataVencimento
+        : formData.dataCompetencia || new Date()
+
+    const valores = calculateParcelValues(formData.valor, quantidade)
+
+    const novasParcelas = Array.from({ length: quantidade }, (_, index) => {
+      const offset = intervalo * index
+      return {
+        valor: valores[index] ?? 0,
+        dataCompetencia: addDays(baseCompetencia, offset),
+        dataVencimento: addDays(baseVencimento, offset),
+      }
+    })
+
+    setParcelas(novasParcelas)
+  }, [
+    parcelado,
+    parcelasConfig.quantidade,
+    parcelasConfig.intervaloDias,
+    formData.dataCompetencia,
+    formData.dataVencimento,
+    formData.valor,
+  ])
+
+  useEffect(() => {
+    if (!parcelado) {
+      setParcelas([])
+      setParcelasManuais(false)
+      return
+    }
+
+    if (!parcelasManuais) {
+      gerarParcelasAutomaticamente()
+    }
+  }, [parcelado, parcelasManuais, gerarParcelasAutomaticamente])
+
+  useEffect(() => {
+    if (!parcelado || parcelasCount === 0 || parcelasManuais) return
+    const valores = calculateParcelValues(formData.valor, parcelasCount)
+    setParcelas((prev) =>
+      prev.map((parcela, index) => ({
+        ...parcela,
+        valor: valores[index] ?? parcela.valor,
+      })),
+    )
+  }, [formData.valor, parcelado, parcelasCount, parcelasManuais])
 
   useEffect(() => {
     const fetchDependencies = async () => {
@@ -153,10 +262,85 @@ const LancamentoCreateForm = () => {
     }
   }
 
+  const clearParcelasError = () => {
+    if (errors.Parcelas) {
+      setErrors((prev) => ({ ...prev, Parcelas: undefined }))
+    }
+  }
+
+  const handleParceladoToggle = (isSelected) => {
+    setParcelado(isSelected)
+    setParcelasManuais(false)
+    clearParcelasError()
+
+    if (isSelected) {
+      setFormData((prev) => ({ ...prev, pago: false, dataPagamento: null }))
+    } else {
+      setParcelas([])
+    }
+  }
+
+  const handleParcelasConfigChange = (field, value) => {
+    const parsed = Number(value)
+    setParcelasConfig((prev) => ({
+      ...prev,
+      [field]: Number.isNaN(parsed) ? prev[field] : parsed,
+    }))
+    setParcelasManuais(false)
+    clearParcelasError()
+  }
+
+  const handleParcelaDateChange = (index, field, dateValue) => {
+    setParcelasManuais(true)
+    setParcelas((prev) => {
+      const clone = [...prev]
+      clone[index] = { ...clone[index], [field]: dateValue }
+      return clone
+    })
+    clearParcelasError()
+  }
+
+  const handleParcelaValorChange = (index, valor) => {
+    setParcelasManuais(true)
+    setParcelas((prev) => {
+      const clone = [...prev]
+      clone[index] = { ...clone[index], valor }
+      return clone
+    })
+    clearParcelasError()
+  }
+
+  const handleRemoveParcela = (index) => {
+    if (parcelas.length <= 2) {
+      showNotification(
+        'Um lançamento parcelado precisa ter no mínimo duas parcelas.',
+        'warning',
+      )
+      return
+    }
+
+    setParcelasManuais(true)
+    setParcelas((prev) => {
+      const atualizadas = prev.filter((_, i) => i !== index)
+      setParcelasConfig((config) => ({
+        ...config,
+        quantidade: Math.max(atualizadas.length, 2),
+      }))
+      return atualizadas
+    })
+    clearParcelasError()
+  }
+
+  const handleRegenerateParcelas = () => {
+    setParcelasManuais(false)
+    gerarParcelasAutomaticamente()
+    clearParcelasError()
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    if (formData.pago && !formData.dataPagamento) {
+    if (!parcelado && formData.pago && !formData.dataPagamento) {
       setErrors((prev) => ({
         ...prev,
         DataPagamento: [`A ${dataPagamentoLabel} é obrigatória.`],
@@ -165,24 +349,85 @@ const LancamentoCreateForm = () => {
       return
     }
 
+    if (parcelado) {
+      if (!parcelasCount) {
+        showNotification(
+          'Defina a quantidade e as datas das parcelas antes de salvar.',
+          'warning',
+        )
+        return
+      }
+
+      if (!formData.valor || Number(formData.valor) <= 0) {
+        showNotification(
+          'Informe o valor total do lançamento para calcular as parcelas.',
+          'warning',
+        )
+        return
+      }
+
+      const possuiDatasInvalidas = parcelas.some(
+        (parcela) => !parcela.dataCompetencia || !parcela.dataVencimento,
+      )
+
+      if (possuiDatasInvalidas) {
+        showNotification(
+          'Todas as parcelas precisam ter datas de competência e vencimento.',
+          'warning',
+        )
+        return
+      }
+
+      if (!parcelasBalanceadas) {
+        const mensagem =
+          'A soma dos valores das parcelas deve ser igual ao valor total informado.'
+        setErrors((prev) => ({
+          ...prev,
+          Parcelas: [mensagem],
+        }))
+        showNotification(mensagem, 'warning')
+        return
+      }
+    }
+
     setLoading(true)
     setErrors({})
 
+    const parcelasPayload = parcelado
+      ? parcelas.map((parcela, index) => ({
+          numero: index + 1,
+          valor: parcela.valor,
+          dataCompetencia: formatDate(parcela.dataCompetencia),
+          dataVencimento: formatDate(parcela.dataVencimento),
+        }))
+      : null
+
     const dados = {
       ...formData,
+      pago: parcelado ? false : formData.pago,
       tipo: formData.tipo === '1' ? 'R' : 'D',
       planoContasId: formData.planoContasId || null,
       contaBancariaId: formData.contaBancariaId || null,
       pessoaId: formData.pessoaId || null,
-      dataPagamento: formatDate(formData.dataPagamento),
+      dataPagamento: parcelado ? null : formatDate(formData.dataPagamento),
       dataCompetencia: formatDate(formData.dataCompetencia),
       dataVencimento: formatDate(formData.dataVencimento),
+      parcelado,
+      quantidadeParcelas: parcelado ? parcelasCount : null,
+      intervaloDiasParcelas: parcelado
+        ? Number(parcelasConfig.intervaloDias) || null
+        : null,
+      parcelas: parcelasPayload,
     }
 
     try {
       await axios.post('/api/lancamentos', dados)
       showNotification('Lançamento cadastrado com sucesso!', 'success')
       setFormData(initialFormState)
+      setParcelado(false)
+      setParcelas([])
+      setParcelasManuais(false)
+      setParcelasConfig({ quantidade: 2, intervaloDias: 30 })
       window.dispatchEvent(new CustomEvent('lancamentosAtualizados'))
     } catch (error) {
       console.error('Erro ao salvar lançamento:', error)
@@ -395,6 +640,7 @@ const LancamentoCreateForm = () => {
               className="md:col-span-1"
               id="tour-situacao"
               label="Situação"
+              isDisabled={parcelado}
               selectedKeys={[String(formData.pago)]}
               onSelectionChange={(keys) =>
                 handleValueChange('pago', Array.from(keys)[0] === 'true')
@@ -422,8 +668,8 @@ const LancamentoCreateForm = () => {
                     d ? d.toDate(getLocalTimeZone()) : null,
                   )
                 }
-                isDisabled={!formData.pago}
-                isRequired={formData.pago}
+                isDisabled={!formData.pago || parcelado}
+                isRequired={formData.pago && !parcelado}
                 isInvalid={
                   !!errors.DataPagamento ||
                   (formData.pago && !formData.dataPagamento)
@@ -431,6 +677,178 @@ const LancamentoCreateForm = () => {
                 errorMessage={errors.DataPagamento?.[0]}
               />
             </div>
+          </div>
+
+          <div className="border border-default-200 dark:border-default-100 rounded-lg p-4 space-y-4">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <Switch
+                isSelected={parcelado}
+                onValueChange={handleParceladoToggle}
+                aria-label="Habilitar lançamento parcelado"
+              >
+                Lançamento parcelado
+              </Switch>
+              {parcelado && (
+                <Button
+                  variant="light"
+                  size="sm"
+                  onPress={handleRegenerateParcelas}
+                  isDisabled={!parcelasCount}
+                >
+                  Recalcular parcelas
+                </Button>
+              )}
+            </div>
+
+            {parcelado && (
+              <>
+                <p className="text-sm text-default-500">
+                  Informe a quantidade de parcelas (mínimo de 2) e o intervalo em dias. Você
+                  pode ajustar manualmente as datas de cada parcela.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="Quantidade de parcelas"
+                    type="number"
+                    min={2}
+                    value={parcelasConfig.quantidade.toString()}
+                    onValueChange={(value) =>
+                      handleParcelasConfigChange('quantidade', value)
+                    }
+                  />
+                  <Input
+                    label="Intervalo entre parcelas (dias)"
+                    type="number"
+                    min={1}
+                    value={parcelasConfig.intervaloDias.toString()}
+                    onValueChange={(value) =>
+                      handleParcelasConfigChange('intervaloDias', value)
+                    }
+                  />
+                  <Input
+                    label="Valor médio por parcela"
+                    value={
+                      parcelasCount
+                        ? formatCurrency(Number(formData.valor || 0) / parcelasCount)
+                        : formatCurrency(0)
+                    }
+                    isReadOnly
+                  />
+                </div>
+
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-sm">
+                  <span>
+                    Total das parcelas:{' '}
+                    <strong>{formatCurrency(totalParcelasValor)}</strong>
+                  </span>
+                  <span
+                    className={
+                      parcelasBalanceadas ? 'text-success-500' : 'text-danger-500'
+                    }
+                  >
+                    Diferença:{' '}
+                    <strong>{formatCurrency(Math.abs(diferencaParcelas))}</strong>
+                    {!parcelasBalanceadas ? ' (ajuste os valores)' : ''}
+                  </span>
+                </div>
+
+                {errors.Parcelas && (
+                  <p className="text-sm text-danger-500">{errors.Parcelas?.[0]}</p>
+                )}
+
+                <Accordion variant="splitted">
+                  <AccordionItem
+                    key="parcelas"
+                    aria-label="Detalhamento das parcelas"
+                    title={`Detalhes das parcelas (${parcelasCount})`}
+                  >
+                    <div className="space-y-4">
+                      {parcelas.map((parcela, index) => (
+                        <div
+                          key={`parcela-${index}`}
+                          className="border border-default-200 dark:border-default-50 rounded-md p-4 space-y-4"
+                        >
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <p className="font-medium">
+                              Parcela {index + 1}/{parcelasCount}
+                            </p>
+                            <p className="text-sm text-default-500">
+                              {formatCurrency(parcela.valor)}
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <NumericFormat
+                              label="Valor da Parcela"
+                              value={parcela.valor}
+                              customInput={TextField}
+                              fullWidth
+                              onValueChange={(values) =>
+                                handleParcelaValorChange(index, values.floatValue || 0)
+                              }
+                              prefix={'R$ '}
+                              thousandSeparator="."
+                              decimalSeparator=","
+                              decimalScale={2}
+                              fixedDecimalScale
+                            />
+                            <DatePicker
+                              label="Data de Competência"
+                              value={
+                                parcela.dataCompetencia
+                                  ? parseDate(
+                                      parcela.dataCompetencia
+                                        .toISOString()
+                                        .split('T')[0],
+                                    )
+                                  : null
+                              }
+                              onChange={(d) =>
+                                handleParcelaDateChange(
+                                  index,
+                                  'dataCompetencia',
+                                  d ? d.toDate(getLocalTimeZone()) : null,
+                                )
+                              }
+                            />
+                            <DatePicker
+                              label="Data de Vencimento"
+                              value={
+                                parcela.dataVencimento
+                                  ? parseDate(
+                                      parcela.dataVencimento.toISOString().split('T')[0],
+                                    )
+                                  : null
+                              }
+                              onChange={(d) =>
+                                handleParcelaDateChange(
+                                  index,
+                                  'dataVencimento',
+                                  d ? d.toDate(getLocalTimeZone()) : null,
+                                )
+                              }
+                            />
+                          </div>
+
+                          <div className="flex justify-end">
+                            <Button
+                              color="danger"
+                              variant="light"
+                              size="sm"
+                              onPress={() => handleRemoveParcela(index)}
+                              isDisabled={parcelasCount <= 2}
+                            >
+                              Remover parcela
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </AccordionItem>
+                </Accordion>
+              </>
+            )}
           </div>
 
           <div className="flex gap-2 pt-4">

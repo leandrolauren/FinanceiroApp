@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace FinanceiroApp.Dtos
@@ -41,6 +42,16 @@ namespace FinanceiroApp.Dtos
             ErrorMessage = "O tipo deve ser 'R' para Receita ou 'D' para Despesa."
         )]
         public string Tipo { get; set; } = string.Empty;
+
+        public bool Parcelado { get; set; }
+
+        [Range(2, int.MaxValue, ErrorMessage = "Um lançamento parcelado precisa ter no mínimo duas parcelas.")]
+        public int? QuantidadeParcelas { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "O intervalo entre parcelas deve ser de pelo menos 1 dia.")]
+        public int? IntervaloDiasParcelas { get; set; }
+
+        public List<ParcelaLancamentoDto>? Parcelas { get; set; }
     }
 
     public class LancamentoEditDto : BaseLancamentoDto { }
@@ -60,6 +71,23 @@ namespace FinanceiroApp.Dtos
         public PessoaSimplificadaDto? Pessoa { get; set; }
         public PlanoContasSimplificadoDto? PlanoContas { get; set; }
         public ContaBancariaSimplificadaDto? ContaBancaria { get; set; }
+    }
+
+    public class ParcelaLancamentoDto
+    {
+        [Range(1, 10, ErrorMessage = "O número da parcela precisa estar entre 1 e 10.")]
+        public int Numero { get; set; }
+
+        [Required(ErrorMessage = "A data de competência da parcela é obrigatória.")]
+        public DateTime DataCompetencia { get; set; }
+
+        [Required(ErrorMessage = "A data de vencimento da parcela é obrigatória.")]
+        public DateTime DataVencimento { get; set; }
+
+        public DateTime? DataPagamento { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "O valor da parcela deve ser maior que zero.")]
+        public decimal Valor { get; set; }
     }
 
     public class LancamentoRelatorioDto
