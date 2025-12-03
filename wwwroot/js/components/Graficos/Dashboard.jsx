@@ -78,7 +78,7 @@ export default function Dashboard() {
   }
   return (
     <I18nProvider locale="pt-BR">
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
         <Box
           display="flex"
           justifyContent="flex-end"
@@ -90,17 +90,19 @@ export default function Dashboard() {
             startContent={<FilterIcon />}
             id="tour-dashboard-filtros"
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
+            size="sm"
+            className="w-full sm:w-auto"
           >
             Filtros {mostrarFiltros ? '▲' : '▼'}
           </Button>
         </Box>
         <Collapse in={mostrarFiltros}>
-          <Paper sx={{ p: 2, mb: 3, border: '1px solid #ddd' }}>
+          <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: 3, border: '1px solid #ddd' }}>
             <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} md={5}>
+              <Grid item xs={12} sm={6} md={5}>
                 <Select
                   label="Situação"
-                  className="w-[190px]"
+                  className="w-full"
                   selectedKeys={[filtrosEditando.status]}
                   onSelectionChange={(keys) => {
                     const value = Array.from(keys)[0]
@@ -108,13 +110,14 @@ export default function Dashboard() {
                       handleFiltroChange('status', value)
                     }
                   }}
+                  size="sm"
                 >
                   <SelectItem key="Todos">Todos - Competência</SelectItem>
                   <SelectItem key="Pago">Pagos - Pagamento</SelectItem>
                   <SelectItem key="Aberto">Aberto - Vencimento</SelectItem>
                 </Select>
               </Grid>
-              <Grid item xs={12} md={2}>
+              <Grid item xs={12} sm={6} md={2}>
                 <DatePicker
                   label="Data Início"
                   value={
@@ -132,9 +135,11 @@ export default function Dashboard() {
                       d ? d.toDate(getLocalTimeZone()) : null,
                     )
                   }
+                  size="sm"
+                  className="w-full"
                 />
               </Grid>
-              <Grid item xs={12} md={2}>
+              <Grid item xs={12} sm={6} md={2}>
                 <DatePicker
                   label="Data Fim"
                   value={
@@ -150,14 +155,16 @@ export default function Dashboard() {
                       d ? d.toDate(getLocalTimeZone()) : null,
                     )
                   }
+                  size="sm"
+                  className="w-full"
                 />
               </Grid>
-              <Grid item xs={12} md={3}>
-                <div className="flex justify-end gap-2">
-                  <Button variant="bordered" onClick={resetarFiltro}>
+              <Grid item xs={12} sm={6} md={3}>
+                <div className="flex flex-col sm:flex-row justify-end gap-2">
+                  <Button variant="bordered" onClick={resetarFiltro} size="sm" className="w-full sm:w-auto">
                     Redefinir
                   </Button>
-                  <Button color="primary" onClick={aplicarFiltro}>
+                  <Button color="primary" onClick={aplicarFiltro} size="sm" className="w-full sm:w-auto">
                     Aplicar
                   </Button>
                 </div>
@@ -166,12 +173,12 @@ export default function Dashboard() {
           </Paper>
         </Collapse>
 
-        <Grid container spacing={3} mb={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} mb={3}>
           <Grid item xs={12} md={4} id="tour-dashboard-kpis">
             <IndicadoresKPIs filtros={filtrosAtivos} />
           </Grid>
           <Grid item xs={12} md={8}>
-            <Grid container spacing={3} id="tour-dashboard-graficos-pizza">
+            <Grid container spacing={{ xs: 2, sm: 3 }} id="tour-dashboard-graficos-pizza">
               <Grid item xs={12} md={6}>
                 <TopDespesas filtros={filtrosAtivos} />
               </Grid>
@@ -182,7 +189,7 @@ export default function Dashboard() {
           </Grid>
         </Grid>
 
-        <Grid container spacing={3} mb={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }} mb={3}>
           <Grid item xs={12} md={6}>
             <SaldosContasBancarias />
           </Grid>
@@ -191,11 +198,13 @@ export default function Dashboard() {
           </Grid>
         </Grid>
 
-        <Grid container spacing={3} mb={3}>
-          <EvolucaoSaldo filtros={filtrosAtivos} />
+        <Grid container spacing={{ xs: 2, sm: 3 }} mb={3}>
+          <Grid item xs={12}>
+            <EvolucaoSaldo filtros={filtrosAtivos} />
+          </Grid>
         </Grid>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={{ xs: 2, sm: 3 }}>
           <EntradaeSaida />
         </Grid>
       </Box>

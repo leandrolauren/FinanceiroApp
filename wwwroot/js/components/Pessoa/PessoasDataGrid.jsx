@@ -21,6 +21,11 @@ import {
   Typography,
   Tooltip,
   IconButton,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
+  Divider,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -174,6 +179,8 @@ const INITIAL_VISIBLE_COLUMNS = [
 
 export default function PessoasDataGrid() {
   const navigate = useNavigate()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [pessoas, setPessoas] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -363,7 +370,7 @@ export default function PessoasDataGrid() {
   const topContent = useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 items-stretch sm:items-end">
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
@@ -373,12 +380,14 @@ export default function PessoasDataGrid() {
             onClear={onClear}
             onValueChange={onSearchChange}
           />
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
+              <DropdownTrigger>
                 <Button
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
+                  className="w-full sm:w-auto"
+                  size="sm"
                 >
                   Colunas
                 </Button>
@@ -406,8 +415,8 @@ export default function PessoasDataGrid() {
 
   const bottomContent = useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-gray-600 dark:text-gray-400">
+      <div className="py-2 px-2 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <span className="text-small text-gray-600 dark:text-gray-400 w-full sm:w-[30%] text-center sm:text-left">
           {selectedKeys === 'all'
             ? 'Todos os itens selecionados'
             : `${selectedKeys.size} de ${filteredItems.length} selecionados`}
@@ -420,12 +429,13 @@ export default function PessoasDataGrid() {
           page={page}
           total={pages}
           onChange={setPage}
+          size="sm"
         />
-        <div className="flex justify-between items-center">
-          <label className="flex items-center text-gray-600 dark:text-gray-400 text-small">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+          <label className="flex items-center text-gray-600 dark:text-gray-400 text-small whitespace-nowrap">
             Linhas por página:
             <select
-              className="bg-transparent outline-none text-gray-600 dark:text-gray-400 text-small"
+              className="bg-transparent outline-none text-gray-600 dark:text-gray-400 text-small ml-1"
               onChange={onRowsPerPageChange}
               defaultValue={rowsPerPage}
             >
@@ -435,6 +445,24 @@ export default function PessoasDataGrid() {
               <option value="100">100</option>
             </select>
           </label>
+          <div className="flex gap-2 sm:hidden">
+            <Button
+              isDisabled={pages === 1}
+              size="sm"
+              variant="flat"
+              onPress={onPreviousPage}
+            >
+              Anterior
+            </Button>
+            <Button
+              isDisabled={pages === 1}
+              size="sm"
+              variant="flat"
+              onPress={onNextPage}
+            >
+              Próximo
+            </Button>
+          </div>
         </div>
         <div className="hidden sm:flex w-[30%] justify-end gap-2">
           <Button
@@ -472,10 +500,10 @@ export default function PessoasDataGrid() {
   }, [fetchData])
 
   return (
-    <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+    <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mb: 2, alignItems: 'center' }}>
         <Tooltip title="Aqui você gerencia todas as pessoas e empresas (clientes, fornecedores, etc.) com quem você transaciona. Mantenha os cadastros atualizados para facilitar seus lançamentos.">
-          <IconButton size="small">
+          <IconButton size="small" sx={{ p: { xs: 0.5, sm: 1 } }}>
             <InfoOutlinedIcon
               fontSize="small"
               sx={{ color: 'text.secondary' }}
@@ -487,6 +515,8 @@ export default function PessoasDataGrid() {
           id="tour-nova-pessoa"
           endContent={<PlusIcon />}
           onPress={() => navigate('/Pessoas/Create')}
+          size="sm"
+          className="flex-1 sm:flex-initial"
         >
           Nova Pessoa
         </Button>
@@ -496,46 +526,227 @@ export default function PessoasDataGrid() {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
+      ) : isMobile ? (
+        <Box>
+          <Box sx={{ mb: 2 }}>{topContent}</Box>
+          {sortedItems.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                Nenhuma pessoa encontrada
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {sortedItems.map((pessoa) => (
+                <Card
+                  key={pessoa.id}
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: 2,
+                    '&:hover': {
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1.5,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                            mb: 0.5,
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {pessoa.nome || pessoa.razaoSocial || 'Sem nome'}
+                        </Typography>
+                        {(pessoa.nomeFantasia || pessoa.razaoSocial) && (
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 1 }}
+                          >
+                            {pessoa.nomeFantasia || pessoa.razaoSocial}
+                          </Typography>
+                        )}
+                      </Box>
+                      <Box sx={{ ml: 1 }}>
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button isIconOnly size="sm" variant="light">
+                              <VerticalDotsIcon className="text-default-300" />
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu aria-label="Ações da Pessoa">
+                            <DropdownItem
+                              onPress={() => navigate(`/Pessoas/Edit/${pessoa.id}`)}
+                            >
+                              Editar
+                            </DropdownItem>
+                            <DropdownItem
+                              className="text-danger"
+                              color="danger"
+                              onPress={() => handleOpenDeleteModal(pessoa.id)}
+                            >
+                              Excluir
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      </Box>
+                    </Box>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 1.5,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      {pessoa.cpf && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            CPF
+                          </Typography>
+                          <Typography variant="body2">{pessoa.cpf}</Typography>
+                        </Box>
+                      )}
+                      {pessoa.cnpj && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            CNPJ
+                          </Typography>
+                          <Typography variant="body2">{pessoa.cnpj}</Typography>
+                        </Box>
+                      )}
+                      {pessoa.telefone && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Telefone
+                          </Typography>
+                          <Typography variant="body2">{pessoa.telefone}</Typography>
+                        </Box>
+                      )}
+                      {pessoa.email && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            E-mail
+                          </Typography>
+                          <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                            {pessoa.email}
+                          </Typography>
+                        </Box>
+                      )}
+                      {pessoa.cidade && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Cidade
+                          </Typography>
+                          <Typography variant="body2">
+                            {pessoa.cidade}
+                            {pessoa.estado && ` - ${pessoa.estado}`}
+                          </Typography>
+                        </Box>
+                      )}
+                      {pessoa.endereco && (
+                        <Box sx={{ gridColumn: '1 / -1' }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Endereço
+                          </Typography>
+                          <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                            {pessoa.endereco}
+                            {pessoa.numero && `, ${pessoa.numero}`}
+                            {pessoa.bairro && ` - ${pessoa.bairro}`}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
+          <Box sx={{ mt: 3 }}>{bottomContent}</Box>
+        </Box>
       ) : (
-        <Table
-          aria-label="Tabela de Pessoas"
-          id="tour-pessoas-grid"
-          isHeaderSticky
-          bottomContent={bottomContent}
-          bottomContentPlacement="outside"
-          classNames={{ wrapper: 'max-h-[70vh]' }}
-          selectedKeys={selectedKeys}
-          selectionMode="multiple"
-          sortDescriptor={sortDescriptor}
-          topContent={topContent}
-          topContentPlacement="outside"
-          onSelectionChange={setSelectedKeys}
-          onSortChange={setSortDescriptor}
-        >
-          <TableHeader columns={headerColumns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align={column.uid === 'acoes' ? 'center' : 'start'}
-                allowsSorting={column.sortable}
-              >
-                {column.name}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody
-            emptyContent={'Nenhuma pessoa encontrada'}
-            items={sortedItems}
+        <div className="overflow-x-auto">
+          <Table
+            aria-label="Tabela de Pessoas"
+            id="tour-pessoas-grid"
+            isHeaderSticky
+            bottomContent={bottomContent}
+            bottomContentPlacement="outside"
+            classNames={{ 
+              wrapper: 'max-h-[calc(100vh-280px)] min-w-[800px]',
+              base: 'overflow-x-auto'
+            }}
+            selectedKeys={selectedKeys}
+            selectionMode="multiple"
+            sortDescriptor={sortDescriptor}
+            topContent={topContent}
+            topContentPlacement="outside"
+            onSelectionChange={setSelectedKeys}
+            onSortChange={setSortDescriptor}
           >
-            {(item) => (
-              <TableRow key={item.id}>
-                {(columnKey) => (
-                  <TableCell>{renderCell(item, columnKey)}</TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            <TableHeader columns={headerColumns}>
+              {(column) => (
+                <TableColumn
+                  key={column.uid}
+                  align={column.uid === 'acoes' ? 'center' : 'start'}
+                  allowsSorting={column.sortable}
+                  minWidth={column.uid === 'nome' ? 150 : column.uid === 'email' ? 180 : 100}
+                >
+                  {column.name}
+                </TableColumn>
+              )}
+            </TableHeader>
+            <TableBody
+              emptyContent={'Nenhuma pessoa encontrada'}
+              items={sortedItems}
+            >
+              {(item) => (
+                <TableRow key={item.id}>
+                  {(columnKey) => (
+                    <TableCell>{renderCell(item, columnKey)}</TableCell>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       )}
       {isModalOpen && (
         <PessoaDeleteModal

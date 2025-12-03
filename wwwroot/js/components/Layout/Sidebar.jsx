@@ -26,6 +26,7 @@ import AccountBalanceIcon from '@mui/icons-material/AccountBalance'
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import MenuIcon from '@mui/icons-material/Menu'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AssessmentIcon from '@mui/icons-material/Assessment'
 import SchoolIcon from '@mui/icons-material/School'
@@ -46,6 +47,9 @@ const Sidebar = ({
   userName,
   handleLogout,
   handleStartTour,
+  isMobile = false,
+  mobileOpen = false,
+  onMobileClose,
 }) => {
   const theme = useTheme()
   const [anchorEl, setAnchorEl] = useState(null)
@@ -73,43 +77,16 @@ const Sidebar = ({
 
   const iconColor = 'rgba(255, 255, 255, 0.85)'
 
-  return (
-    <Drawer
-      variant="permanent"
-      open={isToggled}
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
-          }),
-          overflowX: 'hidden',
-          borderRight: 'none',
-          backgroundColor: theme.palette.background.paper,
-          color: theme.palette.text.primary,
-        },
-        ...(!isToggled && {
-          '& .MuiDrawer-paper': {
-            width: theme.spacing(7),
-            transition: theme.transitions.create('width', {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-          },
-        }),
-      }}
-    >
+  const drawerContent = (
+    <>
       <Toolbar
         sx={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: [1],
+          px: { xs: 1, sm: 2 },
           backgroundColor: theme.palette.background.default,
+          minHeight: { xs: 56, sm: 64 },
         }}
       >
         {isToggled && (
@@ -126,7 +103,7 @@ const Sidebar = ({
               alt="Logo"
               style={{ width: 32, height: 32 }}
             />
-            <Typography variant="h6" sx={{ ml: 2, color: 'inherit' }}>
+            <Typography variant="h6" sx={{ ml: 2, color: 'inherit', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
               Financeiro
             </Typography>
           </Box>
@@ -135,19 +112,23 @@ const Sidebar = ({
         <ThemeSwitcher />
       </Toolbar>
       <Divider />
-      <List>
+      <List sx={{ px: { xs: 0.5, sm: 1 } }}>
         <ListItem disablePadding>
-          <NavLink to="/home" style={navLinkStyle}>
+          <NavLink to="/home" style={navLinkStyle} onClick={isMobile ? onMobileClose : undefined}>
             {({ isActive }) => (
               <ListItemButton
                 id="tour-sidebar-dashboard"
-                sx={isActive ? activeLinkStyle : {}}
+                sx={{
+                  ...(isActive ? activeLinkStyle : {}),
+                  py: { xs: 1, sm: 1.5 },
+                  px: { xs: 1, sm: 2 },
+                }}
               >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
                     minWidth: 'auto',
-                    mr: isToggled ? 3 : 'auto',
+                    mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
                   }}
                 >
                   <HomeIcon />
@@ -155,23 +136,28 @@ const Sidebar = ({
                 <ListItemText
                   primary="Dashboards"
                   sx={{ opacity: isToggled ? 1 : 0 }}
+                  primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                 />
               </ListItemButton>
             )}
           </NavLink>
         </ListItem>
         <ListItem disablePadding>
-          <NavLink to="/relatorios" style={navLinkStyle}>
+          <NavLink to="/relatorios" style={navLinkStyle} onClick={isMobile ? onMobileClose : undefined}>
             {({ isActive }) => (
               <ListItemButton
                 id="tour-sidebar-relatorios"
-                sx={isActive ? activeLinkStyle : {}}
+                sx={{
+                  ...(isActive ? activeLinkStyle : {}),
+                  py: { xs: 1, sm: 1.5 },
+                  px: { xs: 1, sm: 2 },
+                }}
               >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
                     minWidth: 'auto',
-                    mr: isToggled ? 3 : 'auto',
+                    mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
                   }}
                 >
                   <AssessmentIcon />
@@ -179,6 +165,7 @@ const Sidebar = ({
                 <ListItemText
                   primary="Relatórios"
                   sx={{ opacity: isToggled ? 1 : 0 }}
+                  primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                 />
               </ListItemButton>
             )}
@@ -187,6 +174,7 @@ const Sidebar = ({
       </List>
       <Divider />
       <List
+        sx={{ px: { xs: 0.5, sm: 1 } }}
         subheader={
           <ListSubheader
             component="div"
@@ -195,6 +183,8 @@ const Sidebar = ({
               backgroundColor: 'transparent',
               color: 'text.secondary',
               display: isToggled ? 'block' : 'none',
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
             }}
           >
             Cadastros
@@ -211,19 +201,23 @@ const Sidebar = ({
           { text: 'Contas', to: '/Contas', icon: <AccountBalanceIcon /> },
         ].map((item) => (
           <ListItem key={item.text} disablePadding>
-            <NavLink to={item.to} style={navLinkStyle}>
+            <NavLink to={item.to} style={navLinkStyle} onClick={isMobile ? onMobileClose : undefined}>
               {({ isActive }) => (
                 <ListItemButton
                   id={
                     item.text === 'Pessoas' ? 'tour-sidebar-pessoas' : undefined
                   }
-                  sx={isActive ? activeLinkStyle : {}}
+                  sx={{
+                    ...(isActive ? activeLinkStyle : {}),
+                    py: { xs: 1, sm: 1.5 },
+                    px: { xs: 1, sm: 2 },
+                  }}
                 >
                   <ListItemIcon
                     sx={{
                       color: 'inherit',
                       minWidth: 'auto',
-                      mr: isToggled ? 3 : 'auto',
+                      mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
                     }}
                   >
                     {item.icon}
@@ -231,6 +225,7 @@ const Sidebar = ({
                   <ListItemText
                     primary={item.text}
                     sx={{ opacity: isToggled ? 1 : 0 }}
+                    primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                   />
                 </ListItemButton>
               )}
@@ -240,6 +235,7 @@ const Sidebar = ({
       </List>
       <Divider />
       <List
+        sx={{ px: { xs: 0.5, sm: 1 } }}
         subheader={
           <ListSubheader
             component="div"
@@ -248,6 +244,8 @@ const Sidebar = ({
               backgroundColor: 'transparent',
               color: 'text.secondary',
               display: isToggled ? 'block' : 'none',
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
             }}
           >
             Operações
@@ -255,17 +253,21 @@ const Sidebar = ({
         }
       >
         <ListItem disablePadding>
-          <NavLink to="/Lancamentos" style={navLinkStyle}>
+          <NavLink to="/Lancamentos" style={navLinkStyle} onClick={isMobile ? onMobileClose : undefined}>
             {({ isActive }) => (
               <ListItemButton
                 id="tour-sidebar-lancamentos"
-                sx={isActive ? activeLinkStyle : {}}
+                sx={{
+                  ...(isActive ? activeLinkStyle : {}),
+                  py: { xs: 1, sm: 1.5 },
+                  px: { xs: 1, sm: 2 },
+                }}
               >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
                     minWidth: 'auto',
-                    mr: isToggled ? 3 : 'auto',
+                    mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
                   }}
                 >
                   <ReceiptLongIcon />
@@ -273,6 +275,7 @@ const Sidebar = ({
                 <ListItemText
                   primary="Lançamento"
                   sx={{ opacity: isToggled ? 1 : 0 }}
+                  primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                 />
               </ListItemButton>
             )}
@@ -281,6 +284,7 @@ const Sidebar = ({
       </List>
       <Divider />
       <List
+        sx={{ px: { xs: 0.5, sm: 1 } }}
         subheader={
           <ListSubheader
             component="div"
@@ -288,6 +292,8 @@ const Sidebar = ({
               backgroundColor: 'transparent',
               color: 'text.secondary',
               display: isToggled ? 'block' : 'none',
+              fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              px: { xs: 1, sm: 2 },
             }}
           >
             Orientações
@@ -302,14 +308,18 @@ const Sidebar = ({
           },
         ].map((item) => (
           <ListItem key={item.text} disablePadding>
-            <NavLink to={item.to} style={navLinkStyle}>
+            <NavLink to={item.to} style={navLinkStyle} onClick={isMobile ? onMobileClose : undefined}>
               {({ isActive }) => (
-                <ListItemButton sx={isActive ? activeLinkStyle : {}}>
+                <ListItemButton sx={{
+                  ...(isActive ? activeLinkStyle : {}),
+                  py: { xs: 1, sm: 1.5 },
+                  px: { xs: 1, sm: 2 },
+                }}>
                   <ListItemIcon
                     sx={{
                       color: 'inherit',
                       minWidth: 'auto',
-                      mr: isToggled ? 3 : 'auto',
+                      mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
                     }}
                   >
                     {item.icon}
@@ -317,6 +327,7 @@ const Sidebar = ({
                   <ListItemText
                     primary={item.text}
                     sx={{ opacity: isToggled ? 1 : 0 }}
+                    primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
                   />
                 </ListItemButton>
               )}
@@ -324,41 +335,44 @@ const Sidebar = ({
           </ListItem>
         ))}
       </List>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <IconButton onClick={handleToggle} sx={{ color: 'inherit' }}>
-          {isToggled ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-        </IconButton>
-      </Box>
+      {!isMobile && (
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: 1,
+          }}
+        >
+          <IconButton onClick={handleToggle} sx={{ color: 'inherit' }}>
+            {isToggled ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </IconButton>
+        </Box>
+      )}
       <Box sx={{ mt: 'auto' }}>
         <Divider />
         <ListItemButton
           onClick={handleProfileMenuOpen}
           sx={{
-            py: 2,
-            px: isToggled ? 2 : 'auto',
+            py: { xs: 1.5, sm: 2 },
+            px: isToggled ? { xs: 1, sm: 2 } : 'auto',
             justifyContent: 'center',
           }}
         >
           <ListItemIcon
             sx={{
               minWidth: 0,
-              mr: isToggled ? 2 : 'auto',
+              mr: isToggled ? { xs: 1.5, sm: 2 } : 'auto',
               justifyContent: 'center',
             }}
           >
             <Avatar
               sx={{
-                width: 32,
-                height: 32,
+                width: { xs: 28, sm: 32 },
+                height: { xs: 28, sm: 32 },
                 bgcolor: theme.palette.primary.main,
                 color: 'white',
-                fontSize: '1rem',
+                fontSize: { xs: '0.875rem', sm: '1rem' },
               }}
             >
               {decodedUserName ? decodedUserName.charAt(0) : ''}
@@ -367,6 +381,7 @@ const Sidebar = ({
           <ListItemText
             primary={decodedUserName}
             sx={{ opacity: isToggled ? 1 : 0, color: 'inherit' }}
+            primaryTypographyProps={{ fontSize: { xs: '0.875rem', sm: '1rem' } }}
           />
         </ListItemButton>
         <Menu
@@ -385,7 +400,6 @@ const Sidebar = ({
           <MenuItem
             onClick={() => {
               handleMenuClose()
-              // handleStartTour()
             }}
           >
             <ListItemIcon>
@@ -406,7 +420,70 @@ const Sidebar = ({
           </MenuItem>
         </Menu>
       </Box>
-    </Drawer>
+    </>
+  )
+
+  return (
+    <>
+      {isMobile && (
+        <IconButton
+          onClick={handleToggle}
+          sx={{
+            position: 'fixed',
+            top: 8,
+            left: 8,
+            zIndex: theme.zIndex.drawer + 1,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: 2,
+            '&:hover': {
+              backgroundColor: theme.palette.action.hover,
+            },
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+      )}
+      <Drawer
+        variant={isMobile ? 'temporary' : 'permanent'}
+        open={isMobile ? mobileOpen : isToggled}
+        onClose={isMobile ? onMobileClose : undefined}
+        ModalProps={{
+          keepMounted: true,
+        }}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            transition: isMobile
+              ? theme.transitions.create('transform', {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                })
+              : theme.transitions.create('width', {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+            overflowX: 'hidden',
+            borderRight: 'none',
+            backgroundColor: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+          },
+          ...(!isToggled && !isMobile && {
+            '& .MuiDrawer-paper': {
+              width: theme.spacing(7),
+              transition: theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
+            },
+          }),
+        }}
+      >
+        {drawerContent}
+      </Drawer>
+    </>
   )
 }
 

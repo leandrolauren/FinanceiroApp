@@ -22,6 +22,12 @@ import {
   Typography,
   Tooltip,
   IconButton,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
+  Chip as MuiChip,
+  Divider,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import ContaDeleteModal from './ContaDeleteModal'
@@ -167,6 +173,8 @@ const showNotification = (message, variant) => {
 
 export default function ContaBancaria() {
   const navigate = useNavigate()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [loading, setLoading] = useState(true)
   const [contas, setContas] = useState([])
 
@@ -391,7 +399,7 @@ export default function ContaBancaria() {
   const topContent = useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 items-stretch sm:items-end">
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
@@ -401,12 +409,14 @@ export default function ContaBancaria() {
             onClear={onClear}
             onValueChange={onSearchChange}
           />
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
+              <DropdownTrigger>
                 <Button
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
+                  className="w-full sm:w-auto"
+                  size="sm"
                 >
                   Status
                 </Button>
@@ -427,10 +437,12 @@ export default function ContaBancaria() {
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
+              <DropdownTrigger>
                 <Button
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
+                  className="w-full sm:w-auto"
+                  size="sm"
                 >
                   Colunas
                 </Button>
@@ -467,8 +479,8 @@ export default function ContaBancaria() {
 
   const bottomContent = useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <span className="w-[30%] text-small text-default-400">
+      <div className="py-2 px-2 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <span className="text-small text-default-400 w-full sm:w-[30%] text-center sm:text-left">
           {selectedKeys === 'all'
             ? 'Todos os itens selecionados'
             : `${selectedKeys.size} de ${filteredItems.length} selecionados`}
@@ -481,12 +493,13 @@ export default function ContaBancaria() {
           page={page}
           total={pages}
           onChange={setPage}
+          size="sm"
         />
-        <div className="flex justify-between items-center">
-          <label className="flex items-center text-default-400 text-small">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+          <label className="flex items-center text-default-400 text-small whitespace-nowrap">
             Linhas por página:
             <select
-              className="bg-transparent outline-none text-default-400 text-small"
+              className="bg-transparent outline-none text-default-400 text-small ml-1"
               onChange={onRowsPerPageChange}
               defaultValue={rowsPerPage}
             >
@@ -496,6 +509,24 @@ export default function ContaBancaria() {
               <option value="50">50</option>
             </select>
           </label>
+          <div className="flex gap-2 sm:hidden">
+            <Button
+              isDisabled={pages === 1}
+              size="sm"
+              variant="flat"
+              onPress={onPreviousPage}
+            >
+              Anterior
+            </Button>
+            <Button
+              isDisabled={pages === 1}
+              size="sm"
+              variant="flat"
+              onPress={onNextPage}
+            >
+              Próximo
+            </Button>
+          </div>
         </div>
         <div className="hidden sm:flex w-[30%] justify-end gap-2">
           <Button
@@ -524,6 +555,8 @@ export default function ContaBancaria() {
     filteredItems.length,
     onPreviousPage,
     onNextPage,
+    rowsPerPage,
+    onRowsPerPageChange,
   ])
 
   useEffect(() => {
@@ -537,10 +570,10 @@ export default function ContaBancaria() {
   }, [])
 
   return (
-    <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+    <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mb: 2, alignItems: 'center' }}>
         <Tooltip title="Cadastre aqui suas contas bancárias, carteiras ou cartões de crédito. Manter os saldos atualizados é fundamental para uma visão precisa da sua saúde financeira.">
-          <IconButton size="small">
+          <IconButton size="small" sx={{ p: { xs: 0.5, sm: 1 } }}>
             <InfoOutlinedIcon
               fontSize="small"
               sx={{ color: 'text.secondary' }}
@@ -551,6 +584,8 @@ export default function ContaBancaria() {
           color="primary"
           endContent={<PlusIcon />}
           onPress={() => navigate('/Contas/Create')}
+          size="sm"
+          className="flex-1 sm:flex-initial"
         >
           Nova Conta
         </Button>
@@ -560,45 +595,213 @@ export default function ContaBancaria() {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
+      ) : isMobile ? (
+        <Box>
+          <Box sx={{ mb: 2 }}>{topContent}</Box>
+          {sortedItems.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                Nenhuma conta encontrada
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {sortedItems.map((conta) => (
+                <Card
+                  key={conta.id}
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: 2,
+                    '&:hover': {
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1.5,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                            mb: 0.5,
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {conta.descricao}
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                          <MuiChip
+                            label={conta.tipo}
+                            size="small"
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                          <MuiChip
+                            label={conta.ativoTexto}
+                            size="small"
+                            color={conta.ativoTexto === 'Ativo' ? 'success' : 'error'}
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                        </Box>
+                      </Box>
+                      <Box sx={{ ml: 1 }}>
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button isIconOnly size="sm" variant="light">
+                              <VerticalDotsIcon className="text-default-300" />
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu aria-label="Ações da Conta">
+                            <DropdownItem
+                              onPress={() => navigate(`/Contas/Edit/${conta.id}`)}
+                            >
+                              Editar
+                            </DropdownItem>
+                            <DropdownItem
+                              className="text-danger"
+                              color="danger"
+                              onPress={() => handleOpenDeleteModal(conta.id)}
+                            >
+                              Excluir
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </Dropdown>
+                      </Box>
+                    </Box>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 1.5,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Saldo
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color: conta.saldo >= 0 ? 'success.main' : 'error.main',
+                            fontSize: '1rem',
+                          }}
+                        >
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(conta.saldo)}
+                        </Typography>
+                      </Box>
+                      {conta.banco && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Banco
+                          </Typography>
+                          <Typography variant="body2">{conta.banco}</Typography>
+                        </Box>
+                      )}
+                      {conta.agencia && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Agência
+                          </Typography>
+                          <Typography variant="body2">
+                            {conta.agencia}
+                            {conta.digitoAgencia && `-${conta.digitoAgencia}`}
+                          </Typography>
+                        </Box>
+                      )}
+                      {conta.numeroConta && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Conta
+                          </Typography>
+                          <Typography variant="body2">
+                            {conta.numeroConta}
+                            {conta.digitoConta && `-${conta.digitoConta}`}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
+          <Box sx={{ mt: 3 }}>{bottomContent}</Box>
+        </Box>
       ) : (
-        <Table
-          aria-label="Tabela de Contas Bancárias"
-          isHeaderSticky
-          bottomContent={bottomContent}
-          bottomContentPlacement="outside"
-          classNames={{ wrapper: 'max-h-[70vh]' }}
-          selectedKeys={selectedKeys}
-          selectionMode="multiple"
-          sortDescriptor={sortDescriptor}
-          topContent={topContent}
-          topContentPlacement="outside"
-          onSelectionChange={setSelectedKeys}
-          onSortChange={setSortDescriptor}
-        >
-          <TableHeader columns={headerColumns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align={column.uid === 'acoes' ? 'center' : 'start'}
-                allowsSorting={column.sortable}
-              >
-                {column.name}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody
-            emptyContent={'Nenhuma conta encontrada'}
-            items={sortedItems}
+        <div className="overflow-x-auto">
+          <Table
+            aria-label="Tabela de Contas Bancárias"
+            isHeaderSticky
+            bottomContent={bottomContent}
+            bottomContentPlacement="outside"
+            classNames={{ 
+              wrapper: 'max-h-[calc(100vh-280px)] min-w-[640px]',
+              base: 'overflow-x-auto'
+            }}
+            selectedKeys={selectedKeys}
+            selectionMode="multiple"
+            sortDescriptor={sortDescriptor}
+            topContent={topContent}
+            topContentPlacement="outside"
+            onSelectionChange={setSelectedKeys}
+            onSortChange={setSortDescriptor}
           >
-            {(item) => (
-              <TableRow key={item.id}>
-                {(columnKey) => (
-                  <TableCell>{renderCell(item, columnKey)}</TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            <TableHeader columns={headerColumns}>
+              {(column) => (
+                <TableColumn
+                  key={column.uid}
+                  align={column.uid === 'acoes' ? 'center' : 'start'}
+                  allowsSorting={column.sortable}
+                  minWidth={column.uid === 'descricao' ? 150 : column.uid === 'saldo' ? 120 : 100}
+                >
+                  {column.name}
+                </TableColumn>
+              )}
+            </TableHeader>
+            <TableBody
+              emptyContent={'Nenhuma conta encontrada'}
+              items={sortedItems}
+            >
+              {(item) => (
+                <TableRow key={item.id}>
+                  {(columnKey) => (
+                    <TableCell>{renderCell(item, columnKey)}</TableCell>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       )}
       {isModalOpen && (
         <ContaDeleteModal

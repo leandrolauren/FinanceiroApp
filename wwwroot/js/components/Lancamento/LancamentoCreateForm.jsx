@@ -465,21 +465,25 @@ const LancamentoCreateForm = () => {
 
   return (
     <I18nProvider locale="pt-BR">
-      <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
-        <h1 className="text-2xl font-semibold mb-6">Novo Lançamento</h1>
-        <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="p-3 sm:p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+        <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Novo Lançamento</h1>
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           <Tabs
             aria-label="Tipo de Lançamento"
             selectedKey={formData.tipo}
             onSelectionChange={(key) => handleValueChange('tipo', key)}
             color="primary"
             radius="md"
+            size="sm"
+            classNames={{
+              tabList: "flex-wrap"
+            }}
           >
             <Tab key="1" title="Receita" />
             <Tab key="2" title="Despesa" />
           </Tabs>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4 items-start">
             <Input
               id="tour-descricao"
               className="md:col-span-4"
@@ -778,7 +782,7 @@ const LancamentoCreateForm = () => {
                             </p>
                           </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                             <NumericFormat
                               label="Valor da Parcela"
                               value={parcela.valor}
@@ -851,7 +855,7 @@ const LancamentoCreateForm = () => {
             )}
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 pt-4">
             <Button
               id="tour-salvar-lancamento"
               type="submit"
@@ -860,6 +864,8 @@ const LancamentoCreateForm = () => {
               startIcon={
                 loading ? <Spinner color="current" size="sm" /> : <SaveIcon />
               }
+              className="w-full sm:w-auto"
+              size="sm"
             >
               {loading ? 'Salvando...' : 'Salvar'}
             </Button>
@@ -867,6 +873,8 @@ const LancamentoCreateForm = () => {
               variant="bordered"
               onClick={() => navigate('/lancamentos')}
               startIcon={<ArrowBackIcon />}
+              className="w-full sm:w-auto"
+              size="sm"
             >
               Voltar
             </Button>

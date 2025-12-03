@@ -25,6 +25,7 @@ import {
   Collapse,
   Grid,
   Paper,
+  Typography,
 } from '@mui/material'
 import { I18nProvider } from '@react-aria/i18n'
 import { getLocalTimeZone, parseDate } from '@internationalized/date'
@@ -273,29 +274,45 @@ export default function PlanoContaDataGrid() {
       switch (columnKey) {
         case 'descricao':
           return (
-            <div
-              className="flex items-center"
-              style={{ paddingLeft: `${item.nivel * 25}px` }}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                pl: { xs: item.nivel * 1.5, sm: item.nivel * 2, md: item.nivel * 3 },
+                minWidth: 0,
+                width: '100%',
+              }}
             >
-              <span
-                className={
-                  isPai
-                    ? 'text-primary-600 dark:text-primary-400'
-                    : 'text-gray-500 dark:text-gray-400 transform scale-75'
-                }
+              <Box
+                component="span"
+                sx={{
+                  color: isPai
+                    ? 'primary.main'
+                    : 'text.secondary',
+                  fontSize: { xs: '0.875rem', sm: '1rem' },
+                  flexShrink: 0,
+                  mr: 1,
+                }}
               >
                 {isPai ? <FolderOpenIcon /> : <ArrowRightIcon />}
-              </span>
-              <span
-                className={`ml-2 ${
-                  isPai
-                    ? 'font-bold text-gray-800 dark:text-gray-200'
-                    : 'italic text-gray-600 dark:text-gray-400'
-                }`}
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: isPai ? 600 : 400,
+                  fontStyle: isPai ? 'normal' : 'italic',
+                  color: isPai ? 'text.primary' : 'text.secondary',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  minWidth: 0,
+                  flex: 1,
+                }}
+                title={cellValue}
               >
                 {cellValue}
-              </span>
-            </div>
+              </Typography>
+            </Box>
           )
         case 'tipo':
           return cellValue === 1 ? 'Receita' : 'Despesa'
@@ -357,33 +374,49 @@ export default function PlanoContaDataGrid() {
   }
 
   return (
-    <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+    <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: { xs: 1, sm: 2 }, 
+          mb: 2, 
+          alignItems: 'center',
+          width: '100%',
+        }}
+      >
         <Tooltip title="O Plano de Contas é a estrutura que organiza suas finanças. Crie categorias como 'Salário', 'Aluguel' ou 'Supermercado' para classificar suas receitas e despesas e entender para onde seu dinheiro está indo.">
-          <IconButton size="small">
+          <IconButton size="small" sx={{ p: { xs: 0.5, sm: 1 } }}>
             <InfoOutlinedIcon
               fontSize="small"
               sx={{ color: 'text.secondary' }}
             />
           </IconButton>
         </Tooltip>
-        <Button color="primary" onPress={() => navigate('/PlanoContas/Create')}>
+        <Button 
+          color="primary" 
+          onPress={() => navigate('/PlanoContas/Create')}
+          size="sm"
+          className="flex-1 sm:flex-initial"
+        >
           Novo Plano de Contas
         </Button>
         <Button
           variant="bordered"
           startContent={<FilterIcon />}
           onClick={() => setMostrarFiltros(!mostrarFiltros)}
+          size="sm"
+          className="flex-1 sm:flex-initial"
         >
           Filtros {mostrarFiltros ? '▲' : '▼'}
         </Button>
       </Box>
       <Collapse in={mostrarFiltros}>
-        <Paper sx={{ p: 2, mb: 3, border: '1px solid #ddd' }}>
+        <Paper sx={{ p: { xs: 1.5, sm: 2 }, mb: 3, border: '1px solid #ddd' }}>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={3}>
+            <Grid item xs={12}>
               <I18nProvider locale="pt-BR">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                   <Select
                     label="Tipo de Data"
                     name="tipoData"
@@ -458,7 +491,14 @@ export default function PlanoContaDataGrid() {
           {error}
         </Alert>
       )}
-      <Table aria-label="Tabela de Plano de Contas">
+      <Box sx={{ width: '100%', overflowX: 'auto', position: 'relative', mt: 2 }}>
+        <Table 
+          aria-label="Tabela de Plano de Contas"
+          classNames={{
+            wrapper: 'w-full',
+            base: 'w-full'
+          }}
+        >
         <TableHeader columns={columns}>
           {(column) => (
             <TableColumn
@@ -470,6 +510,7 @@ export default function PlanoContaDataGrid() {
                   ? 'center'
                   : 'start'
               }
+              width={column.uid === 'descricao' ? '50%' : column.uid === 'total' ? '25%' : column.uid === 'acoes' ? '10%' : '15%'}
             >
               {column.name}
             </TableColumn>
@@ -482,12 +523,22 @@ export default function PlanoContaDataGrid() {
           {(item) => (
             <TableRow key={item.id}>
               {(columnKey) => (
-                <TableCell>{renderCell(item, columnKey)}</TableCell>
+                <TableCell 
+                  sx={{
+                    maxWidth: columnKey === 'descricao' ? { xs: '200px', sm: '300px', md: '400px' } : 'none',
+                    overflow: columnKey === 'descricao' ? 'hidden' : 'visible',
+                    textOverflow: columnKey === 'descricao' ? 'ellipsis' : 'clip',
+                    whiteSpace: columnKey === 'descricao' ? 'nowrap' : 'normal',
+                  }}
+                >
+                  {renderCell(item, columnKey)}
+                </TableCell>
               )}
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+            )}
+          </TableBody>
+        </Table>
+      </Box>
       {isDeleteModalOpen && (
         <PlanoContaDeleteModal
           open={isDeleteModalOpen}

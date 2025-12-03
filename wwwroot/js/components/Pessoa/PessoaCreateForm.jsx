@@ -219,22 +219,26 @@ const PessoaCreateForm = () => {
 
   return (
     <I18nProvider locale="pt-BR">
-      <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
-        <h1 className="text-2xl font-semibold mb-6">Nova Pessoa</h1>
+      <div className="p-3 sm:p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+        <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Nova Pessoa</h1>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           <Tabs
             aria-label="Tipo de Pessoa"
             selectedKey={tipoPessoa}
             onSelectionChange={(key) => setTipoPessoa(key)}
             color="primary"
             radius="md"
+            size="sm"
+            classNames={{
+              tabList: "flex-wrap"
+            }}
           >
             <Tab key="1" title="Pessoa Física" />
             <Tab key="2" title="Pessoa Jurídica" />
           </Tabs>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {tipoPessoa === '1' && (
               <>
                 <Input
@@ -381,7 +385,7 @@ const PessoaCreateForm = () => {
             />
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 pt-4">
             <Button
               type="submit"
               color="primary"
@@ -389,6 +393,8 @@ const PessoaCreateForm = () => {
               startIcon={
                 loading ? <Spinner color="current" size="sm" /> : <SaveIcon />
               }
+              className="w-full sm:w-auto"
+              size="sm"
             >
               {loading ? 'Salvando...' : 'Salvar'}
             </Button>
@@ -396,6 +402,8 @@ const PessoaCreateForm = () => {
               variant="bordered"
               onClick={() => navigate('/pessoas')}
               startIcon={<ArrowBackIcon />}
+              className="w-full sm:w-auto"
+              size="sm"
             >
               Voltar
             </Button>

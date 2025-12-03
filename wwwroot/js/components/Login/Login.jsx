@@ -108,12 +108,12 @@ const Login = () => {
         py: 4,
       }}
     >
-      <Container component="main" maxWidth="xs">
+      <Container component="main" maxWidth="xs" sx={{ px: { xs: 2, sm: 3 } }}>
         <Card
           elevation={8}
           sx={{
             borderRadius: 2,
-            p: 4,
+            p: { xs: 2, sm: 3, md: 4 },
             backgroundColor: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(5px)',
             boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.2)',

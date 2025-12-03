@@ -149,17 +149,21 @@ const EditContaForm = ({ contaId }) => {
   }
 
   return (
-    <div className="p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
-      <h1 className="text-2xl font-semibold mb-6">Editar Conta Bancária</h1>
+    <div className="p-3 sm:p-4 md:p-6 rounded-lg shadow-sm text-gray-900 dark:text-gray-100">
+      <h1 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6">Editar Conta Bancária</h1>
 
       {formData && (
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8">
           <Tabs
             aria-label="Tipo de Conta"
             selectedKey={formData.tipo}
             onSelectionChange={(key) => handleDynamicChange('tipo', key)}
             color="primary"
             radius="md"
+            size="sm"
+            classNames={{
+              tabList: "flex-wrap"
+            }}
           >
             <Tab key="Corrente" title="Corrente" />
             <Tab key="Poupanca" title="Poupança" />
@@ -167,7 +171,7 @@ const EditContaForm = ({ contaId }) => {
             <Tab key="Investimento" title="Investimento" />
           </Tabs>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 sm:gap-4 items-center">
             <Input
               className="md:col-span-6"
               name="descricao"
@@ -237,7 +241,7 @@ const EditContaForm = ({ contaId }) => {
             </Checkbox>
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex flex-col sm:flex-row gap-2 pt-4">
             <Button
               type="submit"
               color="primary"
@@ -249,6 +253,8 @@ const EditContaForm = ({ contaId }) => {
                   <SaveIcon />
                 )
               }
+              className="w-full sm:w-auto"
+              size="sm"
             >
               {isSubmitting ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
@@ -256,6 +262,8 @@ const EditContaForm = ({ contaId }) => {
               variant="bordered"
               onClick={() => navigate('/contas')}
               startIcon={<ArrowBackIcon />}
+              className="w-full sm:w-auto"
+              size="sm"
             >
               Voltar
             </Button>

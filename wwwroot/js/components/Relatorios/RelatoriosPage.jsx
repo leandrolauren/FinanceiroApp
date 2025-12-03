@@ -308,13 +308,13 @@ const RelatoriosPage = () => {
 
   return (
     <I18nProvider locale="pt-BR">
-      <Box sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
+        <Typography variant="h4" gutterBottom sx={{ fontSize: { xs: '1.5rem', sm: '2rem' } }}>
           Central de Relatórios
         </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
+        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-        <Grid container spacing={4} sx={{ mb: 4 }}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} sx={{ mb: 4 }}>
           <Grid item xs={12} md={6}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
@@ -341,6 +341,8 @@ const RelatoriosPage = () => {
                           d ? d.toDate(getLocalTimeZone()) : null,
                         )
                       }
+                      size="sm"
+                      className="w-full"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -359,16 +361,19 @@ const RelatoriosPage = () => {
                           d ? d.toDate(getLocalTimeZone()) : null,
                         )
                       }
+                      size="sm"
+                      className="w-full"
                     />
                   </Grid>
                   <Grid item xs={12}>
                     <Select
                       label="Situação"
-                      className="min-w-[100px] w-full"
+                      className="w-full"
                       selectedKeys={[filtros.status]}
                       onSelectionChange={(keys) =>
                         handleFiltroChange('status', Array.from(keys)[0])
                       }
+                      size="sm"
                     >
                       <SelectItem key="Todos">Todos</SelectItem>
                       <SelectItem key="Pago">Pago</SelectItem>
@@ -377,11 +382,13 @@ const RelatoriosPage = () => {
                   </Grid>
                 </Grid>
               </CardContent>
-              <CardActions>
+              <CardActions sx={{ px: { xs: 1.5, sm: 2 }, pb: { xs: 1.5, sm: 2 } }}>
                 <Button
                   color="primary"
                   onClick={handleGenerateReport}
                   isLoading={generating}
+                  size="sm"
+                  className="w-full sm:w-auto"
                 >
                   Gerar Relatório
                 </Button>
@@ -417,7 +424,8 @@ const RelatoriosPage = () => {
                         <TextField
                           {...params}
                           label="Plano de Contas *"
-                          sx={{ width: 200 }}
+                          fullWidth
+                          size="small"
                         />
                       )}
                     />
@@ -440,6 +448,8 @@ const RelatoriosPage = () => {
                           dataInicio: d ? d.toDate(getLocalTimeZone()) : null,
                         }))
                       }
+                      size="sm"
+                      className="w-full"
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -460,15 +470,19 @@ const RelatoriosPage = () => {
                           dataFim: d ? d.toDate(getLocalTimeZone()) : null,
                         }))
                       }
+                      size="sm"
+                      className="w-full"
                     />
                   </Grid>
                 </Grid>
               </CardContent>
-              <CardActions>
+              <CardActions sx={{ px: { xs: 1.5, sm: 2 }, pb: { xs: 1.5, sm: 2 } }}>
                 <Button
                   color="primary"
                   onClick={handleGenerateExtrato}
                   isLoading={generating}
+                  size="sm"
+                  className="w-full sm:w-auto"
                 >
                   Gerar Extrato
                 </Button>
@@ -477,9 +491,9 @@ const RelatoriosPage = () => {
           </Grid>
         </Grid>
 
-        <Grid container spacing={4}>
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }}>
           <Grid item xs={12}>
-            <Paper sx={{ p: 2, height: '100%' }}>
+            <Paper sx={{ p: { xs: 1.5, sm: 2 }, height: '100%' }}>
               <Typography variant="h6">Relatórios Gerados</Typography>
               {listLoading ? (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>

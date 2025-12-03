@@ -9,7 +9,7 @@ import {
 import { HelmetProvider } from 'react-helmet-async'
 import { SnackbarProvider } from 'notistack'
 import Notifcacao from '../Shared/Notificacao'
-import { Box, CircularProgress, CssBaseline } from '@mui/material'
+import { Box, CircularProgress, CssBaseline, useMediaQuery, useTheme } from '@mui/material'
 import '../../../css/tailwind.css'
 import { AppThemeProvider } from '../../contexts/ThemeContext'
 import { I18nProvider } from '@react-aria/i18n'
@@ -70,16 +70,31 @@ const drawerWidth = 240
 
 const App = () => {
   const { userName, csrfToken } = window.APP_DATA || {}
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [isToggled, setIsToggled] = useState(() => {
     const savedState = localStorage.getItem('sidebarToggled')
-    return savedState !== null ? JSON.parse(savedState) : true
+    return savedState !== null ? JSON.parse(savedState) : !isMobile
   })
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem('sidebarToggled', JSON.stringify(isToggled))
-  }, [isToggled])
+    if (!isMobile) {
+      localStorage.setItem('sidebarToggled', JSON.stringify(isToggled))
+    }
+  }, [isToggled, isMobile])
 
-  const handleToggle = () => setIsToggled(!isToggled)
+  const handleToggle = () => {
+    if (isMobile) {
+      setMobileOpen(!mobileOpen)
+    } else {
+      setIsToggled(!isToggled)
+    }
+  }
+
+  const handleMobileClose = () => {
+    setMobileOpen(false)
+  }
 
   const handleLogout = async () => {
     try {
@@ -108,16 +123,18 @@ const App = () => {
       <CssBaseline />
 
       <Sidebar
-        isToggled={isToggled}
+        isToggled={isMobile ? mobileOpen : isToggled}
         handleToggle={handleToggle}
         userName={userName}
         handleLogout={handleLogout}
+        isMobile={isMobile}
+        mobileOpen={mobileOpen}
+        onMobileClose={handleMobileClose}
       />
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: 3,
           minHeight: '100vh',
           backgroundColor: (theme) => theme.palette.background.default,
           transition: (theme) =>
@@ -125,18 +142,54 @@ const App = () => {
               easing: theme.transitions.easing.sharp,
               duration: theme.transitions.duration.leavingScreen,
             }),
-          ml: (theme) => (isToggled ? `${drawerWidth}px` : theme.spacing(7)),
+          ml: {
+            xs: 0,
+            md: (theme) => (isToggled ? `${drawerWidth}px` : theme.spacing(7)),
+          },
+          width: {
+            xs: '100%',
+            md: (theme) => `calc(100% - ${isToggled ? drawerWidth : theme.spacing(7)}px)`,
+          },
         }}
       >
-        {/* O conteúdo principal da página é renderizado aqui */}
-        <Suspense
-          fallback={
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <CircularProgress />
-            </Box>
-          }
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: {
+              xs: '100%',
+              sm: '100%',
+              md: '100%',
+              lg: (theme) => `calc(100vw - ${isToggled ? drawerWidth : theme.spacing(7)}px - ${theme.spacing(8)})`,
+              xl: (theme) => `calc(100vw - ${isToggled ? drawerWidth : theme.spacing(7)}px - ${theme.spacing(12)})`,
+            },
+            mx: 'auto',
+            px: {
+              xs: 1,
+              sm: 2,
+              md: 3,
+              lg: 4,
+              xl: 5,
+            },
+            py: {
+              xs: 1,
+              sm: 2,
+              md: 3,
+            },
+            transition: (theme) =>
+              theme.transitions.create(['max-width'], {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
+          }}
         >
-          <Routes>
+          <Suspense
+            fallback={
+              <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+              </Box>
+            }
+          >
+            <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/pessoas" element={<PessoasDataGrid />} />
@@ -172,6 +225,7 @@ const App = () => {
             <Route path="*" element={<h1>Página Não Encontrada</h1>} />
           </Routes>
         </Suspense>
+        </Box>
       </Box>
       <AIChatPage />
     </Router>

@@ -24,6 +24,12 @@ import {
   Typography,
   Tooltip,
   IconButton,
+  Card,
+  CardContent,
+  useTheme,
+  useMediaQuery,
+  Chip as MuiChip,
+  Divider,
 } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
@@ -264,6 +270,8 @@ const showNotification = (message, variant) => {
 
 export default function Lancamentos() {
   const navigate = useNavigate()
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
   const [lancamentos, setLancamentos] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -599,7 +607,7 @@ export default function Lancamentos() {
   const topContent = useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex justify-between gap-3 items-end">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 items-stretch sm:items-end">
           <Input
             isClearable
             className="w-full sm:max-w-[44%]"
@@ -609,12 +617,14 @@ export default function Lancamentos() {
             onClear={onClear}
             onValueChange={onSearchChange}
           />
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
+              <DropdownTrigger>
                 <Button
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
+                  className="w-full sm:w-auto"
+                  size="sm"
                 >
                   Status
                 </Button>
@@ -637,10 +647,12 @@ export default function Lancamentos() {
               </DropdownMenu>
             </Dropdown>
             <Dropdown>
-              <DropdownTrigger className="hidden sm:flex">
+              <DropdownTrigger>
                 <Button
                   endContent={<ChevronDownIcon className="text-small" />}
                   variant="flat"
+                  className="w-full sm:w-auto"
+                  size="sm"
                 >
                   Colunas
                 </Button>
@@ -664,6 +676,8 @@ export default function Lancamentos() {
               variant="flat"
               onPress={onOpenFilterModal}
               startContent={<FilterIcon />}
+              className="w-full sm:w-auto"
+              size="sm"
             >
               Filtros
             </Button>
@@ -685,8 +699,8 @@ export default function Lancamentos() {
 
   const bottomContent = useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
-        <div className="w-[30%]" />
+      <div className="py-2 px-2 flex flex-col sm:flex-row justify-between items-center gap-3">
+        <div className="w-full sm:w-[30%]" />
         <Pagination
           isCompact
           showControls
@@ -695,9 +709,10 @@ export default function Lancamentos() {
           page={pagination.page}
           total={pagination.totalPages}
           onChange={onPageChange}
+          size="sm"
         />
-        <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          <label className="flex items-center text-default-400 text-small">
+        <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-[30%] justify-end">
+          <label className="flex items-center text-default-400 text-small whitespace-nowrap">
             Linhas por página:
           </label>
           <select
@@ -722,10 +737,10 @@ export default function Lancamentos() {
   ])
 
   return (
-    <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+    <Box sx={{ p: { xs: 0.5, sm: 1 } }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: { xs: 1, sm: 2 }, mb: 2, alignItems: 'center' }}>
         <Tooltip title="Esta é a tela principal para registrar todas as suas movimentações: receitas (o que você ganha) e despesas (o que você gasta). Um registro detalhado ajuda a manter o controle.">
-          <IconButton size="small">
+          <IconButton size="small" sx={{ p: { xs: 0.5, sm: 1 } }}>
             <InfoOutlinedIcon
               fontSize="small"
               sx={{ color: 'text.secondary' }}
@@ -737,6 +752,8 @@ export default function Lancamentos() {
           endContent={<PlusIcon />}
           onPress={() => navigate('/lancamentos/create')}
           id="tour-novo-lancamento"
+          size="sm"
+          className="flex-1 sm:flex-initial"
         >
           Novo Lançamento
         </Button>
@@ -745,6 +762,8 @@ export default function Lancamentos() {
           variant="flat"
           endContent={<UploadIcon />}
           onPress={() => navigate('/lancamentos/importar/ofx')}
+          size="sm"
+          className="flex-1 sm:flex-initial"
         >
           Importar OFX
         </Button>
@@ -753,48 +772,267 @@ export default function Lancamentos() {
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
           <CircularProgress />
         </Box>
+      ) : isMobile ? (
+        <Box>
+          <Box sx={{ mb: 2 }}>{topContent}</Box>
+          {lancamentos.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 4 }}>
+              <Typography variant="body1" color="text.secondary">
+                Nenhum lançamento encontrado
+              </Typography>
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {lancamentos.map((lancamento) => (
+                <Card
+                  key={lancamento.id}
+                  sx={{
+                    borderRadius: 2,
+                    boxShadow: 2,
+                    '&:hover': {
+                      boxShadow: 4,
+                    },
+                  }}
+                >
+                  <CardContent sx={{ p: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        mb: 1.5,
+                      }}
+                    >
+                      <Box sx={{ flex: 1 }}>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontSize: '1rem',
+                            fontWeight: 600,
+                            mb: 0.5,
+                            wordBreak: 'break-word',
+                          }}
+                        >
+                          {lancamento.descricao}
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+                          <MuiChip
+                            label={lancamento.tipo}
+                            size="small"
+                            color={lancamento.tipo === 'Receita' ? 'success' : 'error'}
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                          <MuiChip
+                            label={lancamento.pagoTexto}
+                            size="small"
+                            color={lancamento.pago ? 'success' : 'error'}
+                            sx={{ fontSize: '0.75rem' }}
+                          />
+                        </Box>
+                      </Box>
+                      <Box sx={{ ml: 1 }}>
+                        <Dropdown>
+                          <DropdownTrigger>
+                            <Button isIconOnly size="sm" variant="light">
+                              <VerticalDotsIcon className="text-default-300" />
+                            </Button>
+                          </DropdownTrigger>
+                          <DropdownMenu aria-label="Ações do Lançamento">
+                            {lancamento.pago
+                              ? [
+                                  <DropdownItem
+                                    key="estornar"
+                                    onPress={() => handleEstornar(lancamento.id)}
+                                  >
+                                    Estornar
+                                  </DropdownItem>,
+                                ]
+                              : [
+                                  <DropdownItem
+                                    key="edit"
+                                    onPress={() =>
+                                      navigate(`/Lancamentos/Edit/${lancamento.id}`)
+                                    }
+                                  >
+                                    Editar
+                                  </DropdownItem>,
+                                  <DropdownItem
+                                    key="delete"
+                                    className="text-danger"
+                                    color="danger"
+                                    onPress={() => handleOpenDeleteModal(lancamento.id)}
+                                  >
+                                    Excluir
+                                  </DropdownItem>,
+                                ]}
+                          </DropdownMenu>
+                        </Dropdown>
+                      </Box>
+                    </Box>
+                    <Divider sx={{ my: 1.5 }} />
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 1.5,
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Valor
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 600,
+                            color:
+                              lancamento.tipo === 'Receita'
+                                ? 'success.main'
+                                : 'error.main',
+                            fontSize: '1rem',
+                          }}
+                        >
+                          {new Intl.NumberFormat('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                          }).format(lancamento.valor)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Pessoa
+                        </Typography>
+                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                          {lancamento.pessoaNome || '--'}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Vencimento
+                        </Typography>
+                        <Typography variant="body2">
+                          {formatarParaExibicao(lancamento.dataVencimento)}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Competência
+                        </Typography>
+                        <Typography variant="body2">
+                          {formatarParaExibicao(lancamento.dataCompetencia)}
+                        </Typography>
+                      </Box>
+                      {lancamento.dataPagamento && (
+                        <Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: 'block', mb: 0.5 }}
+                          >
+                            Pagamento
+                          </Typography>
+                          <Typography variant="body2">
+                            {formatarParaExibicao(lancamento.dataPagamento)}
+                          </Typography>
+                        </Box>
+                      )}
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Plano de Contas
+                        </Typography>
+                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                          {lancamento.planoContasDescricao || '--'}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ display: 'block', mb: 0.5 }}
+                        >
+                          Conta Bancária
+                        </Typography>
+                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                          {lancamento.contaBancariaDescricao || '--'}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )}
+          <Box sx={{ mt: 3 }}>{bottomContent}</Box>
+        </Box>
       ) : (
-        <Table
-          aria-label="Tabela de Lançamentos Financeiros"
-          id="tour-lancamentos-grid"
-          isHeaderSticky
-          bottomContent={bottomContent}
-          bottomContentPlacement="outside"
-          classNames={{ wrapper: 'max-h-[calc(100vh-280px)]' }}
-          selectedKeys={selectedKeys}
-          selectionMode="multiple"
-          sortDescriptor={sortDescriptor}
-          topContent={topContent}
-          topContentPlacement="outside"
-          onSelectionChange={setSelectedKeys}
-          onSortChange={setSortDescriptor}
-        >
-          <TableHeader columns={headerColumns}>
-            {(column) => (
-              <TableColumn
-                key={column.uid}
-                align={column.uid === 'acoes' ? 'center' : 'start'}
-                allowsSorting={column.sortable}
-              >
-                {column.name}
-              </TableColumn>
-            )}
-          </TableHeader>
-          <TableBody
-            emptyContent={'Nenhum lançamento encontrado'}
-            items={lancamentos}
-            isLoading={loading}
-            loadingContent={<Spinner label="Carregando..." />}
+        <div className="overflow-x-auto">
+          <Table
+            aria-label="Tabela de Lançamentos Financeiros"
+            id="tour-lancamentos-grid"
+            isHeaderSticky
+            bottomContent={bottomContent}
+            bottomContentPlacement="outside"
+            classNames={{ 
+              wrapper: 'max-h-[calc(100vh-280px)] min-w-[900px]',
+              base: 'overflow-x-auto'
+            }}
+            selectedKeys={selectedKeys}
+            selectionMode="multiple"
+            sortDescriptor={sortDescriptor}
+            topContent={topContent}
+            topContentPlacement="outside"
+            onSelectionChange={setSelectedKeys}
+            onSortChange={setSortDescriptor}
           >
-            {(item) => (
-              <TableRow key={item.id}>
-                {(columnKey) => (
-                  <TableCell>{renderCell(item, columnKey)}</TableCell>
-                )}
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            <TableHeader columns={headerColumns}>
+              {(column) => (
+                <TableColumn
+                  key={column.uid}
+                  align={column.uid === 'acoes' ? 'center' : 'start'}
+                  allowsSorting={column.sortable}
+                  minWidth={column.uid === 'descricao' ? 180 : column.uid === 'valor' ? 120 : 100}
+                >
+                  {column.name}
+                </TableColumn>
+              )}
+            </TableHeader>
+            <TableBody
+              emptyContent={'Nenhum lançamento encontrado'}
+              items={lancamentos}
+              isLoading={loading}
+              loadingContent={<Spinner label="Carregando..." />}
+            >
+              {(item) => (
+                <TableRow key={item.id}>
+                  {(columnKey) => (
+                    <TableCell>{renderCell(item, columnKey)}</TableCell>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       )}
       {isModalOpen && (
         <LancamentoDeleteModal
