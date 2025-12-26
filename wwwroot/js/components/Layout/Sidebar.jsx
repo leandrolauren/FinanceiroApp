@@ -33,6 +33,7 @@ import SchoolIcon from '@mui/icons-material/School'
 import { ThemeSwitcher } from './ThemeSwitcher'
 
 const drawerWidth = 240
+const drawerMinWidth = 64
 
 function decodeHtml(html) {
   if (!html) return ''
@@ -83,36 +84,64 @@ const Sidebar = ({
         sx={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          px: { xs: 1, sm: 2 },
+          justifyContent: isToggled ? 'space-between' : 'center',
+          px: isToggled ? { xs: 1, sm: 2 } : 0,
           backgroundColor: theme.palette.background.default,
           minHeight: { xs: 56, sm: 64 },
         }}
       >
-        {isToggled && (
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              ml: 1,
-              whiteSpace: 'nowrap',
-            }}
-          >
+        {isToggled ? (
+          <>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <img
+                src="/favicon.ico"
+                alt="Logo"
+                style={{ 
+                  width: 32, 
+                  height: 32, 
+                  flexShrink: 0,
+                  objectFit: 'contain',
+                  aspectRatio: '1 / 1'
+                }}
+              />
+              <Typography variant="h6" sx={{ ml: 2, color: 'inherit', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
+                Financeiro
+              </Typography>
+            </Box>
+            <Box sx={{ flexGrow: 1 }} />
+            <ThemeSwitcher />
+          </>
+        ) : (
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            width: '100%',
+            height: '100%',
+          }}>
             <img
               src="/favicon.ico"
               alt="Logo"
-              style={{ width: 32, height: 32 }}
+              style={{ 
+                width: 32, 
+                height: 32, 
+                flexShrink: 0,
+                objectFit: 'contain',
+                aspectRatio: '1 / 1',
+                display: 'block'
+              }}
             />
-            <Typography variant="h6" sx={{ ml: 2, color: 'inherit', fontSize: { xs: '1rem', sm: '1.25rem' } }}>
-              Financeiro
-            </Typography>
           </Box>
         )}
-        <Box sx={{ flexGrow: 1 }} />
-        <ThemeSwitcher />
       </Toolbar>
       <Divider />
-      <List sx={{ px: { xs: 0.5, sm: 1 } }}>
+      <List sx={{ px: isToggled ? { xs: 0.5, sm: 1 } : 0 }}>
         <ListItem disablePadding>
           <NavLink to="/home" style={navLinkStyle} onClick={isMobile ? onMobileClose : undefined}>
             {({ isActive }) => (
@@ -121,14 +150,19 @@ const Sidebar = ({
                 sx={{
                   ...(isActive ? activeLinkStyle : {}),
                   py: { xs: 1, sm: 1.5 },
-                  px: { xs: 1, sm: 2 },
+                  px: isToggled ? { xs: 1, sm: 2 } : 0,
+                  justifyContent: isToggled ? 'flex-start' : 'center',
+                  minHeight: 48,
                 }}
               >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
-                    minWidth: 'auto',
-                    mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
+                    minWidth: isToggled ? 40 : drawerMinWidth,
+                    justifyContent: 'center',
+                    mr: isToggled ? { xs: 2, sm: 3 } : 0,
+                    display: 'flex',
+                    alignItems: 'center',
                   }}
                 >
                   <HomeIcon />
@@ -150,14 +184,16 @@ const Sidebar = ({
                 sx={{
                   ...(isActive ? activeLinkStyle : {}),
                   py: { xs: 1, sm: 1.5 },
-                  px: { xs: 1, sm: 2 },
+                  px: isToggled ? { xs: 1, sm: 2 } : 0,
+                  justifyContent: isToggled ? 'flex-start' : 'center',
                 }}
               >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
-                    minWidth: 'auto',
-                    mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
+                    minWidth: isToggled ? 40 : drawerMinWidth,
+                    justifyContent: 'center',
+                    mr: isToggled ? { xs: 2, sm: 3 } : 0,
                   }}
                 >
                   <AssessmentIcon />
@@ -210,14 +246,16 @@ const Sidebar = ({
                   sx={{
                     ...(isActive ? activeLinkStyle : {}),
                     py: { xs: 1, sm: 1.5 },
-                    px: { xs: 1, sm: 2 },
+                    px: isToggled ? { xs: 1, sm: 2 } : 0,
+                    justifyContent: isToggled ? 'flex-start' : 'center',
                   }}
                 >
                   <ListItemIcon
                     sx={{
                       color: 'inherit',
-                      minWidth: 'auto',
-                      mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
+                      minWidth: isToggled ? 40 : drawerMinWidth,
+                      justifyContent: 'center',
+                      mr: isToggled ? { xs: 2, sm: 3 } : 0,
                     }}
                   >
                     {item.icon}
@@ -260,14 +298,16 @@ const Sidebar = ({
                 sx={{
                   ...(isActive ? activeLinkStyle : {}),
                   py: { xs: 1, sm: 1.5 },
-                  px: { xs: 1, sm: 2 },
+                  px: isToggled ? { xs: 1, sm: 2 } : 0,
+                  justifyContent: isToggled ? 'flex-start' : 'center',
                 }}
               >
                 <ListItemIcon
                   sx={{
                     color: 'inherit',
-                    minWidth: 'auto',
-                    mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
+                    minWidth: isToggled ? 40 : drawerMinWidth,
+                    justifyContent: 'center',
+                    mr: isToggled ? { xs: 2, sm: 3 } : 0,
                   }}
                 >
                   <ReceiptLongIcon />
@@ -313,13 +353,15 @@ const Sidebar = ({
                 <ListItemButton sx={{
                   ...(isActive ? activeLinkStyle : {}),
                   py: { xs: 1, sm: 1.5 },
-                  px: { xs: 1, sm: 2 },
+                  px: isToggled ? { xs: 1, sm: 2 } : 0,
+                  justifyContent: isToggled ? 'flex-start' : 'center',
                 }}>
                   <ListItemIcon
                     sx={{
                       color: 'inherit',
-                      minWidth: 'auto',
-                      mr: isToggled ? { xs: 2, sm: 3 } : 'auto',
+                      minWidth: isToggled ? 40 : drawerMinWidth,
+                      justifyContent: 'center',
+                      mr: isToggled ? { xs: 2, sm: 3 } : 0,
                     }}
                   >
                     {item.icon}
@@ -355,14 +397,14 @@ const Sidebar = ({
           onClick={handleProfileMenuOpen}
           sx={{
             py: { xs: 1.5, sm: 2 },
-            px: isToggled ? { xs: 1, sm: 2 } : 'auto',
-            justifyContent: 'center',
+            px: isToggled ? { xs: 1, sm: 2 } : 0,
+            justifyContent: isToggled ? 'flex-start' : 'center',
           }}
         >
           <ListItemIcon
             sx={{
-              minWidth: 0,
-              mr: isToggled ? { xs: 1.5, sm: 2 } : 'auto',
+              minWidth: isToggled ? 40 : drawerMinWidth,
+              mr: isToggled ? { xs: 1.5, sm: 2 } : 0,
               justifyContent: 'center',
             }}
           >
@@ -451,10 +493,10 @@ const Sidebar = ({
           keepMounted: true,
         }}
         sx={{
-          width: drawerWidth,
+          width: isMobile ? drawerWidth : (isToggled ? drawerWidth : drawerMinWidth),
           flexShrink: 0,
           '& .MuiDrawer-paper': {
-            width: drawerWidth,
+            width: isMobile ? drawerWidth : (isToggled ? drawerWidth : drawerMinWidth),
             boxSizing: 'border-box',
             transition: isMobile
               ? theme.transitions.create('transform', {
@@ -466,19 +508,11 @@ const Sidebar = ({
                   duration: theme.transitions.duration.enteringScreen,
                 }),
             overflowX: 'hidden',
-            borderRight: 'none',
+            borderRight: `1px solid ${theme.palette.divider}`,
             backgroundColor: theme.palette.background.paper,
             color: theme.palette.text.primary,
+            position: 'relative',
           },
-          ...(!isToggled && !isMobile && {
-            '& .MuiDrawer-paper': {
-              width: theme.spacing(7),
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-            },
-          }),
         }}
       >
         {drawerContent}

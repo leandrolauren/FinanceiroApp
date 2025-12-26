@@ -11,11 +11,16 @@ import {
   TextField,
   MenuItem,
   Typography,
+  useTheme,
+  useMediaQuery,
+  Paper,
+  alpha,
 } from '@mui/material'
 import { DatePicker } from '@heroui/react'
 import { I18nProvider } from '@react-aria/i18n'
 import { parseDate, getLocalTimeZone } from '@internationalized/date'
-import { FilterAlt } from '@mui/icons-material'
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
+import FilterListIcon from '@mui/icons-material/FilterList'
 import axios from 'axios'
 import { startOfYear, endOfYear } from 'date-fns'
 
@@ -37,13 +42,15 @@ const getFiltrosSalvos = () => {
 }
 
 export default function EntradaeSaida() {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'))
   const [chartData, setChartData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [mostrarFiltros, setMostrarFiltros] = useState(false)
 
   const [filtrosAtivos, setFiltrosAtivos] = useState(getFiltrosSalvos)
-
   const [filtrosEditando, setFiltrosEditando] = useState(filtrosAtivos)
 
   const fetchData = useCallback(async () => {
@@ -85,178 +92,152 @@ export default function EntradaeSaida() {
     setMostrarFiltros(false)
   }
 
+  const formatCurrency = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+
   if (loading) {
     return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        sx={{ width: '100%', aspectRatio: '1 / 1' }}
-      >
+      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', justifyContent: 'center', minHeight: 400 }}>
         <CircularProgress />
-      </Box>
+      </Paper>
     )
   }
 
-  if (error) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        sx={{ width: '100%', aspectRatio: '1 / 1' }}
-      >
-        <Alert severity="error">
-          <AlertTitle>Erro</AlertTitle>
-          {error}
-        </Alert>
-      </Box>
-    )
-  }
-
-  const todosValores = [
-    ...(chartData?.receitas || []),
-    ...(chartData?.despesas || []),
-  ].map((v) => Math.abs(v))
-
-  const yAxisMax =
-    todosValores.length > 0 ? Math.max(...todosValores) * 1.1 : 1000
+  const chartHeight = isMobile ? 300 : isTablet ? 400 : 450
 
   return (
     <I18nProvider locale="pt-BR">
-      <Box
+      <Paper
+        elevation={0}
         sx={{
           width: '100%',
-          p: 2,
-          bgcolor: 'background.paper',
-          borderRadius: 2,
-          boxShadow: 1,
+          p: { xs: 2, sm: 3 },
+          borderRadius: 4,
+          border: '1px solid',
+          borderColor: 'divider',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 1)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
         }}
       >
-        <Typography variant="h6">
-          Fluxo de Caixa (Receitas vs. Despesas)
-        </Typography>
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          mb={2}
-        >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <Box sx={{ 
+              p: 1, 
+              borderRadius: 2, 
+              bgcolor: alpha(theme.palette.success.main, 0.1),
+              color: theme.palette.success.main,
+              display: 'flex'
+            }}>
+              <AccountBalanceWalletIcon />
+            </Box>
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                Fluxo de Caixa
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Entradas vs Saídas mensais
+              </Typography>
+            </Box>
+          </Box>
           <Button
-            variant="outlined"
-            startIcon={<FilterAlt />}
+            size="small"
+            startIcon={<FilterListIcon />}
             onClick={() => setMostrarFiltros(!mostrarFiltros)}
+            sx={{ borderRadius: 2 }}
           >
             Filtros
           </Button>
         </Box>
 
         <Collapse in={mostrarFiltros}>
-          <Box sx={{ p: 2, mb: 2, border: '1px solid #ddd', borderRadius: 1 }}>
+          <Box sx={{ p: 2, mb: 3, bgcolor: alpha(theme.palette.divider, 0.05), borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
             <Grid container spacing={2} alignItems="center">
               <Grid item xs={12} sm={3}>
                 <DatePicker
-                  label="Data Início"
-                  value={
-                    filtrosEditando.dataInicio
-                      ? parseDate(
-                          filtrosEditando.dataInicio
-                            .toISOString()
-                            .split('T')[0],
-                        )
-                      : null
-                  }
-                  onChange={(d) =>
-                    handleFiltroChange(
-                      'dataInicio',
-                      d ? d.toDate(getLocalTimeZone()) : null,
-                    )
-                  }
+                  label="Início"
+                  value={filtrosEditando.dataInicio ? parseDate(filtrosEditando.dataInicio.toISOString().split('T')[0]) : null}
+                  onChange={(d) => handleFiltroChange('dataInicio', d ? d.toDate(getLocalTimeZone()) : null)}
+                  variant="flat"
                 />
               </Grid>
               <Grid item xs={12} sm={3}>
                 <DatePicker
-                  label="Data Fim"
-                  value={
-                    filtrosEditando.dataFim
-                      ? parseDate(
-                          filtrosEditando.dataFim.toISOString().split('T')[0],
-                        )
-                      : null
-                  }
-                  onChange={(d) =>
-                    handleFiltroChange(
-                      'dataFim',
-                      d ? d.toDate(getLocalTimeZone()) : null,
-                    )
-                  }
+                  label="Fim"
+                  value={filtrosEditando.dataFim ? parseDate(filtrosEditando.dataFim.toISOString().split('T')[0]) : null}
+                  onChange={(d) => handleFiltroChange('dataFim', d ? d.toDate(getLocalTimeZone()) : null)}
+                  variant="flat"
                 />
               </Grid>
               <Grid item xs={12} sm={3}>
                 <TextField
                   select
                   fullWidth
+                  size="small"
                   label="Situação"
                   value={filtrosEditando.status}
                   onChange={(e) => handleFiltroChange('status', e.target.value)}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
                 >
-                  <MenuItem value="Todos">Todos - Competência</MenuItem>
-                  <MenuItem value="Pago">Pagos - Pagamento</MenuItem>
-                  <MenuItem value="Aberto">Em Aberto - Vencimento</MenuItem>
+                  <MenuItem value="Todos">Todos</MenuItem>
+                  <MenuItem value="Pago">Pagos</MenuItem>
+                  <MenuItem value="Aberto">Em Aberto</MenuItem>
                 </TextField>
               </Grid>
               <Grid item xs={12} sm={3}>
-                <Box display="flex" justifyContent="flex-end">
-                  <Button variant="contained" onClick={aplicarFiltro}>
-                    Aplicar
-                  </Button>
-                </Box>
+                <Button fullWidth variant="contained" onClick={aplicarFiltro} sx={{ borderRadius: 2, py: 1 }}>
+                  Aplicar
+                </Button>
               </Grid>
             </Grid>
           </Box>
         </Collapse>
 
-        {chartData && chartData.meses.length > 0 ? (
-          <BarChart
-            sx={{ height: { xs: 300, md: 500 } }}
-            series={[
-              {
-                data: chartData.receitas,
-                label: 'Receitas',
-                color: '#4CAF50',
-                id: 'receitasId',
-              },
-              {
-                // Usamos Math.abs para garantir que as barras de despesa sejam sempre positivas (para cima)
-                data: chartData.despesas.map((v) => Math.abs(v)),
-                label: 'Despesas',
-                color: '#F44336',
-                id: 'despesasId',
-              },
-            ]}
-            xAxis={[{ data: chartData.meses, scaleType: 'band', label: 'Mês' }]}
-            yAxis={[{ label: 'Valor (R$)', max: yAxisMax }]}
-            slotProps={{
-              bar: { rx: 4 },
-              legend: {
-                direction: 'vertical',
-                position: { vertical: 'top', horizontal: 'end' },
-              },
-            }}
-          />
+        {chartData && chartData.meses && chartData.meses.length > 0 ? (
+          <Box sx={{ width: '100%', height: chartHeight + 100 }}>
+            <BarChart
+              dataset={chartData.meses.map((mes, i) => ({
+                mes,
+                receitas: chartData.receitas[i] || 0,
+                despesas: Math.abs(chartData.despesas[i] || 0)
+              }))}
+              xAxis={[{ 
+                scaleType: 'band', 
+                dataKey: 'mes',
+                tickLabelStyle: {
+                  fontSize: isMobile ? 10 : 12,
+                  fontWeight: 500
+                }
+              }]}
+              series={[
+                { dataKey: 'receitas', label: 'Receitas', color: theme.palette.success.main, valueFormatter: (v) => formatCurrency(v) },
+                { dataKey: 'despesas', label: 'Despesas', color: theme.palette.error.main, valueFormatter: (v) => formatCurrency(v) },
+              ]}
+              height={chartHeight + 100}
+              grid={{ horizontal: true }}
+              margin={{ top: 30, right: 30, bottom: 40, left: isMobile ? 70 : 100 }}
+              slotProps={{
+                legend: {
+                  direction: 'row',
+                  position: { vertical: 'top', horizontal: 'middle' },
+                  padding: -5,
+                },
+              }}
+              sx={{
+                '& .MuiBarElement-root': { rx: 6 },
+                '.MuiChartsGrid-line': { 
+                  stroke: theme.palette.divider, 
+                  strokeDasharray: '4 4' 
+                },
+                width: '100%'
+              }}
+            />
+          </Box>
         ) : (
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            sx={{ height: { xs: 300, md: 500 } }}
-          >
-            <Typography>
-              Nenhum dado encontrado para o período selecionado.
-            </Typography>
+          <Box display="flex" justifyContent="center" alignItems="center" sx={{ height: chartHeight }}>
+            <Typography variant="body2" color="text.secondary">Nenhum dado encontrado.</Typography>
           </Box>
         )}
-      </Box>
+
+      </Paper>
     </I18nProvider>
   )
 }
+

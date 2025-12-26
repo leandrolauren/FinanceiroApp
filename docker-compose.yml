@@ -10,7 +10,7 @@ services:
       - "8366:8366"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certs:/etc/letsencrypt:ro
     depends_on:
       - webapp
     networks:

@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react'
-import { PieChart } from '@mui/x-charts/PieChart'
-import { Box, Typography, Skeleton, Paper } from '@mui/material'
+import { BarChart } from '@mui/x-charts/BarChart'
+import { Box, Typography, Skeleton, Paper, useTheme, useMediaQuery, alpha } from '@mui/material'
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong'
 import axios from 'axios'
 
+const formatCurrency = (value) =>
+  value.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  })
+
 export default function TopDespesas({ filtros }) {
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const [data, setData] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -19,12 +30,7 @@ export default function TopDespesas({ filtros }) {
         const response = await axios.get('/api/dashboard/top-despesas', {
           params,
         })
-        const chartData = response.data.map((item, index) => ({
-          id: index,
-          value: item.total,
-          label: item.categoria,
-        }))
-        setData(chartData)
+        setData(response.data)
       } catch (error) {
         console.error('Erro ao buscar Top 5 Despesas:', error)
       } finally {
@@ -34,51 +40,74 @@ export default function TopDespesas({ filtros }) {
     fetchData()
   }, [filtros])
 
-  if (loading)
-    return (
-      <Skeleton
-        variant="rectangular"
-        sx={{ width: '100%', aspectRatio: '1 / 1' }}
-      />
-    )
+  if (loading) return (
+    <Paper elevation={0} sx={{ p: 2, borderRadius: 4, border: '1px solid', borderColor: 'divider', height: '100%' }}>
+      <Skeleton variant="text" width="60%" height={30} />
+      <Skeleton variant="rectangular" height={250} sx={{ mt: 2, borderRadius: 2 }} />
+    </Paper>
+  )
+
+  const chartHeight = 300
 
   return (
-    <Paper
-      elevation={3}
-      sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}
+    <Paper 
+      elevation={0} 
+      sx={{ 
+        p: { xs: 2, sm: 3 }, 
+        borderRadius: 4, 
+        border: '1px solid', 
+        borderColor: 'divider',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column'
+      }}
     >
-      <Typography variant="h6" align="center" mb={0}>
-        Top 5 Despesas por Categoria
-      </Typography>
+      <Box display="flex" alignItems="center" mb={2} gap={1}>
+        <ReceiptLongIcon color="error" fontSize="small" />
+        <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+          Maiores Despesas
+        </Typography>
+      </Box>
+
       {data.length > 0 ? (
-        <PieChart
-          height={200}
-          series={[
-            {
-              data,
-              innerRadius: 50,
-              outerRadius: 80,
-              paddingAngle: 2,
-              cornerRadius: 5,
-            },
-          ]}
-          slotProps={{
-            legend: {
-              direction: 'vertical',
-              position: { vertical: 'middle', horizontal: 'end' },
-            },
-          }}
-        />
+        <Box sx={{ width: '100%', mt: 2, height: chartHeight + 50 }}>
+          <BarChart
+            dataset={data}
+            xAxis={[{ 
+              scaleType: 'band', 
+              dataKey: 'categoria',
+              tickLabelStyle: {
+                fontSize: 12,
+                fontWeight: 600,
+                angle: -35,
+                textAnchor: 'end',
+              }
+            }]}
+            series={[{ 
+              dataKey: 'total', 
+              color: theme.palette.error.main,
+              valueFormatter: (v) => formatCurrency(v)
+            }]}
+            height={chartHeight + 50}
+            margin={{ left: 70, right: 20, top: 10, bottom: 80 }}
+            slotProps={{
+              legend: { hidden: true },
+            }}
+            sx={{
+              '& .MuiBarElement-root': { rx: 6, stroke: alpha(theme.palette.error.main, 0.5), strokeWidth: 1 },
+              width: '100%'
+            }}
+          />
+        </Box>
       ) : (
-        <Box
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-          sx={{ height: 250 }}
-        >
-          <Typography>Nenhuma despesa encontrada no período.</Typography>
+        <Box display="flex" justifyContent="center" alignItems="center" height={chartHeight}>
+          <Typography variant="body2" color="text.secondary">Nenhuma despesa.</Typography>
         </Box>
       )}
+
+
+
     </Paper>
   )
 }
+

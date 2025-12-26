@@ -19,6 +19,7 @@ appsettings.Development.json
 *.sln.docstates
 
 nginx/
+certs/
 
 # Visual Studio Code
 .vscode/

@@ -67,6 +67,7 @@ const AIChatPage = lazy(() => import('../Orientacoes/AIChat'))
 const RelatoriosPage = lazy(() => import('../Relatorios/RelatoriosPage'))
 
 const drawerWidth = 240
+const drawerMinWidth = 64
 
 const App = () => {
   const { userName, csrfToken } = window.APP_DATA || {}
@@ -121,37 +122,41 @@ const App = () => {
     <Router>
       <Seo />
       <CssBaseline />
-
-      <Sidebar
-        isToggled={isMobile ? mobileOpen : isToggled}
-        handleToggle={handleToggle}
-        userName={userName}
-        handleLogout={handleLogout}
-        isMobile={isMobile}
-        mobileOpen={mobileOpen}
-        onMobileClose={handleMobileClose}
-      />
       <Box
-        component="main"
         sx={{
-          flexGrow: 1,
+          display: 'flex',
+          width: '100%',
           minHeight: '100vh',
-          backgroundColor: (theme) => theme.palette.background.default,
-          transition: (theme) =>
-            theme.transitions.create(['margin'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-          ml: {
-            xs: 0,
-            md: (theme) => (isToggled ? `${drawerWidth}px` : theme.spacing(7)),
-          },
-          width: {
-            xs: '100%',
-            md: (theme) => `calc(100% - ${isToggled ? drawerWidth : theme.spacing(7)}px)`,
-          },
         }}
       >
+        <Sidebar
+          isToggled={isMobile ? mobileOpen : isToggled}
+          handleToggle={handleToggle}
+          userName={userName}
+          handleLogout={handleLogout}
+          isMobile={isMobile}
+          mobileOpen={mobileOpen}
+          onMobileClose={handleMobileClose}
+        />
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            minHeight: '100vh',
+            backgroundColor: (theme) => theme.palette.background.default,
+            width: {
+              xs: '100%',
+              md: (theme) => `calc(100% - ${isToggled ? drawerWidth : drawerMinWidth}px)`,
+            },
+            transition: (theme) =>
+              theme.transitions.create('width', {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.enteringScreen,
+              }),
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
         <Box
           sx={{
             width: '100%',
@@ -159,8 +164,8 @@ const App = () => {
               xs: '100%',
               sm: '100%',
               md: '100%',
-              lg: (theme) => `calc(100vw - ${isToggled ? drawerWidth : theme.spacing(7)}px - ${theme.spacing(8)})`,
-              xl: (theme) => `calc(100vw - ${isToggled ? drawerWidth : theme.spacing(7)}px - ${theme.spacing(12)})`,
+              lg: (theme) => `calc(100vw - ${isToggled ? drawerWidth : drawerMinWidth}px - ${theme.spacing(8)})`,
+              xl: (theme) => `calc(100vw - ${isToggled ? drawerWidth : drawerMinWidth}px - ${theme.spacing(12)})`,
             },
             mx: 'auto',
             px: {
@@ -225,6 +230,7 @@ const App = () => {
             <Route path="*" element={<h1>Página Não Encontrada</h1>} />
           </Routes>
         </Suspense>
+        </Box>
         </Box>
       </Box>
       <AIChatPage />

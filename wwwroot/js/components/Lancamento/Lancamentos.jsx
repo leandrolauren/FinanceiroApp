@@ -526,13 +526,22 @@ export default function Lancamentos() {
         case 'acoes':
           return (
             <div className="relative flex justify-end items-center gap-2">
-              <Dropdown>
+              <Dropdown 
+                placement={isMobile ? "bottom" : "bottom-end"}
+                offset={isMobile ? 5 : 10}
+              >
                 <DropdownTrigger>
                   <Button isIconOnly size="sm" variant="light">
                     <VerticalDotsIcon className="text-default-300" />
                   </Button>
                 </DropdownTrigger>
-                <DropdownMenu aria-label="Ações do Lançamento">
+                <DropdownMenu 
+                  aria-label="Ações do Lançamento"
+                  disallowEmptySelection
+                  selectionMode="none"
+                  closeOnSelect={true}
+                  className="min-w-[120px]"
+                >
                   {lancamento.pago
                     ? [
                         <DropdownItem
@@ -830,14 +839,24 @@ export default function Lancamentos() {
                           />
                         </Box>
                       </Box>
-                      <Box sx={{ ml: 1 }}>
-                        <Dropdown>
+                      <Box sx={{ ml: 1, position: 'relative' }}>
+                        <Dropdown 
+                          placement={isMobile ? "bottom" : "bottom-end"}
+                          offset={isMobile ? 5 : 10}
+                        >
                           <DropdownTrigger>
                             <Button isIconOnly size="sm" variant="light">
                               <VerticalDotsIcon className="text-default-300" />
                             </Button>
                           </DropdownTrigger>
-                          <DropdownMenu aria-label="Ações do Lançamento">
+                          <DropdownMenu 
+                            aria-label="Ações do Lançamento"
+                            disallowEmptySelection
+                            selectionMode="none"
+                            closeOnSelect={true}
+                            className="min-w-[120px]"
+                            style={{ position: 'absolute' }}
+                          >
                             {lancamento.pago
                               ? [
                                   <DropdownItem

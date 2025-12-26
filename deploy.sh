@@ -12,6 +12,10 @@ git checkout main
 git pull origin main
 
 # 2. Atualizar e reiniciar os containers Docker
+# Habilitar BuildKit para builds mais rápidos e cache otimizado
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+
 echo "=> Etapa 2/3: Recriando e atualizando os containers..."
 docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d --build
 
